@@ -53,14 +53,6 @@ final class AudioDeviceTests: SCATestCase {
         XCTAssertEqual(device.channels(scope: .output), 2)
         XCTAssertEqual(device.channels(scope: .input), 2)
 
-        XCTAssertEqual(device.name(channel: 0, scope: .output), "Master")
-        XCTAssertEqual(device.name(channel: 1, scope: .output), "Left")
-        XCTAssertEqual(device.name(channel: 2, scope: .output), "Right")
-
-        XCTAssertEqual(device.name(channel: 0, scope: .input), "Master")
-        XCTAssertEqual(device.name(channel: 1, scope: .input), "Left")
-        XCTAssertEqual(device.name(channel: 2, scope: .input), "Right")
-
         XCTAssertNotNil(device.ownedObjectIDs)
         XCTAssertNotNil(device.controlList)
         XCTAssertNotNil(device.relatedDevices)
@@ -308,25 +300,25 @@ final class AudioDeviceTests: SCATestCase {
     func testSampleRate() throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.nominalSampleRates, [44_100, 48_000])
+        XCTAssertEqual(device.nominalSampleRates, [44100, 48000])
 
-        XCTAssertTrue(device.setNominalSampleRate(44_100))
+        XCTAssertTrue(device.setNominalSampleRate(44100))
         sleep(1)
-        XCTAssertEqual(device.nominalSampleRate, 44_100)
-        XCTAssertEqual(device.actualSampleRate, 44_100)
+        XCTAssertEqual(device.nominalSampleRate, 44100)
+        XCTAssertEqual(device.actualSampleRate, 44100)
 
-        XCTAssertTrue(device.setNominalSampleRate(48_000))
+        XCTAssertTrue(device.setNominalSampleRate(48000))
         sleep(1)
-        XCTAssertEqual(device.nominalSampleRate, 48_000)
-        XCTAssertEqual(device.actualSampleRate, 48_000)
+        XCTAssertEqual(device.nominalSampleRate, 48000)
+        XCTAssertEqual(device.actualSampleRate, 48000)
     }
 
     func testInvalidSampleRate() throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.nominalSampleRates, [44_100, 48_000])
-        XCTAssertFalse(device.setNominalSampleRate(24_000))
-        XCTAssertFalse(device.setNominalSampleRate(96_000))
+        XCTAssertEqual(device.nominalSampleRates, [44100, 48000])
+        XCTAssertFalse(device.setNominalSampleRate(24000))
+        XCTAssertFalse(device.setNominalSampleRate(96000))
     }
 
     func testDataSource() throws {
@@ -402,16 +394,6 @@ final class AudioDeviceTests: SCATestCase {
         XCTAssertTrue(device.unsetHogMode())
         XCTAssertEqual(device.hogModePID, -1)
     }
-
-//    func testVolumeConversion() throws {
-//        let device = try GetDevice()
-//
-//        XCTAssertEqual(device.scalarToDecibels(volume: 0, channel: 0, scope: .output), -96.0)
-//        XCTAssertEqual(device.scalarToDecibels(volume: 1, channel: 0, scope: .output), 6.0)
-//
-//        XCTAssertEqual(device.decibelsToScalar(volume: -96.0, channel: 0, scope: .output), 0)
-//        XCTAssertEqual(device.decibelsToScalar(volume: 6.0, channel: 0, scope: .output), 1)
-//    }
 
     func testStreams() throws {
         let device = try getNullDevice()

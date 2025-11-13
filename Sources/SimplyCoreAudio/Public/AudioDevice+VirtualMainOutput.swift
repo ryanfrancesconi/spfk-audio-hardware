@@ -8,7 +8,6 @@
 import AudioToolbox
 import CoreAudio
 import Foundation
-@_implementationOnly import SimplyCoreAudioC
 
 // MARK: - 🔊 Virtual Main Output Volume / Balance Functions
 

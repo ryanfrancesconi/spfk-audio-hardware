@@ -28,10 +28,6 @@ public enum Scope {
     /// side of an object.
     case playthrough
 
-    /// The AudioObjectPropertyElement value for properties that apply to the main
-    /// element or to the entire scope. Using deprecated naming
-    case master
-
     /// The wildcard value for AudioObjectPropertySelectors
     case wildcard
     
@@ -49,7 +45,7 @@ extension Scope {
         case .input: return kAudioObjectPropertyScopeInput
         case .output: return kAudioObjectPropertyScopeOutput
         case .playthrough: return kAudioObjectPropertyScopePlayThrough
-        case .main, .master: return Element.main.asPropertyElement
+        case .main: return kAudioObjectPropertyElementMain
         case .wildcard: return kAudioObjectPropertyScopeWildcard
         }
     }
@@ -60,8 +56,7 @@ extension Scope {
         case kAudioObjectPropertyScopeInput: return .input
         case kAudioObjectPropertyScopeOutput: return .output
         case kAudioObjectPropertyScopePlayThrough: return .playthrough
-        case kAudioObjectPropertyElementMaster: return .master
-        case Element.main.asPropertyElement: return .main
+        case kAudioObjectPropertyElementMain: return .main
         case kAudioObjectPropertyScopeWildcard: return .wildcard
         default:
             // Note, the default is only here to satisfy the switch to be exhaustive.
