@@ -1,11 +1,11 @@
 //
 //  SimplyCoreAudio+Aggregate.swift
-//  
+//
 //
 //  Created by Ruben Nine on 4/4/21.
 //
 
-import CoreAudio
+import CoreAudio.AudioHardware
 import Foundation
 import os.log
 
@@ -21,12 +21,11 @@ public extension SimplyCoreAudio {
     func createAggregateDevice(mainDevice: AudioDevice,
                                secondDevice: AudioDevice?,
                                named name: String,
-                               uid: String) -> AudioDevice?
-    {
+                               uid: String) -> AudioDevice? {
         guard let mainDeviceUID = mainDevice.uid else { return nil }
 
         var deviceList: [[String: Any]] = [
-            [kAudioSubDeviceUIDKey: mainDeviceUID]
+            [kAudioSubDeviceUIDKey: mainDeviceUID],
         ]
 
         // make sure same device isn't added twice
@@ -38,7 +37,7 @@ public extension SimplyCoreAudio {
             kAudioAggregateDeviceNameKey: name,
             kAudioAggregateDeviceUIDKey: uid,
             kAudioAggregateDeviceSubDeviceListKey: deviceList,
-            kAudioAggregateDeviceMainSubDeviceKey: mainDeviceUID
+            kAudioAggregateDeviceMainSubDeviceKey: mainDeviceUID,
         ]
 
         var deviceID: AudioDeviceID = 0
@@ -50,15 +49,6 @@ public extension SimplyCoreAudio {
         }
 
         return AudioDevice.lookup(by: deviceID)
-    }
-    
-    @available(*, deprecated, message: "mainDevice: is preferred spelling for first argument")
-    func createAggregateDevice(masterDevice: AudioDevice,
-                               secondDevice: AudioDevice?,
-                               named name: String,
-                               uid: String) -> AudioDevice?
-    {
-        return createAggregateDevice(mainDevice: masterDevice, secondDevice: secondDevice, named: name, uid: uid)
     }
 
     /// Destroy the given audio aggregate device.

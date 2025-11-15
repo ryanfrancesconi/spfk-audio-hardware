@@ -231,7 +231,7 @@ public extension AudioStream {
     func availablePhysicalFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
         guard let physicalFormats = availablePhysicalFormats, let physicalFormat = physicalFormat else { return nil }
 
-        var filteredFormats = physicalFormats.filter { (format) -> Bool in
+        var filteredFormats = physicalFormats.filter { format -> Bool in
             format.mSampleRateRange.mMinimum >= physicalFormat.mSampleRate &&
                 format.mSampleRateRange.mMaximum <= physicalFormat.mSampleRate
         }.map { $0.mFormat }
@@ -256,7 +256,7 @@ public extension AudioStream {
     func availableVirtualFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
         guard let virtualFormats = availableVirtualFormats, let virtualFormat = virtualFormat else { return nil }
 
-        var filteredFormats = virtualFormats.filter { (format) -> Bool in
+        var filteredFormats = virtualFormats.filter { format -> Bool in
             format.mSampleRateRange.mMinimum >= virtualFormat.mSampleRate &&
                 format.mSampleRateRange.mMaximum <= virtualFormat.mSampleRate
         }.map { $0.mFormat }
@@ -370,7 +370,7 @@ extension AudioStream: CustomStringConvertible {
 
 private func propertyListener(objectID: UInt32,
                               numInAddresses: UInt32,
-                              inAddresses : UnsafePointer<AudioObjectPropertyAddress>,
+                              inAddresses: UnsafePointer<AudioObjectPropertyAddress>,
                               clientData: Optional<UnsafeMutableRawPointer>) -> Int32 {
     // Try to get audio object from the pool.
     guard let obj: AudioStream = AudioObjectPool.shared.get(objectID) else { return kAudioHardwareBadObjectError }
@@ -380,9 +380,9 @@ private func propertyListener(objectID: UInt32,
 
     switch address.mSelector {
     case kAudioStreamPropertyIsActive:
-        DispatchQueue.main.async { notificationCenter.post(name: .streamIsActiveDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .streamIsActiveDidChange, object: obj) }
     case kAudioStreamPropertyPhysicalFormat:
-        DispatchQueue.main.async { notificationCenter.post(name: .streamPhysicalFormatDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .streamPhysicalFormatDidChange, object: obj) }
     default:
         break
     }

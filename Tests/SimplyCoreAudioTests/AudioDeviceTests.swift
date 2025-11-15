@@ -1,427 +1,437 @@
+import Foundation
+import Numerics
 @testable import SimplyCoreAudio
-import XCTest
+import Testing
 
-final class AudioDeviceTests: SCATestCase {
-    func testDeviceLookUp() throws {
+final class AudioDeviceTests: SCATestCase2 {
+    @Test func testDeviceLookUp() async throws {
         let device = try getNullDevice()
-        let deviceUID = try XCTUnwrap(device.uid)
+        let deviceUID = try #require(device.uid)
 
-        XCTAssertEqual(AudioDevice.lookup(by: device.id), device)
-        XCTAssertEqual(AudioDevice.lookup(by: deviceUID), device)
+        #expect(AudioDevice.lookup(by: device.id) == device)
+        #expect(AudioDevice.lookup(by: deviceUID) == device)
     }
 
-    func testSettingDefaultDevice() throws {
+    @Test func testSettingDefaultDevice() async throws {
         let device = try getNullDevice()
 
         device.isDefaultInputDevice = true
 
-        XCTAssertTrue(device.isDefaultInputDevice)
-        XCTAssertEqual(simplyCA.defaultInputDevice, device)
+        #expect(device.isDefaultInputDevice)
+        #expect(simplyCA.defaultInputDevice == device)
 
         device.isDefaultOutputDevice = true
 
-        XCTAssertTrue(device.isDefaultOutputDevice)
-        XCTAssertEqual(simplyCA.defaultOutputDevice, device)
+        #expect(device.isDefaultOutputDevice)
+        #expect(simplyCA.defaultOutputDevice == device)
 
         device.isDefaultSystemOutputDevice = true
 
-        XCTAssertTrue(device.isDefaultSystemOutputDevice)
-        XCTAssertEqual(simplyCA.defaultSystemOutputDevice, device)
+        #expect(device.isDefaultSystemOutputDevice)
+        #expect(simplyCA.defaultSystemOutputDevice == device)
     }
 
-    func testGeneralDeviceInformation() throws {
+    @Test func testGeneralDeviceInformation() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.name, "Null Audio Device")
-        XCTAssertEqual(device.manufacturer, "Apple Inc.")
-        XCTAssertEqual(device.uid, "NullAudioDevice_UID")
-        XCTAssertEqual(device.modelUID, "NullAudioDevice_ModelUID")
-        XCTAssertEqual(device.configurationApplication, "com.apple.audio.AudioMIDISetup")
-        XCTAssertEqual(device.transportType, .virtual)
+        #expect(device.name == "Null Audio Device")
+        #expect(device.manufacturer == "Apple Inc.")
+        #expect(device.uid == "NullAudioDevice_UID")
+        #expect(device.modelUID == "NullAudioDevice_ModelUID")
+        #expect(device.configurationApplication == "com.apple.audio.AudioMIDISetup")
+        #expect(device.transportType == .virtual)
 
-        XCTAssertFalse(device.isInputOnlyDevice)
-        XCTAssertFalse(device.isOutputOnlyDevice)
-        XCTAssertFalse(device.isHidden)
+        #expect(!device.isInputOnlyDevice)
+        #expect(!device.isOutputOnlyDevice)
+        #expect(!device.isHidden)
 
-        XCTAssertNil(device.isJackConnected(scope: .output))
-        XCTAssertNil(device.isJackConnected(scope: .input))
+        #expect(device.isJackConnected(scope: .output) == nil)
+        #expect(device.isJackConnected(scope: .input) == nil)
 
-        XCTAssertTrue(device.isAlive)
-        XCTAssertFalse(device.isRunning)
-        XCTAssertFalse(device.isRunningSomewhere)
+        #expect(device.isAlive)
+        #expect(!device.isRunning)
+        #expect(!device.isRunningSomewhere)
 
-        XCTAssertEqual(device.channels(scope: .output), 2)
-        XCTAssertEqual(device.channels(scope: .input), 2)
+        #expect(device.channels(scope: .output) == 2)
+        #expect(device.channels(scope: .input) == 2)
 
-        XCTAssertNotNil(device.ownedObjectIDs)
-        XCTAssertNotNil(device.controlList)
-        XCTAssertNotNil(device.relatedDevices)
+        #expect(device.ownedObjectIDs != nil)
+        #expect(device.controlList != nil)
+        #expect(device.relatedDevices != nil)
     }
 
-    func testLFE() throws {
+    @Test func testLFE() async throws {
         let device = try getNullDevice()
 
-        XCTAssertNil(device.shouldOwniSub)
+        #expect(device.shouldOwniSub == nil)
         device.shouldOwniSub = true
-        XCTAssertNil(device.shouldOwniSub)
+        #expect(device.shouldOwniSub == nil)
 
-        XCTAssertNil(device.lfeMute)
+        #expect(device.lfeMute == nil)
         device.lfeMute = true
-        XCTAssertNil(device.lfeMute)
+        #expect(device.lfeMute == nil)
 
-        XCTAssertNil(device.lfeVolume)
+        #expect(device.lfeVolume == nil)
         device.lfeVolume = 1.0
-        XCTAssertNil(device.lfeVolume)
+        #expect(device.lfeVolume == nil)
 
-        XCTAssertNil(device.lfeVolumeDecibels)
+        #expect(device.lfeVolumeDecibels == nil)
         device.lfeVolumeDecibels = 6.0
-        XCTAssertNil(device.lfeVolumeDecibels)
+        #expect(device.lfeVolumeDecibels == nil)
     }
 
-    func testInputOutputLayout() throws {
+    @Test func testInputOutputLayout() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.layoutChannels(scope: .output), 2)
-        XCTAssertEqual(device.layoutChannels(scope: .input), 2)
+        #expect(device.layoutChannels(scope: .output) == 2)
+        #expect(device.layoutChannels(scope: .input) == 2)
 
-        XCTAssertEqual(device.channels(scope: .output), 2)
-        XCTAssertEqual(device.channels(scope: .input), 2)
+        #expect(device.channels(scope: .output) == 2)
+        #expect(device.channels(scope: .input) == 2)
 
-        XCTAssertFalse(device.isInputOnlyDevice)
-        XCTAssertFalse(device.isOutputOnlyDevice)
+        #expect(!device.isInputOnlyDevice)
+        #expect(!device.isOutputOnlyDevice)
     }
 
-    func testVolumeInfo() throws {
+    @Test func testVolumeInfo() async throws {
         let device = try getNullDevice()
         var volumeInfo: VolumeInfo!
 
-        XCTAssertTrue(device.setMute(false, channel: 0, scope: .output))
+        #expect(device.setMute(false, channel: 0, scope: .output))
 
-        volumeInfo = try XCTUnwrap(device.volumeInfo(channel: 0, scope: .output))
-        XCTAssertEqual(volumeInfo.hasVolume, true)
-        XCTAssertEqual(volumeInfo.canSetVolume, true)
-        XCTAssertEqual(volumeInfo.canMute, true)
-        XCTAssertEqual(volumeInfo.isMuted, false)
-        XCTAssertEqual(volumeInfo.canPlayThru, false)
-        XCTAssertEqual(volumeInfo.isPlayThruSet, false)
+        volumeInfo = device.volumeInfo(channel: 0, scope: .output)
+        #expect(volumeInfo.hasVolume == true)
+        #expect(volumeInfo.canSetVolume == true)
+        #expect(volumeInfo.canMute == true)
+        #expect(volumeInfo.isMuted == false)
+        #expect(volumeInfo.canPlayThru == false)
+        #expect(volumeInfo.isPlayThruSet == false)
 
-        XCTAssertTrue(device.setVolume(0, channel: 0, scope: .output))
-        volumeInfo = try XCTUnwrap(device.volumeInfo(channel: 0, scope: .output))
-        XCTAssertEqual(volumeInfo.volume, 0)
+        #expect(device.setVolume(0, channel: 0, scope: .output))
+        volumeInfo = device.volumeInfo(channel: 0, scope: .output)
+        #expect(volumeInfo.volume == 0)
 
-        XCTAssertTrue(device.setVolume(0.5, channel: 0, scope: .output))
-        volumeInfo = try XCTUnwrap(device.volumeInfo(channel: 0, scope: .output))
-        XCTAssertEqual(volumeInfo.volume, 0.5)
+        #expect(device.setVolume(0.5, channel: 0, scope: .output))
+        volumeInfo = device.volumeInfo(channel: 0, scope: .output)
+        #expect(volumeInfo.volume == 0.5)
 
-        XCTAssertNil(device.volumeInfo(channel: 1, scope: .output))
-        XCTAssertNil(device.volumeInfo(channel: 2, scope: .output))
-        XCTAssertNil(device.volumeInfo(channel: 3, scope: .output))
-        XCTAssertNil(device.volumeInfo(channel: 4, scope: .output))
+        #expect(device.volumeInfo(channel: 1, scope: .output) == nil)
+        #expect(device.volumeInfo(channel: 2, scope: .output) == nil)
+        #expect(device.volumeInfo(channel: 3, scope: .output) == nil)
+        #expect(device.volumeInfo(channel: 4, scope: .output) == nil)
 
-        XCTAssertNotNil(device.volumeInfo(channel: 0, scope: .input))
+        #expect(device.volumeInfo(channel: 0, scope: .input) != nil)
 
-        XCTAssertNil(device.volumeInfo(channel: 1, scope: .input))
-        XCTAssertNil(device.volumeInfo(channel: 2, scope: .input))
-        XCTAssertNil(device.volumeInfo(channel: 3, scope: .input))
-        XCTAssertNil(device.volumeInfo(channel: 4, scope: .input))
+        #expect(device.volumeInfo(channel: 1, scope: .input) == nil)
+        #expect(device.volumeInfo(channel: 2, scope: .input) == nil)
+        #expect(device.volumeInfo(channel: 3, scope: .input) == nil)
+        #expect(device.volumeInfo(channel: 4, scope: .input) == nil)
     }
 
-    func testVolume() throws {
+    @Test func testVolume() async throws {
         let device = try getNullDevice()
 
         // Output scope
-        XCTAssertTrue(device.setVolume(0, channel: 0, scope: .output))
-        XCTAssertEqual(device.volume(channel: 0, scope: .output), 0)
+        #expect(device.setVolume(0, channel: 0, scope: .output))
+        #expect(device.volume(channel: 0, scope: .output) == 0)
 
-        XCTAssertTrue(device.setVolume(0.5, channel: 0, scope: .output))
-        XCTAssertEqual(device.volume(channel: 0, scope: .output), 0.5)
+        #expect(device.setVolume(0.5, channel: 0, scope: .output))
+        #expect(device.volume(channel: 0, scope: .output) == 0.5)
 
-        XCTAssertFalse(device.setVolume(0.5, channel: 1, scope: .output))
-        XCTAssertNil(device.volume(channel: 1, scope: .output))
+        #expect(!device.setVolume(0.5, channel: 1, scope: .output))
+        #expect(device.volume(channel: 1, scope: .output) == nil)
 
-        XCTAssertFalse(device.setVolume(0.5, channel: 2, scope: .output))
-        XCTAssertNil(device.volume(channel: 2, scope: .output))
+        #expect(!device.setVolume(0.5, channel: 2, scope: .output))
+        #expect(device.volume(channel: 2, scope: .output) == nil)
 
         // Input scope
-        XCTAssertTrue(device.setVolume(0, channel: 0, scope: .input))
-        XCTAssertEqual(device.volume(channel: 0, scope: .input), 0)
+        #expect(device.setVolume(0, channel: 0, scope: .input))
+        #expect(device.volume(channel: 0, scope: .input) == 0)
 
-        XCTAssertTrue(device.setVolume(0.5, channel: 0, scope: .input))
-        XCTAssertEqual(device.volume(channel: 0, scope: .input), 0.5)
+        #expect(device.setVolume(0.5, channel: 0, scope: .input))
+        #expect(device.volume(channel: 0, scope: .input) == 0.5)
 
-        XCTAssertFalse(device.setVolume(0.5, channel: 1, scope: .input))
-        XCTAssertNil(device.volume(channel: 1, scope: .input))
+        #expect(!device.setVolume(0.5, channel: 1, scope: .input))
+        #expect(device.volume(channel: 1, scope: .input) == nil)
 
-        XCTAssertFalse(device.setVolume(0.5, channel: 2, scope: .input))
-        XCTAssertNil(device.volume(channel: 2, scope: .input))
+        #expect(!device.setVolume(0.5, channel: 2, scope: .input))
+        #expect(device.volume(channel: 2, scope: .input) == nil)
     }
 
-    func testVolumeInDecibels() throws {
+    @Test func testVolumeInDecibels() async throws {
         let device = try getNullDevice()
 
         // Output scope
-        XCTAssertTrue(device.canSetVolume(channel: 0, scope: .output))
-        XCTAssertTrue(device.setVolume(0, channel: 0, scope: .output))
-        XCTAssertEqual(device.volumeInDecibels(channel: 0, scope: .output), -96)
-        XCTAssertTrue(device.setVolume(0.5, channel: 0, scope: .output))
-        XCTAssertEqual(device.volumeInDecibels(channel: 0, scope: .output), -70.5)
+        #expect(device.canSetVolume(channel: 0, scope: .output))
+        #expect(device.setVolume(0, channel: 0, scope: .output))
+        #expect(device.volumeInDecibels(channel: 0, scope: .output) == -96)
+        #expect(device.setVolume(0.5, channel: 0, scope: .output))
+        #expect(device.volumeInDecibels(channel: 0, scope: .output) == -70.5)
 
-        XCTAssertFalse(device.canSetVolume(channel: 1, scope: .output))
-        XCTAssertFalse(device.setVolume(0.5, channel: 1, scope: .output))
-        XCTAssertNil(device.volumeInDecibels(channel: 1, scope: .output))
+        #expect(!device.canSetVolume(channel: 1, scope: .output))
+        #expect(!device.setVolume(0.5, channel: 1, scope: .output))
+        #expect(device.volumeInDecibels(channel: 1, scope: .output) == nil)
 
-        XCTAssertFalse(device.canSetVolume(channel: 2, scope: .output))
-        XCTAssertFalse(device.setVolume(0.5, channel: 2, scope: .output))
-        XCTAssertNil(device.volumeInDecibels(channel: 2, scope: .output))
+        #expect(!device.canSetVolume(channel: 2, scope: .output))
+        #expect(!device.setVolume(0.5, channel: 2, scope: .output))
+        #expect(device.volumeInDecibels(channel: 2, scope: .output) == nil)
 
         // Input scope
-        XCTAssertTrue(device.canSetVolume(channel: 0, scope: .input))
-        XCTAssertTrue(device.setVolume(0, channel: 0, scope: .input))
-        XCTAssertEqual(device.volumeInDecibels(channel: 0, scope: .input), -96)
-        XCTAssertTrue(device.setVolume(0.5, channel: 0, scope: .input))
-        XCTAssertEqual(device.volumeInDecibels(channel: 0, scope: .input), -70.5)
+        #expect(device.canSetVolume(channel: 0, scope: .input))
+        #expect(device.setVolume(0, channel: 0, scope: .input))
+        #expect(device.volumeInDecibels(channel: 0, scope: .input) == -96)
+        #expect(device.setVolume(0.5, channel: 0, scope: .input))
+        #expect(device.volumeInDecibels(channel: 0, scope: .input) == -70.5)
 
-        XCTAssertFalse(device.canSetVolume(channel: 1, scope: .input))
-        XCTAssertFalse(device.setVolume(0.5, channel: 1, scope: .input))
-        XCTAssertNil(device.volumeInDecibels(channel: 1, scope: .input))
+        #expect(!device.canSetVolume(channel: 1, scope: .input))
+        #expect(!device.setVolume(0.5, channel: 1, scope: .input))
+        #expect(device.volumeInDecibels(channel: 1, scope: .input) == nil)
 
-        XCTAssertFalse(device.canSetVolume(channel: 2, scope: .input))
-        XCTAssertFalse(device.setVolume(0.5, channel: 2, scope: .input))
-        XCTAssertNil(device.volumeInDecibels(channel: 2, scope: .input))
+        #expect(!device.canSetVolume(channel: 2, scope: .input))
+        #expect(!device.setVolume(0.5, channel: 2, scope: .input))
+        #expect(device.volumeInDecibels(channel: 2, scope: .input) == nil)
     }
 
-    func testMute() throws {
+    @Test func testMute() async throws {
         let device = try getNullDevice()
 
         // Output scope
-        XCTAssertTrue(device.canMute(channel: 0, scope: .output))
-        XCTAssertTrue(device.setMute(true, channel: 0, scope: .output))
-        XCTAssertEqual(device.isMuted(channel: 0, scope: .output), true)
-        XCTAssertTrue(device.setMute(false, channel: 0, scope: .output))
-        XCTAssertEqual(device.isMuted(channel: 0, scope: .output), false)
+        #expect(device.canMute(channel: 0, scope: .output))
+        #expect(device.setMute(true, channel: 0, scope: .output))
+        #expect(device.isMuted(channel: 0, scope: .output) == true)
+        #expect(device.setMute(false, channel: 0, scope: .output))
+        #expect(device.isMuted(channel: 0, scope: .output) == false)
 
-        XCTAssertFalse(device.canMute(channel: 1, scope: .output))
-        XCTAssertFalse(device.setMute(true, channel: 1, scope: .output))
-        XCTAssertNil(device.isMuted(channel: 1, scope: .output))
+        #expect(!device.canMute(channel: 1, scope: .output))
+        #expect(!device.setMute(true, channel: 1, scope: .output))
+        #expect(device.isMuted(channel: 1, scope: .output) == nil)
 
-        XCTAssertFalse(device.canMute(channel: 2, scope: .output))
-        XCTAssertFalse(device.setMute(true, channel: 2, scope: .output))
-        XCTAssertNil(device.isMuted(channel: 2, scope: .output))
+        #expect(!device.canMute(channel: 2, scope: .output))
+        #expect(!device.setMute(true, channel: 2, scope: .output))
+        #expect(device.isMuted(channel: 2, scope: .output) == nil)
 
         // Input scope
-        XCTAssertTrue(device.canMute(channel: 0, scope: .input))
-        XCTAssertTrue(device.setMute(true, channel: 0, scope: .input))
-        XCTAssertEqual(device.isMuted(channel: 0, scope: .input), true)
-        XCTAssertTrue(device.setMute(false, channel: 0, scope: .input))
-        XCTAssertEqual(device.isMuted(channel: 0, scope: .input), false)
+        #expect(device.canMute(channel: 0, scope: .input))
+        #expect(device.setMute(true, channel: 0, scope: .input))
+        #expect(device.isMuted(channel: 0, scope: .input) == true)
+        #expect(device.setMute(false, channel: 0, scope: .input))
+        #expect(device.isMuted(channel: 0, scope: .input) == false)
 
-        XCTAssertFalse(device.canMute(channel: 1, scope: .input))
-        XCTAssertFalse(device.setMute(true, channel: 1, scope: .input))
-        XCTAssertNil(device.isMuted(channel: 1, scope: .input))
+        #expect(!device.canMute(channel: 1, scope: .input))
+        #expect(!device.setMute(true, channel: 1, scope: .input))
+        #expect(device.isMuted(channel: 1, scope: .input) == nil)
 
-        XCTAssertFalse(device.canMute(channel: 2, scope: .input))
-        XCTAssertFalse(device.setMute(true, channel: 2, scope: .input))
-        XCTAssertNil(device.isMuted(channel: 2, scope: .input))
+        #expect(!device.canMute(channel: 2, scope: .input))
+        #expect(!device.setMute(true, channel: 2, scope: .input))
+        #expect(device.isMuted(channel: 2, scope: .input) == nil)
     }
 
-    func testMainChannelMute() throws {
+    @Test(arguments: [Scope.output, Scope.input])
+    func testMainChannelMute(scope: Scope) async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.canMuteMainChannel(scope: .output), true)
-        XCTAssertTrue(device.setMute(false, channel: 0, scope: .output))
-        XCTAssertEqual(device.isMainChannelMuted(scope: .output), false)
-        XCTAssertTrue(device.setMute(true, channel: 0, scope: .output))
-        XCTAssertEqual(device.isMainChannelMuted(scope: .output), true)
+        #expect(device.canMuteMainChannel(scope: scope) == true)
+        #expect(device.setMute(false, channel: 0, scope: scope))
+        #expect(device.isMainChannelMuted(scope: scope) == false)
+        #expect(device.setMute(true, channel: 0, scope: scope))
+        #expect(device.isMainChannelMuted(scope: scope) == true)
 
-        XCTAssertEqual(device.canMuteMainChannel(scope: .input), true)
-        XCTAssertTrue(device.setMute(false, channel: 0, scope: .input))
-        XCTAssertEqual(device.isMainChannelMuted(scope: .input), false)
-        XCTAssertTrue(device.setMute(true, channel: 0, scope: .input))
-        XCTAssertEqual(device.isMainChannelMuted(scope: .input), true)
+        #expect(device.canMuteMainChannel(scope: scope) == true)
+        #expect(device.setMute(false, channel: 0, scope: scope))
+        #expect(device.isMainChannelMuted(scope: scope) == false)
+        #expect(device.setMute(true, channel: 0, scope: scope))
+        #expect(device.isMainChannelMuted(scope: scope) == true)
     }
 
-    func testPreferredChannelsForStereo() throws {
+    @Test(arguments: [Scope.output, Scope.input])
+    func testPreferredChannelsForStereo(scope: Scope) async throws {
         let device = try getNullDevice()
-        var preferredChannels = try XCTUnwrap(device.preferredChannelsForStereo(scope: .output))
+        var preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
 
-        XCTAssertEqual(preferredChannels.left, 1)
-        XCTAssertEqual(preferredChannels.right, 2)
+        #expect(preferredChannels.left == 1)
+        #expect(preferredChannels.right == 2)
 
-        XCTAssertTrue(device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: .output))
-        preferredChannels = try XCTUnwrap(device.preferredChannelsForStereo(scope: .output))
-        XCTAssertEqual(preferredChannels.left, 1)
-        XCTAssertEqual(preferredChannels.right, 1)
+        #expect(device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
+        preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
+        #expect(preferredChannels.left == 1)
+        #expect(preferredChannels.right == 1)
 
-        XCTAssertTrue(device.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: .output))
-        preferredChannels = try XCTUnwrap(device.preferredChannelsForStereo(scope: .output))
-        XCTAssertEqual(preferredChannels.left, 2)
-        XCTAssertEqual(preferredChannels.right, 2)
+        #expect(device.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
+        preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
+        #expect(preferredChannels.left == 2)
+        #expect(preferredChannels.right == 2)
 
-        XCTAssertTrue(device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: .output))
-        preferredChannels = try XCTUnwrap(device.preferredChannelsForStereo(scope: .output))
-        XCTAssertEqual(preferredChannels.left, 1)
-        XCTAssertEqual(preferredChannels.right, 2)
+        #expect(device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: scope))
+        preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
+        #expect(preferredChannels.left == 1)
+        #expect(preferredChannels.right == 2)
     }
 
-    func testVirtualMainChannels() throws {
-        let device = try getNullDevice()
+    @Test(arguments: [Scope.output, Scope.input])
+    func testVirtualMainVolumeOutput(scope: Scope) async throws {
+        let nullDevice = try getNullDevice()
 
-        XCTAssertTrue(device.canSetVirtualMainVolume(scope: .output))
-        XCTAssertTrue(device.canSetVirtualMainVolume(scope: .input))
+        let devices = simplyCA.allDevices.filter {
+            $0 != nullDevice &&
+                $0.canSetVirtualMainVolume(scope: scope)
+        }
 
-        XCTAssertTrue(device.setVirtualMainVolume(0.0, scope: .output))
-        XCTAssertEqual(device.virtualMainVolume(scope: .output), 0.0)
-        // XCTAssertEqual(device.virtualMainVolumeInDecibels(scope: .output), -96.0)
-        XCTAssertTrue(device.setVirtualMainVolume(0.5, scope: .output))
-        XCTAssertEqual(device.virtualMainVolume(scope: .output), 0.5)
-        // XCTAssertEqual(device.virtualMainVolumeInDecibels(scope: .output), -70.5)
+        for device in devices {
+            #expect(device.setVirtualMainVolume(0.0, scope: scope))
+            #expect(device.virtualMainVolume(scope: scope) == 0.0)
 
-        XCTAssertTrue(device.setVirtualMainVolume(0.0, scope: .input))
-        XCTAssertEqual(device.virtualMainVolume(scope: .input), 0.0)
-        // XCTAssertEqual(device.virtualMainVolumeInDecibels(scope: .input), -96.0)
-        XCTAssertTrue(device.setVirtualMainVolume(0.5, scope: .input))
-        XCTAssertEqual(device.virtualMainVolume(scope: .input), 0.5)
-        // XCTAssertEqual(device.virtualMainVolumeInDecibels(scope: .input), -70.5)
+            var dB = try #require(device.virtualMainVolumeInDecibels(scope: scope))
+            #expect(dB < 0)
+            print(scope, device.name, "dB", dB)
+
+            #expect(device.setVirtualMainVolume(0.5, scope: scope))
+            #expect(device.virtualMainVolume(scope: scope)?.isApproximatelyEqual(to: 0.5, relativeTolerance: 0.001) == true)
+
+            dB = try #require(device.virtualMainVolumeInDecibels(scope: scope))
+            #expect(dB < 0)
+            print(scope, device.name, "dB", dB)
+        }
     }
 
-    func testVirtualMainBalance() throws {
+    @Test func testVirtualMainBalance() async throws {
         let device = try getNullDevice()
 
-        XCTAssertFalse(device.canSetVirtualMainBalance(scope: .output))
-        XCTAssertFalse(device.canSetVirtualMainBalance(scope: .input))
+        #expect(!device.canSetVirtualMainBalance(scope: .output))
+        #expect(!device.canSetVirtualMainBalance(scope: .input))
 
-        XCTAssertFalse(device.setVirtualMainBalance(0.0, scope: .output))
-        XCTAssertNil(device.virtualMainBalance(scope: .output))
+        #expect(!device.setVirtualMainBalance(0.0, scope: .output))
+        #expect(device.virtualMainBalance(scope: .output) == nil)
 
-        XCTAssertFalse(device.setVirtualMainBalance(0.0, scope: .input))
-        XCTAssertNil(device.virtualMainBalance(scope: .input))
+        #expect(!device.setVirtualMainBalance(0.0, scope: .input))
+        #expect(device.virtualMainBalance(scope: .input) == nil)
     }
 
-    func testSampleRate() throws {
+    @Test func testSampleRate() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.nominalSampleRates, [44100, 48000])
+        #expect(device.nominalSampleRates == [44100, 48000])
 
-        XCTAssertTrue(device.setNominalSampleRate(44100))
+        #expect(device.setNominalSampleRate(44100))
         sleep(1)
-        XCTAssertEqual(device.nominalSampleRate, 44100)
-        XCTAssertEqual(device.actualSampleRate, 44100)
+        #expect(device.nominalSampleRate == 44100)
+        #expect(device.actualSampleRate == 44100)
 
-        XCTAssertTrue(device.setNominalSampleRate(48000))
+        #expect(device.setNominalSampleRate(48000))
         sleep(1)
-        XCTAssertEqual(device.nominalSampleRate, 48000)
-        XCTAssertEqual(device.actualSampleRate, 48000)
+        #expect(device.nominalSampleRate == 48000)
+        #expect(device.actualSampleRate == 48000)
     }
 
-    func testInvalidSampleRate() throws {
+    @Test func testInvalidSampleRate() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.nominalSampleRates, [44100, 48000])
-        XCTAssertFalse(device.setNominalSampleRate(24000))
-        XCTAssertFalse(device.setNominalSampleRate(96000))
+        #expect(device.nominalSampleRates == [44100, 48000])
+        #expect(!device.setNominalSampleRate(24000))
+        #expect(!device.setNominalSampleRate(96000))
     }
 
-    func testDataSource() throws {
+    @Test func testDataSource() async throws {
         let device = try getNullDevice()
 
-        XCTAssertNotNil(device.dataSource(scope: .output))
-        XCTAssertNotNil(device.dataSource(scope: .input))
+        #expect(device.dataSource(scope: .output) != nil)
+        #expect(device.dataSource(scope: .input) != nil)
     }
 
-    func testDataSources() throws {
+    @Test func testDataSources() async throws {
         let device = try getNullDevice()
 
-        XCTAssertNotNil(device.dataSources(scope: .output))
-        XCTAssertNotNil(device.dataSources(scope: .input))
+        #expect(device.dataSources(scope: .output) != nil)
+        #expect(device.dataSources(scope: .input) != nil)
     }
 
-    func testDataSourceName() throws {
+    @Test func testDataSourceName() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 0, scope: .output), "Data Source Item 0")
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 1, scope: .output), "Data Source Item 1")
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 2, scope: .output), "Data Source Item 2")
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 3, scope: .output), "Data Source Item 3")
-        XCTAssertNil(device.dataSourceName(dataSourceID: 4, scope: .output))
+        #expect(device.dataSourceName(dataSourceID: 0, scope: .output) == "Data Source Item 0")
+        #expect(device.dataSourceName(dataSourceID: 1, scope: .output) == "Data Source Item 1")
+        #expect(device.dataSourceName(dataSourceID: 2, scope: .output) == "Data Source Item 2")
+        #expect(device.dataSourceName(dataSourceID: 3, scope: .output) == "Data Source Item 3")
+        #expect(device.dataSourceName(dataSourceID: 4, scope: .output) == nil)
 
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 0, scope: .input), "Data Source Item 0")
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 1, scope: .input), "Data Source Item 1")
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 2, scope: .input), "Data Source Item 2")
-        XCTAssertEqual(device.dataSourceName(dataSourceID: 3, scope: .input), "Data Source Item 3")
-        XCTAssertNil(device.dataSourceName(dataSourceID: 4, scope: .input))
+        #expect(device.dataSourceName(dataSourceID: 0, scope: .input) == "Data Source Item 0")
+        #expect(device.dataSourceName(dataSourceID: 1, scope: .input) == "Data Source Item 1")
+        #expect(device.dataSourceName(dataSourceID: 2, scope: .input) == "Data Source Item 2")
+        #expect(device.dataSourceName(dataSourceID: 3, scope: .input) == "Data Source Item 3")
+        #expect(device.dataSourceName(dataSourceID: 4, scope: .input) == nil)
     }
 
-    func testClockSource() throws {
+    @Test func testClockSource() async throws {
         let device = try getNullDevice()
 
-        XCTAssertNil(device.clockSourceID)
-        XCTAssertNil(device.clockSourceIDs)
-        XCTAssertNil(device.clockSourceName)
-        XCTAssertNil(device.clockSourceNames)
-        XCTAssertNil(device.clockSourceName(clockSourceID: 0))
-        XCTAssertFalse(device.setClockSourceID(0))
+        #expect(device.clockSourceID == nil)
+        #expect(device.clockSourceIDs == nil)
+        #expect(device.clockSourceName == nil)
+        #expect(device.clockSourceNames == nil)
+        #expect(device.clockSourceName(clockSourceID: 0) == nil)
+        #expect(!device.setClockSourceID(0))
     }
 
-    func testTotalLatency() throws {
+    @Test func testTotalLatency() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.latency(scope: .output), 512)
-        XCTAssertEqual(device.latency(scope: .input), 512)
+        #expect(device.latency(scope: .output) == 512)
+        #expect(device.latency(scope: .input) == 512)
     }
 
-    func testSafetyOffset() throws {
+    @Test func testSafetyOffset() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.safetyOffset(scope: .output), 0)
-        XCTAssertEqual(device.safetyOffset(scope: .input), 0)
+        #expect(device.safetyOffset(scope: .output) == 0)
+        #expect(device.safetyOffset(scope: .input) == 0)
     }
 
-    func testBufferFrameSize() throws {
+    @Test func testBufferFrameSize() async throws {
         let device = try getNullDevice()
 
         // The IO buffer is generally 512 by default. Also the case
         // for the NullAudio.driver
-        XCTAssertEqual(device.bufferFrameSize(scope: .output), 512)
-        XCTAssertEqual(device.bufferFrameSize(scope: .input), 512)
+        #expect(device.bufferFrameSize(scope: .output) == 512)
+        #expect(device.bufferFrameSize(scope: .input) == 512)
     }
 
-    func testHogMode() throws {
+    @Test func testHogMode() async throws {
         let device = try getNullDevice()
 
-        XCTAssertEqual(device.hogModePID, -1)
-        XCTAssertTrue(device.setHogMode())
-        XCTAssertEqual(device.hogModePID, pid_t(ProcessInfo.processInfo.processIdentifier))
-        XCTAssertTrue(device.unsetHogMode())
-        XCTAssertEqual(device.hogModePID, -1)
+        #expect(device.hogModePID == -1)
+        #expect(device.setHogMode())
+        #expect(device.hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier))
+        #expect(device.unsetHogMode())
+        #expect(device.hogModePID == -1)
     }
 
-    func testStreams() throws {
+    @Test func testStreams() async throws {
         let device = try getNullDevice()
 
-        XCTAssertNotNil(device.streams(scope: .output))
-        XCTAssertNotNil(device.streams(scope: .input))
+        #expect(device.streams(scope: .output) != nil)
+        #expect(device.streams(scope: .input) != nil)
     }
 
-    func testCreateAndDestroyAggregateDevice() throws {
+    @Test func testCreateAndDestroyAggregateDevice() async throws {
         let nullDevice = try getNullDevice()
 
-        guard let device = simplyCA.createAggregateDevice(mainDevice: nullDevice,
-                                                          secondDevice: nil,
-                                                          named: "testCreateAggregateAudioDevice",
-                                                          uid: "testCreateAggregateAudioDevice-12345")
-        else {
-            XCTFail("Failed creating device")
+        guard let device = simplyCA.createAggregateDevice(
+            mainDevice: nullDevice,
+            secondDevice: nil,
+            named: "testCreateAggregateAudioDevice",
+            uid: "testCreateAggregateAudioDevice-12345"
+        ) else {
+            Issue.record("Failed creating device")
             return
         }
 
-        XCTAssertTrue(device.isAggregateDevice)
-        XCTAssertTrue(device.ownedAggregateDevices?.count == 1)
+        #expect(device.isAggregateDevice)
+        #expect(device.ownedAggregateDevices?.count == 1)
 
-        wait(for: 2)
+        try await Task.sleep(for: .seconds(2))
 
         let error = simplyCA.removeAggregateDevice(id: device.id)
-        XCTAssertTrue(error == noErr, "Failed removing device")
+        #expect(error == noErr, "Failed removing device")
 
-        wait(for: 2)
+        try await Task.sleep(for: .seconds(2))
     }
 }

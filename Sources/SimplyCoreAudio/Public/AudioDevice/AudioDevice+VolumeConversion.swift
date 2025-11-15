@@ -22,8 +22,10 @@ public extension AudioDevice {
                                          scope: scope.asPropertyScope,
                                          element: channel) else { return nil }
 
-        var inOutVolume = volume
+        var inOutVolume: Float32 = 0
         let status = getPropertyData(address, andValue: &inOutVolume)
+
+        //  print(address, status, inOutVolume, kAudioDevicePropertyVolumeScalarToDecibels)
 
         return noErr == status ? inOutVolume : nil
     }
@@ -40,7 +42,7 @@ public extension AudioDevice {
                                          scope: scope.asPropertyScope,
                                          element: channel) else { return nil }
 
-        var inOutVolume = volume
+        var inOutVolume: Float32 = 0
         let status = getPropertyData(address, andValue: &inOutVolume)
 
         return noErr == status ? inOutVolume : nil

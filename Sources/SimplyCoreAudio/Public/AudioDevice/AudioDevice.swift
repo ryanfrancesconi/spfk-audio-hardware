@@ -22,10 +22,6 @@ public final class AudioDevice: AudioObject {
         kAudioEndPointDeviceClassID,
     ]
 
-    // MARK: - Internal Properties
-
-    let hardware = AudioHardware()
-
     // MARK: - Private Properties
 
     private var cachedDeviceName: String?
@@ -39,7 +35,7 @@ public final class AudioDevice: AudioObject {
     private init?(id: AudioObjectID) {
         super.init(objectID: id)
 
-        guard let classID = classID, Self.deviceClassIDs.contains(classID) else { return nil }
+        guard let classID, Self.deviceClassIDs.contains(classID) else { return nil }
 
         AudioObjectPool.shared.set(self, for: objectID)
         registerForNotifications()
@@ -179,45 +175,45 @@ private func propertyListener(objectID: UInt32,
 
     switch address.mSelector {
     case kAudioDevicePropertyNominalSampleRate:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceNominalSampleRateDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceNominalSampleRateDidChange, object: obj) }
     case kAudioDevicePropertyAvailableNominalSampleRates:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceAvailableNominalSampleRatesDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceAvailableNominalSampleRatesDidChange, object: obj) }
     case kAudioDevicePropertyClockSource:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceClockSourceDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceClockSourceDidChange, object: obj) }
     case kAudioObjectPropertyName:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceNameDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceNameDidChange, object: obj) }
     case kAudioObjectPropertyOwnedObjects:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceOwnedObjectsDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceOwnedObjectsDidChange, object: obj) }
     case kAudioDevicePropertyVolumeScalar:
         let userInfo: [AnyHashable: Any] = [
             "channel": address.mElement,
             "scope": Scope.from(address.mScope),
         ]
 
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceVolumeDidChange, object: obj, userInfo: userInfo) }
+        Task { @MainActor in notificationCenter.post(name: .deviceVolumeDidChange, object: obj, userInfo: userInfo) }
     case kAudioDevicePropertyMute:
         let userInfo: [AnyHashable: Any] = [
             "channel": address.mElement,
             "scope": Scope.from(address.mScope),
         ]
 
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceMuteDidChange, object: obj, userInfo: userInfo) }
+        Task { @MainActor in notificationCenter.post(name: .deviceMuteDidChange, object: obj, userInfo: userInfo) }
     case kAudioDevicePropertyDeviceIsAlive:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceIsAliveDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceIsAliveDidChange, object: obj) }
     case kAudioDevicePropertyDeviceIsRunning:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceIsRunningDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceIsRunningDidChange, object: obj) }
     case kAudioDevicePropertyDeviceIsRunningSomewhere:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceIsRunningSomewhereDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceIsRunningSomewhereDidChange, object: obj) }
     case kAudioDevicePropertyJackIsConnected:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceIsJackConnectedDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceIsJackConnectedDidChange, object: obj) }
     case kAudioDevicePropertyPreferredChannelsForStereo:
-        DispatchQueue.main.async { notificationCenter.post(name: .devicePreferredChannelsForStereoDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .devicePreferredChannelsForStereoDidChange, object: obj) }
     case kAudioDevicePropertyHogMode:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceHogModeDidChange, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceHogModeDidChange, object: obj) }
     case kAudioDeviceProcessorOverload:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceProcessorOverload, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceProcessorOverload, object: obj) }
     case kAudioDevicePropertyIOStoppedAbnormally:
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceIOStoppedAbnormally, object: obj) }
+        Task { @MainActor in notificationCenter.post(name: .deviceIOStoppedAbnormally, object: obj) }
 
     default:
         break

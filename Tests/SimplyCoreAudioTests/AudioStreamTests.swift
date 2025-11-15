@@ -1,55 +1,56 @@
-import XCTest
+import AudioToolbox
 @testable import SimplyCoreAudio
+import Testing
 
-class AudioStreamTests: SCATestCase {
-    func testProperties() throws {
+class AudioStreamTests: SCATestCase2 {
+    @Test func testProperties() throws {
         let device = try getNullDevice()
-        let outputStreams = try XCTUnwrap(device.streams(scope: .output))
-        let inputStreams = try XCTUnwrap(device.streams(scope: .input))
+        let outputStreams = try #require(device.streams(scope: .output))
+        let inputStreams = try #require(device.streams(scope: .input))
 
-        XCTAssertEqual(outputStreams.count, 1)
-        XCTAssertEqual(inputStreams.count, 1)
+        #expect(outputStreams.count == 1)
+        #expect(inputStreams.count == 1)
 
-        let outputStream = try XCTUnwrap(outputStreams.first)
-        XCTAssertTrue(outputStream.active)
-        XCTAssertNotNil(outputStream.startingChannel)
-        XCTAssertEqual(outputStream.scope, .output)
-        XCTAssertEqual(outputStream.terminalType, .speaker)
-        XCTAssertEqual(outputStream.latency, 0)
-        XCTAssertNotNil(outputStream.availableVirtualFormats)
-        XCTAssertNotNil(outputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate())
-        XCTAssertNotNil(outputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(true))
-        XCTAssertNotNil(outputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(false))
-        XCTAssertNotNil(outputStream.availablePhysicalFormats)
-        XCTAssertNotNil(outputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate())
-        XCTAssertNotNil(outputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(true))
-        XCTAssertNotNil(outputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(false))
+        let outputStream = try #require(outputStreams.first)
+        #expect(outputStream.active)
+        #expect(outputStream.startingChannel != nil)
+        #expect(outputStream.scope == .output)
+        #expect(outputStream.terminalType == .speaker)
+        #expect(outputStream.latency == 0)
+        #expect(outputStream.availableVirtualFormats != nil)
+        #expect(outputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate() != nil)
+        #expect(outputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(true) != nil)
+        #expect(outputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(false) != nil)
+        #expect(outputStream.availablePhysicalFormats != nil)
+        #expect(outputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate() != nil)
+        #expect(outputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(true) != nil)
+        #expect(outputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(false) != nil)
 
         outputStream.virtualFormat = nil
-        XCTAssertNotNil(outputStream.virtualFormat)
+        #expect(outputStream.virtualFormat != nil)
 
         outputStream.physicalFormat = nil
-        XCTAssertNotNil(outputStream.physicalFormat)
+        #expect(outputStream.physicalFormat != nil)
 
-        let inputStream = try XCTUnwrap(inputStreams.first)
-        XCTAssertTrue(inputStream.active)
-        XCTAssertNotNil(inputStream.startingChannel)
-        XCTAssertEqual(inputStream.scope, .input)
-        XCTAssertEqual(inputStream.terminalType, .microphone)
-        XCTAssertEqual(inputStream.latency, 0)
-        XCTAssertNotNil(inputStream.availableVirtualFormats)
-        XCTAssertNotNil(inputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate())
-        XCTAssertNotNil(inputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(true))
-        XCTAssertNotNil(inputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(false))
-        XCTAssertNotNil(inputStream.availablePhysicalFormats)
-        XCTAssertNotNil(inputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate())
-        XCTAssertNotNil(inputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(true))
-        XCTAssertNotNil(inputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(false))
+        let inputStream = try #require(inputStreams.first)
+        #expect(inputStream.active)
+        #expect(inputStream.startingChannel != nil)
+        #expect(inputStream.scope == .input)
+        #expect(inputStream.terminalType == .microphone)
+        #expect(inputStream.latency == 0)
+        #expect(inputStream.availableVirtualFormats != nil)
+        #expect(inputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate() != nil)
+        #expect(inputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(true) != nil)
+        #expect(inputStream.availableVirtualFormatsMatchingCurrentNominalSampleRate(false) != nil)
+        #expect(inputStream.availablePhysicalFormats != nil)
+        #expect(inputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate() != nil)
+        #expect(inputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(true) != nil)
+        #expect(inputStream.availablePhysicalFormatsMatchingCurrentNominalSampleRate(false) != nil)
 
         inputStream.virtualFormat = nil
-        XCTAssertNotNil(inputStream.virtualFormat)
+        #expect(inputStream.virtualFormat != nil)
 
         inputStream.physicalFormat = nil
-        XCTAssertNotNil(inputStream.physicalFormat)
+        #expect(inputStream.physicalFormat != nil)
     }
 }

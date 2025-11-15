@@ -11,11 +11,11 @@ class NotificationTests: SCATestCase {
     func testHardwareNotifications() throws {
         let nullDevice = try getNullDevice()
         var aggregateDevice: AudioDevice?
-
         let expectedName = "NullDeviceAggregate"
         let expectedUID = "NullDeviceAggregate_UID"
 
         let expectation1 = expectation(forNotification: .deviceListChanged, object: nil) { (notification) -> Bool in
+            
             guard let addedDevices = notification.userInfo?["addedDevices"] as? [AudioDevice] else { return false }
             guard let firstAddedDevice = addedDevices.first else { return false }
             guard firstAddedDevice.uid == expectedUID else { return false }
@@ -49,7 +49,7 @@ class NotificationTests: SCATestCase {
         XCTAssertEqual(aggregateDevice, simplyCA.defaultOutputDevice)
         XCTAssertEqual(aggregateDevice, simplyCA.defaultSystemOutputDevice)
 
-        if let aggregateDevice = aggregateDevice {
+        if let aggregateDevice {
             XCTAssertEqual(noErr, simplyCA.removeAggregateDevice(id: aggregateDevice.id))
         }
 

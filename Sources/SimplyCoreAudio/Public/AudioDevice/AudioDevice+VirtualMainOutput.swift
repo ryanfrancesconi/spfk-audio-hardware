@@ -12,7 +12,6 @@ import Foundation
 // MARK: - 🔊 Virtual Main Output Volume / Balance Functions
 
 public extension AudioDevice {
-    
     /// Whether the main volume can be set for a given scope.
     ///
     /// - Parameter scope: A scope.
@@ -24,7 +23,7 @@ public extension AudioDevice {
 
         return true
     }
-    
+
     @available(*, deprecated, renamed: "canSetVirtualMainVolume")
     func canSetVirtualMasterVolume(scope: Scope) -> Bool {
         return canSetVirtualMainVolume(scope: scope)
@@ -41,7 +40,7 @@ public extension AudioDevice {
 
         return setProperty(address: address, value: volume)
     }
-    
+
     @available(*, deprecated, renamed: "setVirtualMainVolume")
     @discardableResult func setVirtualMasterVolume(_ volume: Float32, scope: Scope) -> Bool {
         return setVirtualMainVolume(volume, scope: scope)
@@ -58,7 +57,7 @@ public extension AudioDevice {
 
         return getProperty(address: address)
     }
-    
+
     @available(*, deprecated, renamed: "virtualMainVolume")
     func virtualMasterVolume(scope: Scope) -> Float32? {
         return virtualMainVolume(scope: scope)
@@ -82,11 +81,6 @@ public extension AudioDevice {
         guard let mainVolume = virtualMainVolume(scope: scope) else { return nil }
 
         return scalarToDecibels(volume: mainVolume, channel: referenceChannel, scope: scope)
-    }
-    
-    @available(*, deprecated, renamed: "virtualMainVolumeInDecibels")
-    func virtualMasterVolumeInDecibels(scope: Scope) -> Float32? {
-        return virtualMainVolumeInDecibels(scope: scope)
     }
 
     /// Whether the main balance can be set for a given scope.
@@ -115,7 +109,7 @@ public extension AudioDevice {
 
         return getProperty(address: address)
     }
-    
+
     @available(*, deprecated, renamed: "virtualMainBalance")
     func virtualMasterBalance(scope: Scope) -> Float32? {
         return virtualMainBalance(scope: scope)
@@ -125,7 +119,7 @@ public extension AudioDevice {
     ///
     /// The range is from 0 (all power to the left) to 1 (all power to the right) with the value of 0.5 signifying
     /// that the channels have equal power.
-    ///setVirtualMainBalance
+    /// setVirtualMainBalance
     /// - Parameter value: The new balance.
     /// - Parameter scope: A scope.
     ///
@@ -136,7 +130,7 @@ public extension AudioDevice {
 
         return setProperty(address: address, value: value)
     }
-    
+
     @available(*, deprecated, renamed: "setVirtualMainBalance")
     @discardableResult func setVirtualMasterBalance(_ value: Float32, scope: Scope) -> Bool {
         return setVirtualMainBalance(value, scope: scope)

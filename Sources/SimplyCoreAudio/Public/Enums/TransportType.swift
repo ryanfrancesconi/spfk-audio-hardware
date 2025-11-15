@@ -50,10 +50,10 @@ public enum TransportType: String {
 
     /// Thunderbolt Transport Type
     case thunderbolt = "Thunderbolt"
-    
+
     /// Network Transport Type
     case network = "Network"
-    
+
     /// Other Transport Type
     case other = "Other"
 }

@@ -101,6 +101,13 @@ public final class SimplyCoreAudio {
         hardware.defaultSystemOutputDevice
     }
 
+    /// Get the device with the passed in `AudioHardwareDefaultDeviceType`.
+    ///
+    /// - Returns: *(optional)* An `AudioDevice`.
+    public func getDevice(of propertySelector: AudioHardwareDefaultDeviceType) -> AudioDevice? {
+        AudioHardware.defaultDevice(of: propertySelector)
+    }
+
     // MARK: - Private Static Properties
 
     private static var sharedHardware: AudioHardware!
@@ -108,12 +115,16 @@ public final class SimplyCoreAudio {
 
     // MARK: - Private Properties
 
-    private let hardware: AudioHardware
+    let hardware: AudioHardware
+
+    private var instanceId: Int
 
     // MARK: - Lifecycle
 
     public init() {
-        if Self.instances.load(ordering: .acquiring) == 0 {
+        instanceId = Self.instances.load(ordering: .acquiring)
+
+        if instanceId == 0 {
             Self.sharedHardware = AudioHardware()
             Self.sharedHardware.enableDeviceMonitoring()
         }

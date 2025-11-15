@@ -12,6 +12,7 @@ final class AudioHardware {
     // MARK: - Fileprivate Properties
 
     fileprivate var allKnownDevices = [AudioDevice]()
+
     fileprivate lazy var queueLabel = (Bundle.main.bundleIdentifier ?? "SimplyCoreAudio").appending(".audioHardware")
     fileprivate lazy var queue = DispatchQueue(label: queueLabel, qos: .default, attributes: .concurrent)
 
@@ -36,15 +37,15 @@ final class AudioHardware {
     }
 
     var defaultInputDevice: AudioDevice? {
-        defaultDevice(of: kAudioHardwarePropertyDefaultInputDevice)
+        Self.defaultDevice(of: .input)
     }
 
     var defaultOutputDevice: AudioDevice? {
-        defaultDevice(of: kAudioHardwarePropertyDefaultOutputDevice)
+        Self.defaultDevice(of: .output)
     }
 
     var defaultSystemOutputDevice: AudioDevice? {
-        defaultDevice(of: kAudioHardwarePropertyDefaultSystemOutputDevice)
+        Self.defaultDevice(of: .systemOutput)
     }
 
     var allDevices: [AudioDevice] {
@@ -84,19 +85,19 @@ extension AudioHardware {
         updateKnownDevices(adding: [], andRemoving: allKnownDevices)
         unregisterForNotifications()
     }
-}
 
-// MARK: - Private Functions
-
-private extension AudioHardware {
-    func defaultDevice(of type: AudioObjectPropertySelector) -> AudioDevice? {
-        let address = AudioDevice.address(selector: type)
+    static func defaultDevice(of deviceType: AudioHardwareDefaultDeviceType) -> AudioDevice? {
+        let address = AudioDevice.address(selector: deviceType.propertySelector)
         var deviceID = AudioDeviceID()
         let status = AudioDevice.getPropertyData(AudioObjectID(kAudioObjectSystemObject), address: address, andValue: &deviceID)
 
         return noErr == status ? AudioDevice.lookup(by: deviceID) : nil
     }
+}
 
+// MARK: - Private Functions
+
+private extension AudioHardware {
     func updateKnownDevices(adding addedDevices: [AudioDevice], andRemoving removedDevices: [AudioDevice]) {
         queue.async(flags: .barrier) { [weak self] in
             self?.allKnownDevices.append(contentsOf: addedDevices)
@@ -150,10 +151,12 @@ private extension AudioHardware {
 
 // MARK: - C Convention Functions
 
-private func propertyListener(objectID: UInt32,
-                              numInAddresses: UInt32,
-                              inAddresses: UnsafePointer<AudioObjectPropertyAddress>,
-                              clientData: Optional<UnsafeMutableRawPointer>) -> Int32 {
+private func propertyListener(
+    objectID: UInt32,
+    numInAddresses: UInt32,
+    inAddresses: UnsafePointer<AudioObjectPropertyAddress>,
+    clientData: Optional<UnsafeMutableRawPointer>
+) -> Int32 {
     let _self = Unmanaged<AudioHardware>.fromOpaque(clientData!).takeUnretainedValue()
     let address = inAddresses.pointee
     let notificationCenter = NotificationCenter.default
@@ -161,8 +164,8 @@ private func propertyListener(objectID: UInt32,
     switch address.mSelector {
     case kAudioObjectPropertyOwnedObjects:
         // Obtain added and removed devices.
-        var addedDevices: [AudioDevice]!
-        var removedDevices: [AudioDevice]!
+        var addedDevices: [AudioDevice] = []
+        var removedDevices: [AudioDevice] = []
 
         _self.queue.sync {
             let latestDeviceList = _self.allDevices
@@ -180,16 +183,18 @@ private func propertyListener(objectID: UInt32,
             "removedDevices": removedDevices,
         ]
 
-        DispatchQueue.main.async { notificationCenter.post(name: .deviceListChanged, object: _self, userInfo: userInfo) }
+        print("posting", userInfo)
+
+        Task { @MainActor in notificationCenter.post(name: .deviceListChanged, object: _self, userInfo: userInfo) }
 
     case kAudioHardwarePropertyDefaultInputDevice:
-        DispatchQueue.main.async { notificationCenter.post(name: .defaultInputDeviceChanged, object: _self) }
+        Task { @MainActor in notificationCenter.post(name: .defaultInputDeviceChanged, object: _self) }
 
     case kAudioHardwarePropertyDefaultOutputDevice:
-        DispatchQueue.main.async { notificationCenter.post(name: .defaultOutputDeviceChanged, object: _self) }
+        Task { @MainActor in notificationCenter.post(name: .defaultOutputDeviceChanged, object: _self) }
 
     case kAudioHardwarePropertyDefaultSystemOutputDevice:
-        DispatchQueue.main.async { notificationCenter.post(name: .defaultSystemOutputDeviceChanged, object: _self) }
+        Task { @MainActor in notificationCenter.post(name: .defaultSystemOutputDeviceChanged, object: _self) }
 
     default:
         break

@@ -173,12 +173,11 @@ public extension AudioDevice {
     func isMainChannelMuted(scope: Scope) -> Bool? {
         isMuted(channel: Element.main.asPropertyElement, scope: scope)
     }
-    
+
     @available(*, deprecated, renamed: "isMainChannelMuted")
     func isMasterChannelMuted(scope: Scope) -> Bool? {
         return isMainChannelMuted(scope: scope)
     }
-    
 
     /// Whether a channel can be muted for a given scope.
     ///
@@ -206,7 +205,7 @@ public extension AudioDevice {
 
         return true
     }
-    
+
     @available(*, deprecated, renamed: "canMuteMainChannel")
     func canMuteMasterChannel(scope: Scope) -> Bool? {
         return canMuteMainChannel(scope: scope)

@@ -1,21 +1,22 @@
 import Foundation
 
 extension AudioDevice {
+    /// Provides a single object that contains a channel name with its index and scope
     public struct NamedChannel: CustomStringConvertible, Equatable {
         public var description: String {
             var value = "\(scope.title) \(channel)"
 
             // MacBook air speakers Left channel is named "1". That's dumb.
             if let name, name != "", name != String(channel) {
-                value = "\(channel) - " + name
+                value = "\(channel + 1) - " + name
             }
 
             return value
         }
 
-        var channel: UInt32
-        var name: String?
-        var scope: Scope
+        public var channel: UInt32
+        public var name: String?
+        public var scope: Scope
 
         public init(channel: UInt32, name: String? = nil, scope: Scope) {
             self.channel = channel
@@ -32,7 +33,7 @@ extension AudioDevice {
 
         guard channelCount > 0 else { return [] }
 
-        for i in 1 ... channelCount {
+        for i in 0 ..< channelCount {
             let string = name(channel: i, scope: scope)?.trimmingCharacters(in: .whitespacesAndNewlines)
 
             let deviceChannel = NamedChannel(
@@ -44,23 +45,5 @@ extension AudioDevice {
             out.append(deviceChannel)
         }
         return out
-    }
-
-    public func preferredChannelsDescription(scope: Scope) -> String? {
-        guard let preferredChannelsForStereo = preferredChannelsForStereo(scope: scope) else { return nil }
-
-        var namedChannels = self.namedChannels(scope: .output).filter {
-            $0.channel == preferredChannelsForStereo.left || $0.channel == preferredChannelsForStereo.right
-        }
-
-        namedChannels = namedChannels.sorted(by: { lhs, rhs -> Bool in
-            lhs.channel < rhs.channel
-        })
-
-        let stringValues = namedChannels.map {
-            $0.description
-        }
-
-        return stringValues.joined(separator: " + ")
     }
 }

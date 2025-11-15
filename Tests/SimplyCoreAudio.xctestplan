@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "8602FFDB-EF60-45E0-BDEC-4152BD1F771D",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SimplyCoreAudioTests",
+        "name" : "SimplyCoreAudioTests"
+      }
+    }
+  ],
+  "version" : 1
+}

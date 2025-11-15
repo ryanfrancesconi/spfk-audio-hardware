@@ -1,36 +1,30 @@
-//
-//  SCATestCase.swift
-//
-//  Created by Ruben Nine on 21/3/21.
-//
 
+import Foundation
 @testable import SimplyCoreAudio
-import XCTest
+import Testing
 
-class SCATestCase: XCTestCase {
-    var simplyCA: SimplyCoreAudio!
+class SCATestCase2 {
+    var simplyCA: SimplyCoreAudio
     var defaultInputDevice: AudioDevice?
     var defaultOutputDevice: AudioDevice?
     var defaultSystemOutputDevice: AudioDevice?
 
-    override func setUp() {
-        super.setUp()
-
+    public init() async throws {
         simplyCA = SimplyCoreAudio()
         saveDefaultDevices()
-        try? resetNullDeviceState()
+
+        try resetNullDeviceState()
     }
 
-    override func tearDown() {
-        super.tearDown()
-
-        simplyCA = nil
+    deinit {
         restoreDefaultDevices()
         try? resetNullDeviceState()
     }
 
-    func getNullDevice(file: StaticString = #file, line: UInt = #line) throws -> AudioDevice {
-        try XCTUnwrap(AudioDevice.lookup(by: "NullAudioDevice_UID"), "NullAudio driver is missing.", file: file, line: line)
+    func getNullDevice() throws -> AudioDevice {
+        try #require(
+            AudioDevice.lookup(by: "NullAudioDevice_UID")
+        )
     }
 
     func resetNullDeviceState() throws {
@@ -40,7 +34,8 @@ class SCATestCase: XCTestCase {
 
         if device.nominalSampleRate != 44100 {
             device.setNominalSampleRate(44100)
-            wait(for: 1)
+            // wait(for: 1)
+            // try await Task.sleep(for: .seconds(1))
         }
 
         device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: .output)
@@ -55,7 +50,7 @@ class SCATestCase: XCTestCase {
 
 // MARK: - Private Functions
 
-private extension SCATestCase {
+private extension SCATestCase2 {
     func saveDefaultDevices() {
         defaultInputDevice = simplyCA.defaultInputDevice
         defaultOutputDevice = simplyCA.defaultOutputDevice
