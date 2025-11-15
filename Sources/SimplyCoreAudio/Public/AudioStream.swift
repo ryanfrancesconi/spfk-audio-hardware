@@ -229,7 +229,7 @@ public extension AudioStream {
     ///
     /// - Returns: *(optional)* An array of `AudioStreamBasicDescription` structs.
     func availablePhysicalFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
-        guard let physicalFormats = availablePhysicalFormats, let physicalFormat = physicalFormat else { return nil }
+        guard let physicalFormats = availablePhysicalFormats, let physicalFormat else { return nil }
 
         var filteredFormats = physicalFormats.filter { format -> Bool in
             format.mSampleRateRange.mMinimum >= physicalFormat.mSampleRate &&
@@ -254,7 +254,7 @@ public extension AudioStream {
     ///
     /// - Returns: *(optional)* An array of `AudioStreamBasicDescription` structs.
     func availableVirtualFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
-        guard let virtualFormats = availableVirtualFormats, let virtualFormat = virtualFormat else { return nil }
+        guard let virtualFormats = availableVirtualFormats, let virtualFormat else { return nil }
 
         var filteredFormats = virtualFormats.filter { format -> Bool in
             format.mSampleRateRange.mMinimum >= virtualFormat.mSampleRate &&

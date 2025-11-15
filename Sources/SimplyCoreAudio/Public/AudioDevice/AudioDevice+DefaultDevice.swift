@@ -33,7 +33,7 @@ public extension AudioDevice {
     /// Promote device to passed in type
     /// - Parameter deviceType: `AudioHardwareDefaultDeviceType`
     /// - Returns: `OSStatus` with error or noErr if succeeds
-    func promote(to deviceType: AudioHardwareDefaultDeviceType) throws -> OSStatus {
+    func promote(to deviceType: DefaultDeviceType) throws -> OSStatus {
         promote(to: deviceType.propertySelector)
     }
 }

@@ -1,9 +1,12 @@
+// Revision History at https://github.com/ryanfrancesconi/SimplyCoreAudio
+
 import Foundation
 import Numerics
 @testable import SimplyCoreAudio
 import Testing
 
-final class AudioDeviceTests: SCATestCase2 {
+@Suite(.serialized)
+final class AudioDeviceTests: SCATestCase {
     @Test func testDeviceLookUp() async throws {
         let device = try getNullDevice()
         let deviceUID = try #require(device.uid)
@@ -413,25 +416,29 @@ final class AudioDeviceTests: SCATestCase2 {
 
     @Test func testCreateAndDestroyAggregateDevice() async throws {
         let nullDevice = try getNullDevice()
+        let uid = "testCreateAggregateAudioDevice-12345"
+
+        try await remove(aggregateDeviceUID: uid)
+
+        try await Task.sleep(for: .seconds(1))
 
         guard let device = simplyCA.createAggregateDevice(
             mainDevice: nullDevice,
             secondDevice: nil,
             named: "testCreateAggregateAudioDevice",
-            uid: "testCreateAggregateAudioDevice-12345"
+            uid: uid
         ) else {
             Issue.record("Failed creating device")
             return
         }
 
+        try await Task.sleep(for: .seconds(1))
+
         #expect(device.isAggregateDevice)
         #expect(device.ownedAggregateDevices?.count == 1)
 
-        try await Task.sleep(for: .seconds(2))
+        try await remove(aggregateDeviceUID: uid)
 
-        let error = simplyCA.removeAggregateDevice(id: device.id)
-        #expect(error == noErr, "Failed removing device")
-
-        try await Task.sleep(for: .seconds(2))
+        try await Task.sleep(for: .seconds(1))
     }
 }

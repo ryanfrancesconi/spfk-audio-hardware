@@ -1,7 +1,7 @@
 import CoreAudio.AudioHardware
 import Foundation
 
-public enum AudioHardwareDefaultDeviceType {
+public enum DefaultDeviceType {
     /// The AudioObjectID of the output AudioDevice to use for system related sound
     /// from the alert sound to digital call progress.
     case systemOutput

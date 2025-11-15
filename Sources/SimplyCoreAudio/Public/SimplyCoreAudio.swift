@@ -104,7 +104,7 @@ public final class SimplyCoreAudio {
     /// Get the device with the passed in `AudioHardwareDefaultDeviceType`.
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
-    public func getDevice(of propertySelector: AudioHardwareDefaultDeviceType) -> AudioDevice? {
+    public func getDevice(of propertySelector: DefaultDeviceType) -> AudioDevice? {
         AudioHardware.defaultDevice(of: propertySelector)
     }
 

@@ -2,7 +2,7 @@ import AudioToolbox
 @testable import SimplyCoreAudio
 import Testing
 
-class AudioStreamTests: SCATestCase2 {
+class AudioStreamTests: SCATestCase {
     @Test func testProperties() throws {
         let device = try getNullDevice()
         let outputStreams = try #require(device.streams(scope: .output))

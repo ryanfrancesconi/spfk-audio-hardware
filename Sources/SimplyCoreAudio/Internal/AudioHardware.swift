@@ -86,7 +86,7 @@ extension AudioHardware {
         unregisterForNotifications()
     }
 
-    static func defaultDevice(of deviceType: AudioHardwareDefaultDeviceType) -> AudioDevice? {
+    static func defaultDevice(of deviceType: DefaultDeviceType) -> AudioDevice? {
         let address = AudioDevice.address(selector: deviceType.propertySelector)
         var deviceID = AudioDeviceID()
         let status = AudioDevice.getPropertyData(AudioObjectID(kAudioObjectSystemObject), address: address, andValue: &deviceID)

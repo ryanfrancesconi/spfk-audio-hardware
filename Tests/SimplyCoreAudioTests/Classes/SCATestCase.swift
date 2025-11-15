@@ -1,36 +1,36 @@
-//
-//  SCATestCase.swift
-//
-//  Created by Ruben Nine on 21/3/21.
-//
+// Revision History at https://github.com/ryanfrancesconi/SimplyCoreAudio
 
+import Foundation
 @testable import SimplyCoreAudio
-import XCTest
+import Testing
 
-class SCATestCase: XCTestCase {
-    var simplyCA: SimplyCoreAudio!
+class SCATestCase {
+    var simplyCA: SimplyCoreAudio
     var defaultInputDevice: AudioDevice?
     var defaultOutputDevice: AudioDevice?
     var defaultSystemOutputDevice: AudioDevice?
 
-    override func setUp() {
-        super.setUp()
-
+    public init() async throws {
         simplyCA = SimplyCoreAudio()
         saveDefaultDevices()
-        try? resetNullDeviceState()
+        try resetNullDeviceState()
     }
 
-    override func tearDown() {
-        super.tearDown()
-
-        simplyCA = nil
+    deinit {
         restoreDefaultDevices()
         try? resetNullDeviceState()
     }
 
-    func getNullDevice(file: StaticString = #file, line: UInt = #line) throws -> AudioDevice {
-        try XCTUnwrap(AudioDevice.lookup(by: "NullAudioDevice_UID"), "NullAudio driver is missing.", file: file, line: line)
+    func getNullDevice() throws -> AudioDevice {
+        try #require(
+            AudioDevice.lookup(by: "NullAudioDevice_UID")
+        )
+    }
+
+    func tearDown() async throws {
+        try resetNullDeviceState()
+        try await Task.sleep(for: .seconds(1))
+        print(#function)
     }
 
     func resetNullDeviceState() throws {
@@ -40,7 +40,6 @@ class SCATestCase: XCTestCase {
 
         if device.nominalSampleRate != 44100 {
             device.setNominalSampleRate(44100)
-            wait(for: 1)
         }
 
         device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: .output)
@@ -50,6 +49,34 @@ class SCATestCase: XCTestCase {
         device.setVolume(0.5, channel: 0, scope: .input)
         device.setVirtualMainVolume(0.5, scope: .output)
         device.setVirtualMainVolume(0.5, scope: .input)
+    }
+
+    func wait(for notificationName: Notification.Name) async throws -> Notification {
+        let asyncSequence = NotificationCenter.default.notifications(named: notificationName)
+        let iterator = asyncSequence.makeAsyncIterator()
+
+        guard let notification = await iterator.next() else {
+            throw NSError(domain: "failed to get notification", code: 0)
+        }
+
+        print(notification)
+
+        return notification
+    }
+
+    func remove(aggregateDeviceUID deviceUID: String) async throws {
+        if let existingDevice = simplyCA.allAggregateDevices.first(where: { device in
+            device.uid == deviceUID
+        }) {
+            if noErr != simplyCA.removeAggregateDevice(id: existingDevice.id) {
+                Issue.record("Failed to remove existing device")
+            }
+
+            try await Task.sleep(for: .seconds(1))
+            return
+        } else {
+            print("didn't find device of UID", deviceUID)
+        }
     }
 }
 

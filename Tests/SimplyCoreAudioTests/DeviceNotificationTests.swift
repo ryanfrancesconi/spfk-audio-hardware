@@ -5,10 +5,10 @@ import Foundation
 import Testing
 
 @Suite(.serialized)
-final class DeviceNotificationTests: SCATestCase2 {
+final class DeviceNotificationTests: SCATestCase {
     lazy var nullDevice = try? getNullDevice()
-    let expectedName = "NullDeviceAggregate"
-    let expectedUID = "NullDeviceAggregate_UID"
+    let deviceName = "NullDeviceAggregate"
+    let deviceUID = "NullDeviceAggregate_UID"
     var aggregateDevice: AudioDevice?
 
     override init() async throws {
@@ -22,26 +22,20 @@ final class DeviceNotificationTests: SCATestCase2 {
             let addedDevices = try #require(notification.userInfo?["addedDevices"] as? [AudioDevice])
             let firstAddedDevice = try #require(addedDevices.first)
 
-            let passed = firstAddedDevice.uid == expectedUID && firstAddedDevice.name == expectedName
+            let passed = firstAddedDevice.uid == deviceUID && firstAddedDevice.name == deviceName
             return passed
         }
 
         try await createAggregateDevice(in: 1)
 
         #expect(try await task.value)
+
         try await cleanup()
     }
 
-    @Test func defaultInputDeviceChanged() async throws {
-        try await testWithTimeout(propertyType: .input)
-    }
-
-    @Test func defaultOutputDeviceChanged() async throws {
-        try await testWithTimeout(propertyType: .output)
-    }
-
-    @Test func defaultSystemOutputDeviceChanged() async throws {
-        try await testWithTimeout(propertyType: .systemOutput)
+    @Test(arguments: [DefaultDeviceType.input, DefaultDeviceType.output, DefaultDeviceType.systemOutput])
+    func defaultIODeviceChanged(propertyType: DefaultDeviceType) async throws {
+        try await testWithTimeout(propertyType: propertyType)
     }
 }
 
@@ -57,16 +51,14 @@ extension DeviceNotificationTests {
         aggregateDevice = simplyCA.createAggregateDevice(
             mainDevice: nullDevice,
             secondDevice: nil,
-            named: expectedName,
-            uid: expectedUID
+            named: deviceName,
+            uid: deviceUID
         )
     }
 
     func cleanup() async throws {
-        simplyCA.hardware.disableDeviceMonitoring()
-
         if let existingDevice = simplyCA.allAggregateDevices.first(where: { device in
-            device.uid == expectedUID
+            device.uid == deviceUID
         }) {
             if noErr != simplyCA.removeAggregateDevice(id: existingDevice.id) {
                 Issue.record("Failed to remove existing device")
@@ -74,24 +66,9 @@ extension DeviceNotificationTests {
 
             try await Task.sleep(for: .seconds(1))
         }
-
-        simplyCA.hardware.enableDeviceMonitoring()
     }
 
-    func wait(for notificationName: Notification.Name) async throws -> Notification {
-        let asyncSequence = NotificationCenter.default.notifications(named: notificationName)
-        let iterator = asyncSequence.makeAsyncIterator()
-
-        guard let notification = await iterator.next() else {
-            throw NSError(domain: "failed to get notification", code: 0)
-        }
-
-        print(notification)
-
-        return notification
-    }
-
-    func test(propertyType: AudioHardwareDefaultDeviceType) async throws {
+    func test(propertyType: DefaultDeviceType) async throws {
         let notificationName = propertyType.notificationName
 
         let task = Task<Bool, Error> {
@@ -122,7 +99,7 @@ extension DeviceNotificationTests {
         try await cleanup()
     }
 
-    func testWithTimeout(propertyType: AudioHardwareDefaultDeviceType) async throws {
+    func testWithTimeout(propertyType: DefaultDeviceType) async throws {
         try await createAggregateDevice()
 
         let notificationName = propertyType.notificationName

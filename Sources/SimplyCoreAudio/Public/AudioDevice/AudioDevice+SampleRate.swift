@@ -11,7 +11,7 @@ import os.log
 // MARK: - 〰 Sample Rate Functions
 
 public extension AudioDevice {
-    /// The actual audio device's sample rate.
+    /// The audio device's actual sample rate.
     ///
     /// - Returns: *(optional)* A `Float64` value with the actual sample rate.
     var actualSampleRate: Float64? {
@@ -19,7 +19,7 @@ public extension AudioDevice {
         return getProperty(address: address)
     }
 
-    /// The nominal audio device's sample rate.
+    /// The audio device's nominal sample rate.
     ///
     /// - Returns: *(optional)* A `Float64` value with the nominal sample rate.
     var nominalSampleRate: Float64? {

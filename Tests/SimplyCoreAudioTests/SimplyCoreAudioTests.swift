@@ -1,13 +1,10 @@
-//
-//  SimplyCoreAudioTests.swift
-//
-//  Created by Ruben Nine on 20/3/21.
-//
+// Revision History at https://github.com/ryanfrancesconi/SimplyCoreAudio
 
-import Testing
 @testable import SimplyCoreAudio
+import Testing
 
-class SimplyCoreAudioTests: SCATestCase2 {
+@Suite(.serialized)
+class SimplyCoreAudioTests: SCATestCase {
     @Test func testDeviceEnumeration() throws {
         let device = try getNullDevice()
 
