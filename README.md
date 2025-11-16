@@ -5,9 +5,10 @@
 [![Swift Package Manager compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg?style=flat&colorA=28a745&&colorB=4E4E4E)](https://github.com/apple/swift-package-manager)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/ryanfrancesconi/SPFKAudioHardware/LICENSE.md)
 
-`SPFKAudioHardware` (formerly known as `SimplyCoreAudio`) is a Swift framework that aims to make [Core Audio](https://developer.apple.com/documentation/coreaudio) use less tedious in macOS.
+`SPFKAudioHardware` is a modern 2025 rewrite of SimplyCoreAudio. In progress...
 
-`SimplyCoreAudio` (formerly known as `AMCoreAudio`) is a Swift framework that aims to make [Core Audio](https://developer.apple.com/documentation/coreaudio) use less tedious in macOS.
+
+[SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) is a Swift framework that aims to make [Core Audio](https://developer.apple.com/documentation/coreaudio) use less tedious in macOS.
 
 ### License
 

@@ -14,7 +14,7 @@ import Foundation
 ///
 /// - Important: If you are interested in receiving hardware-related notifications, remember to keep a strong reference
 /// to an object of this class.
-public final class SPFKCoreAudio {
+public final class AudioHardwareManager {
     // MARK: - Private Static Properties
 
     private static var sharedHardware: AudioHardware!

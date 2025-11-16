@@ -11,7 +11,7 @@ import os.log
 
 // MARK: - Create and Destroy Aggregate Devices
 
-extension SPFKCoreAudio {
+extension AudioHardwareManager {
     /// This routine creates a new aggregate audio device.
     ///
     /// - Parameter mainDevice: An audio device. This will also be the clock source.

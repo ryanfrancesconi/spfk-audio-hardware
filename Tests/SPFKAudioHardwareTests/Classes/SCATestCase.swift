@@ -1,19 +1,19 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SPFKAudioHardware by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SPFKAudioHardware
 
 import Foundation
 @testable import SPFKAudioHardware
 import Testing
 
 class SCATestCase {
-    var simplyCA: SimplyCoreAudio
+    var simplyCA: AudioHardwareManager
 
     private var defaultInputDevice: AudioDevice?
     private var defaultOutputDevice: AudioDevice?
     private var defaultSystemOutputDevice: AudioDevice?
 
     public init() async throws {
-        simplyCA = SimplyCoreAudio()
+        simplyCA = AudioHardwareManager()
         saveDefaultDevices()
         try resetNullDeviceState()
     }

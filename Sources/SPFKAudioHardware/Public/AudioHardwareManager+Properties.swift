@@ -4,7 +4,7 @@
 import CoreAudio.AudioHardware
 import Foundation
 
-extension SPFKCoreAudio {
+extension AudioHardwareManager {
     // MARK: - Device Enumeration
 
     /// All the audio device identifiers currently available.

@@ -8,7 +8,7 @@ import Testing
 
 @Suite(.serialized)
 final class AudioDeviceTests: SCATestCase {
-    @Test func testDeviceLookUp() async throws {
+    @Test func deviceLookUp() async throws {
         let device = try getNullDevice()
         let deviceUID = try #require(device.uid)
 
@@ -26,10 +26,10 @@ final class AudioDeviceTests: SCATestCase {
         #expect(noErr == err)
         #expect(device.isDefaultDevice(for: deviceType))
 
-        try await Task.sleep(for: .seconds(1))
+        try await wait(sec: 1)
     }
 
-    @Test func testGeneralDeviceInformation() async throws {
+    @Test func generalDeviceInformation() async throws {
         let device = try getNullDevice()
 
         #expect(device.name == "Null Audio Device")
@@ -58,7 +58,7 @@ final class AudioDeviceTests: SCATestCase {
         #expect(device.relatedDevices != nil)
     }
 
-    @Test func testLFE() async throws {
+    @Test func lfe() async throws {
         let device = try getNullDevice()
 
         #expect(device.shouldOwniSub == nil)
@@ -78,7 +78,7 @@ final class AudioDeviceTests: SCATestCase {
         #expect(device.lfeVolumeDecibels == nil)
     }
 
-    @Test func testInputOutputLayout() async throws {
+    @Test func inputOutputLayout() async throws {
         let device = try getNullDevice()
 
         #expect(device.layoutChannels(scope: .output) == 2)
@@ -91,7 +91,7 @@ final class AudioDeviceTests: SCATestCase {
         #expect(!device.isOutputOnlyDevice)
     }
 
-    @Test func testVolumeInfo() async throws {
+    @Test func volumeInfo() async throws {
         let device = try getNullDevice()
         var volumeInfo: VolumeInfo!
 
@@ -126,7 +126,7 @@ final class AudioDeviceTests: SCATestCase {
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func testVolume(scopeToTest: Scope) async throws {
+    func volume(scopeToTest: Scope) async throws {
         let device = try getNullDevice()
 
         #expect(device.setVolume(0, channel: 0, scope: scopeToTest))
@@ -143,7 +143,7 @@ final class AudioDeviceTests: SCATestCase {
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func testVolumeInDecibels(scopeToTest: Scope) async throws {
+    func volumeInDecibels(scopeToTest: Scope) async throws {
         let device = try getNullDevice()
 
         #expect(device.canSetVolume(channel: 0, scope: scopeToTest))
@@ -162,7 +162,7 @@ final class AudioDeviceTests: SCATestCase {
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func testMute(scopeToTest: Scope) async throws {
+    func mute(scopeToTest: Scope) async throws {
         let device = try getNullDevice()
 
         #expect(device.canMute(channel: 0, scope: scopeToTest))
@@ -181,7 +181,7 @@ final class AudioDeviceTests: SCATestCase {
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func testMainChannelMute(scope: Scope) async throws {
+    func mainChannelMute(scope: Scope) async throws {
         let device = try getNullDevice()
 
         #expect(device.canMuteMainChannel(scope: scope) == true)
@@ -198,7 +198,7 @@ final class AudioDeviceTests: SCATestCase {
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func testPreferredChannelsForStereo(scope: Scope) async throws {
+    func preferredChannelsForStereo(scope: Scope) async throws {
         let device = try getNullDevice()
         var preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
 
@@ -222,7 +222,7 @@ final class AudioDeviceTests: SCATestCase {
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func testVirtualMainVolumeOutput(scope: Scope) async throws {
+    func virtualMainVolumeOutput(scope: Scope) async throws {
         let nullDevice = try getNullDevice()
 
         let devices = simplyCA.allDevices.filter {
@@ -247,7 +247,7 @@ final class AudioDeviceTests: SCATestCase {
         }
     }
 
-    @Test func testVirtualMainBalance() async throws {
+    @Test func virtualMainBalance() async throws {
         let device = try getNullDevice()
 
         #expect(!device.canSetVirtualMainBalance(scope: .output))
@@ -260,23 +260,25 @@ final class AudioDeviceTests: SCATestCase {
         #expect(device.virtualMainBalance(scope: .input) == nil)
     }
 
-    @Test func testSampleRate() async throws {
+    @Test func sampleRate() async throws {
         let device = try getNullDevice()
 
         #expect(device.nominalSampleRates == [44100, 48000])
 
         #expect(device.setNominalSampleRate(44100))
-        sleep(1)
+        try await wait(sec: 1)
+
         #expect(device.nominalSampleRate == 44100)
         #expect(device.actualSampleRate == 44100)
 
         #expect(device.setNominalSampleRate(48000))
-        sleep(1)
+        try await wait(sec: 1)
+
         #expect(device.nominalSampleRate == 48000)
         #expect(device.actualSampleRate == 48000)
     }
 
-    @Test func testInvalidSampleRate() async throws {
+    @Test func invalidSampleRate() async throws {
         let device = try getNullDevice()
 
         #expect(device.nominalSampleRates == [44100, 48000])
@@ -284,21 +286,21 @@ final class AudioDeviceTests: SCATestCase {
         #expect(!device.setNominalSampleRate(96000))
     }
 
-    @Test func testDataSource() async throws {
+    @Test func dataSource() async throws {
         let device = try getNullDevice()
 
         #expect(device.dataSource(scope: .output) != nil)
         #expect(device.dataSource(scope: .input) != nil)
     }
 
-    @Test func testDataSources() async throws {
+    @Test func dataSources() async throws {
         let device = try getNullDevice()
 
         #expect(device.dataSources(scope: .output) != nil)
         #expect(device.dataSources(scope: .input) != nil)
     }
 
-    @Test func testDataSourceName() async throws {
+    @Test func dataSourceName() async throws {
         let device = try getNullDevice()
 
         #expect(device.dataSourceName(dataSourceID: 0, scope: .output) == "Data Source Item 0")
@@ -314,7 +316,7 @@ final class AudioDeviceTests: SCATestCase {
         #expect(device.dataSourceName(dataSourceID: 4, scope: .input) == nil)
     }
 
-    @Test func testClockSource() async throws {
+    @Test func clockSource() async throws {
         let device = try getNullDevice()
 
         #expect(device.clockSourceID == nil)
@@ -325,21 +327,21 @@ final class AudioDeviceTests: SCATestCase {
         #expect(!device.setClockSourceID(0))
     }
 
-    @Test func testTotalLatency() async throws {
+    @Test func totalLatency() async throws {
         let device = try getNullDevice()
 
         #expect(device.latency(scope: .output) == 512)
         #expect(device.latency(scope: .input) == 512)
     }
 
-    @Test func testSafetyOffset() async throws {
+    @Test func safetyOffset() async throws {
         let device = try getNullDevice()
 
         #expect(device.safetyOffset(scope: .output) == 0)
         #expect(device.safetyOffset(scope: .input) == 0)
     }
 
-    @Test func testBufferFrameSize() async throws {
+    @Test func bufferFrameSize() async throws {
         let device = try getNullDevice()
 
         // The IO buffer is generally 512 by default. Also the case
@@ -348,7 +350,7 @@ final class AudioDeviceTests: SCATestCase {
         #expect(device.bufferFrameSize(scope: .input) == 512)
     }
 
-    @Test func testHogMode() async throws {
+    @Test func hogMode() async throws {
         let device = try getNullDevice()
 
         #expect(device.hogModePID == -1)
@@ -358,7 +360,7 @@ final class AudioDeviceTests: SCATestCase {
         #expect(device.hogModePID == -1)
     }
 
-    @Test func testStreams() async throws {
+    @Test func streams() async throws {
         let device = try getNullDevice()
 
         #expect(device.streams(scope: .output)?.count == 1)
