@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "2DCF53FD-2E60-4E80-87ED-CB32E70C0C96",
+      "id" : "DDC19F2A-7328-433D-9F6D-A049E3818819",
       "name" : "Test Scheme Action",
       "options" : {
 
@@ -15,7 +15,7 @@
     {
       "parallelizable" : false,
       "target" : {
-        "containerPath" : "container:Packages\/SimplyCoreAudio",
+        "containerPath" : "container:",
         "identifier" : "SimplyCoreAudioTests",
         "name" : "SimplyCoreAudioTests"
       }

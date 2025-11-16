@@ -11,17 +11,19 @@ import os.log
 
 // MARK: - Create and Destroy Aggregate Devices
 
-public extension SimplyCoreAudio {
+extension SimplyCoreAudio {
     /// This routine creates a new aggregate audio device.
     ///
     /// - Parameter mainDevice: An audio device. This will also be the clock source.
     /// - Parameter secondDevice: An audio device.
     ///
     /// - Returns *(optional)* An aggregate `AudioDevice` if one can be created.
-    func createAggregateDevice(mainDevice: AudioDevice,
-                               secondDevice: AudioDevice?,
-                               named name: String,
-                               uid: String) -> AudioDevice? {
+    public func createAggregateDevice(
+        mainDevice: AudioDevice,
+        secondDevice: AudioDevice?,
+        named name: String,
+        uid: String
+    ) -> AudioDevice? {
         guard let mainDeviceUID = mainDevice.uid else { return nil }
 
         var deviceList: [[String: Any]] = [
@@ -58,7 +60,7 @@ public extension SimplyCoreAudio {
     ///
     /// - Parameter id: The `AudioObjectID` of the audio aggregate device to destroy.
     /// - Returns An `OSStatus` indicating success or failure.
-    func removeAggregateDevice(id deviceID: AudioObjectID) -> OSStatus {
+    public func removeAggregateDevice(id deviceID: AudioObjectID) -> OSStatus {
         AudioHardwareDestroyAggregateDevice(deviceID)
     }
 }

@@ -1,46 +1,27 @@
-//
-//  AudioDevice+DefaultDevice.swift
-//
-//  Created by Ruben Nine on 20/3/21.
-//
+// Copyright SimplyCoreAudio. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import Foundation
 
-// MARK: - Public Functions & Properties
-
-public extension AudioDevice {
-    // MARK: - Default Device Properties
-
-    /// Allows getting and setting this device as the default input device.
-    var isDefaultInputDevice: Bool {
-        get { AudioHardware.defaultDevice(of: .input) == self }
-        set { _ = try? promote(to: .input) } // i don't like these as the error is ignored
+extension AudioDevice {
+    /// Promote device to passed in selector type
+    ///
+    /// - Parameter type: `DefaultSelectorType`
+    /// - Returns: `OSStatus` with error or noErr if succeeds
+    public func promote(to type: DefaultSelectorType) throws -> OSStatus {
+        promote(to: type.propertySelector)
     }
 
-    /// Allows getting and setting this device as the default output device.
-    var isDefaultOutputDevice: Bool {
-        get { AudioHardware.defaultDevice(of: .output) == self }
-        set { _ = try? promote(to: .output) }
-    }
-
-    /// Allows getting and setting this device as the default system output device.
-    var isDefaultSystemOutputDevice: Bool {
-        get { AudioHardware.defaultDevice(of: .systemOutput) == self }
-        set { _ = try? promote(to: .systemOutput) }
+    /// Check if this device is set to a passed in `DefaultSelectorType`
+    /// - Parameter type: `DefaultSelectorType` to check
+    /// - Returns: `true` when the device is set to the type, `false` otherwise.
+    public func isDefaultDevice(for type: DefaultSelectorType) -> Bool {
+        Self.defaultDevice(of: type) == self
     }
 
     /// Promote device to passed in type
-    /// - Parameter deviceType: `AudioHardwareDefaultDeviceType`
+    /// - Parameter deviceType: `AudioObjectPropertySelector`
     /// - Returns: `OSStatus` with error or noErr if succeeds
-    func promote(to deviceType: DefaultDeviceType) throws -> OSStatus {
-        promote(to: deviceType.propertySelector)
-    }
-}
-
-// MARK: - Private Functions
-
-private extension AudioDevice {
     func promote(to type: AudioObjectPropertySelector) -> OSStatus {
         let address = self.address(selector: type)
 

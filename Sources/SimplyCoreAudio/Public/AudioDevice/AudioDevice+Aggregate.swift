@@ -12,15 +12,15 @@ import Foundation
 public extension AudioDevice {
     /// - Returns: `true` if this device is an aggregate one, `false` otherwise.
     var isAggregateDevice: Bool {
-        guard let aggregateDevices = ownedAggregateDevices else { return false }
-        return !aggregateDevices.isEmpty
+        guard let ownedAggregateDevices else { return false }
+        return !ownedAggregateDevices.isEmpty
     }
 
     /// All the subdevices of this aggregate device
     ///
     /// - Returns: An array of `AudioDevice` objects.
     var ownedAggregateDevices: [AudioDevice]? {
-        guard let ownedObjectIDs = ownedObjectIDs else { return nil }
+        guard let ownedObjectIDs else { return nil }
         return ownedObjectIDs.compactMap { AudioDevice.lookup(by: $0) }
     }
 

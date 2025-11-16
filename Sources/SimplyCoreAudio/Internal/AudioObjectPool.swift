@@ -7,6 +7,8 @@
 import CoreAudio
 import Foundation
 
+// TODO: convert to actor
+
 class AudioObjectPool {
     // MARK: - Private Properties
 

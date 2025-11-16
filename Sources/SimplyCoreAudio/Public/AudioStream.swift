@@ -140,12 +140,12 @@ public final class AudioStream: AudioObject {
     ///
     /// - Returns: *(optional)* An array of `AudioStreamRangedDescription` structs.
     public lazy var availablePhysicalFormats: [AudioStreamRangedDescription]? = {
-        guard let scope = scope else { return nil }
+        guard let scope else { return nil }
 
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioStreamPropertyAvailablePhysicalFormats,
-            mScope: scope.asPropertyScope,
-            mElement: Element.main.asPropertyElement
+            mScope: scope.propertyScope,
+            mElement: Element.main.propertyElement
         )
 
         guard AudioObjectHasProperty(id, &address) else { return nil }
@@ -163,12 +163,12 @@ public final class AudioStream: AudioObject {
     ///
     /// - Returns: *(optional)* An array of `AudioStreamRangedDescription` structs.
     public lazy var availableVirtualFormats: [AudioStreamRangedDescription]? = {
-        guard let scope = scope else { return nil }
+        guard let scope else { return nil }
 
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioStreamPropertyAvailableVirtualFormats,
-            mScope: scope.asPropertyScope,
-            mElement: Element.main.asPropertyElement
+            mScope: scope.propertyScope,
+            mElement: Element.main.propertyElement
         )
 
         guard AudioObjectHasProperty(id, &address) else { return nil }
@@ -283,12 +283,12 @@ private extension AudioStream {
     ///
     /// - Returns: An `OSStatus` with `noErr` on success, or an error code other than `noErr` when it fails.
     func getStreamPropertyData<T>(_ selector: AudioObjectPropertySelector, andValue value: inout T) -> OSStatus? {
-        guard let scope = scope else { return nil }
+        guard let scope else { return nil }
 
         var address = AudioObjectPropertyAddress(
             mSelector: selector,
-            mScope: scope.asPropertyScope,
-            mElement: Element.main.asPropertyElement
+            mScope: scope.propertyScope,
+            mElement: Element.main.propertyElement
         )
 
         guard AudioObjectHasProperty(id, &address) else { return nil }
@@ -307,12 +307,12 @@ private extension AudioStream {
     ///
     /// - Returns: An `OSStatus` with `noErr` on success, or an error code other than `noErr` when it fails.
     func setStreamPropertyData<T>(_ selector: AudioObjectPropertySelector, andValue value: inout T) -> OSStatus? {
-        guard let scope = scope else { return nil }
+        guard let scope else { return nil }
 
         var address = AudioObjectPropertyAddress(
             mSelector: selector,
-            mScope: scope.asPropertyScope,
-            mElement: Element.main.asPropertyElement
+            mScope: scope.propertyScope,
+            mElement: Element.main.propertyElement
         )
 
         guard AudioObjectHasProperty(id, &address) else { return nil }
@@ -381,8 +381,10 @@ private func propertyListener(objectID: UInt32,
     switch address.mSelector {
     case kAudioStreamPropertyIsActive:
         Task { @MainActor in notificationCenter.post(name: .streamIsActiveDidChange, object: obj) }
+
     case kAudioStreamPropertyPhysicalFormat:
         Task { @MainActor in notificationCenter.post(name: .streamPhysicalFormatDidChange, object: obj) }
+
     default:
         break
     }

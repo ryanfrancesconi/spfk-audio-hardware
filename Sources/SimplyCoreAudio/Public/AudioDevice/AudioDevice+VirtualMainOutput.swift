@@ -19,7 +19,7 @@ public extension AudioDevice {
     /// - Returns: `true` when the volume can be set, `false` otherwise.
     func canSetVirtualMainVolume(scope: Scope) -> Bool {
         guard validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-                           scope: scope.asPropertyScope) != nil else { return false }
+                           scope: scope.propertyScope) != nil else { return false }
 
         return true
     }
@@ -36,7 +36,7 @@ public extension AudioDevice {
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> Bool {
         guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-                                         scope: scope.asPropertyScope) else { return false }
+                                         scope: scope.propertyScope) else { return false }
 
         return setProperty(address: address, value: volume)
     }
@@ -53,7 +53,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `Float32` value with the scalar volume.
     func virtualMainVolume(scope: Scope) -> Float32? {
         guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-                                         scope: scope.asPropertyScope) else { return nil }
+                                         scope: scope.propertyScope) else { return nil }
 
         return getProperty(address: address)
     }
@@ -71,8 +71,8 @@ public extension AudioDevice {
     func virtualMainVolumeInDecibels(scope: Scope) -> Float32? {
         var referenceChannel: UInt32
 
-        if canSetVolume(channel: Element.main.asPropertyElement, scope: scope) {
-            referenceChannel = Element.main.asPropertyElement
+        if canSetVolume(channel: Element.main.propertyElement, scope: scope) {
+            referenceChannel = Element.main.propertyElement
         } else {
             guard let channels = preferredChannelsForStereo(scope: scope) else { return nil }
             referenceChannel = channels.0
@@ -90,7 +90,7 @@ public extension AudioDevice {
     /// - Returns: `true` when the balance can be set, `false` otherwise.
     func canSetVirtualMainBalance(scope: Scope) -> Bool {
         guard validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
-                           scope: scope.asPropertyScope) != nil else { return false }
+                           scope: scope.propertyScope) != nil else { return false }
 
         return true
     }
@@ -105,7 +105,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `Float32` value with the stereo balance.
     func virtualMainBalance(scope: Scope) -> Float32? {
         guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
-                                         scope: scope.asPropertyScope) else { return nil }
+                                         scope: scope.propertyScope) else { return nil }
 
         return getProperty(address: address)
     }
@@ -126,7 +126,7 @@ public extension AudioDevice {
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult func setVirtualMainBalance(_ value: Float32, scope: Scope) -> Bool {
         guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
-                                         scope: scope.asPropertyScope) else { return false }
+                                         scope: scope.propertyScope) else { return false }
 
         return setProperty(address: address, value: value)
     }

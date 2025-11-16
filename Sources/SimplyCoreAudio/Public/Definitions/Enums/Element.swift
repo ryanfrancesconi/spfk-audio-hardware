@@ -15,7 +15,7 @@ public enum Element {
 // MARK: - Internal Functions
 
 extension Element {
-    var asPropertyElement: AudioObjectPropertyElement {
+    var propertyElement: AudioObjectPropertyElement {
         switch self {
         case .main:
             return kAudioObjectPropertyElementMain

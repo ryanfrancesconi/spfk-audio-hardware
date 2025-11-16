@@ -17,7 +17,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* An array of `AudioStream` objects.
     func streams(scope: Scope) -> [AudioStream]? {
         guard let address = validAddress(selector: kAudioDevicePropertyStreams,
-                                         scope: scope.asPropertyScope) else { return nil }
+                                         scope: scope.propertyScope) else { return nil }
 
         var streamIDs = [AudioStreamID]()
 

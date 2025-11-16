@@ -76,7 +76,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `UInt32` value with the latency in frames.
     func deviceLatency(scope: Scope) -> UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertyLatency,
-                                         scope: scope.asPropertyScope) else { return nil }
+                                         scope: scope.propertyScope) else { return nil }
 
         return getProperty(address: address)
     }
@@ -90,7 +90,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `UInt32` value with the safety offset in frames.
     func safetyOffset(scope: Scope) -> UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertySafetyOffset,
-                                         scope: scope.asPropertyScope) else { return nil }
+                                         scope: scope.propertyScope) else { return nil }
 
         return getProperty(address: address)
     }
@@ -104,7 +104,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `UInt32` value that indicates the number of frames in the IO buffers.
     func bufferFrameSize(scope: Scope) -> UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertyBufferFrameSize,
-                                         scope: scope.asPropertyScope) else { return nil }
+                                         scope: scope.propertyScope) else { return nil }
 
         return getProperty(address: address)
     }
@@ -118,7 +118,7 @@ public extension AudioDevice {
     @discardableResult
     func setBufferFrameSize(_ frameSize: UInt32, scope: Scope) -> Bool {
         guard let address = validAddress(selector: kAudioDevicePropertyBufferFrameSize,
-                                         scope: scope.asPropertyScope) else { return false }
+                                         scope: scope.propertyScope) else { return false }
 
         return setProperty(address: address, value: frameSize)
     }

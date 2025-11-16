@@ -39,7 +39,7 @@ public enum Scope {
 // MARK: - Internal Functions
 
 extension Scope {
-    var asPropertyScope: AudioObjectPropertyScope {
+    var propertyScope: AudioObjectPropertyScope {
         switch self {
         case .global: return kAudioObjectPropertyScopeGlobal
         case .input: return kAudioObjectPropertyScopeInput
@@ -50,21 +50,27 @@ extension Scope {
         }
     }
 
-    static func from(_ scope: AudioObjectPropertyScope) -> Scope {
-        switch scope {
-        case kAudioObjectPropertyScopeGlobal: return .global
-        case kAudioObjectPropertyScopeInput: return .input
-        case kAudioObjectPropertyScopeOutput: return .output
-        case kAudioObjectPropertyScopePlayThrough: return .playthrough
-        case kAudioObjectPropertyElementMain: return .main
-        case kAudioObjectPropertyScopeWildcard: return .wildcard
+    public init(propertyScope: AudioObjectPropertyScope) {
+        switch propertyScope {
+        case kAudioObjectPropertyScopeGlobal:
+            self = .global
+        case kAudioObjectPropertyScopeInput:
+            self = .input
+        case kAudioObjectPropertyScopeOutput:
+            self = .output
+        case kAudioObjectPropertyScopePlayThrough:
+            self = .playthrough
+        case kAudioObjectPropertyElementMain:
+            self = .main
+        case kAudioObjectPropertyScopeWildcard:
+            self = .wildcard
         default:
             // Note, the default is only here to satisfy the switch to be exhaustive.
             // It already defines the complete set of AudioObjectPropertyScope from
             // AudioHardware.h, so it's pretty unlikely this would be returned. The
             // only case should be if Apple adds a new scope type - which seems fairly
             // unlikely
-            return .wildcard
+            self = .wildcard
         }
     }
 

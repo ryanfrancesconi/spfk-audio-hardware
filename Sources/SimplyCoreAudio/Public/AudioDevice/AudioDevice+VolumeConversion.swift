@@ -19,7 +19,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `Float32` value with the scalar volume converted in decibels.
     func scalarToDecibels(volume: Float32, channel: UInt32, scope: Scope) -> Float32? {
         guard let address = validAddress(selector: kAudioDevicePropertyVolumeScalarToDecibels,
-                                         scope: scope.asPropertyScope,
+                                         scope: scope.propertyScope,
                                          element: channel) else { return nil }
 
         var inOutVolume: Float32 = 0
@@ -39,7 +39,7 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `Float32` value with the decibels volume converted to scalar.
     func decibelsToScalar(volume: Float32, channel: UInt32, scope: Scope) -> Float32? {
         guard let address = validAddress(selector: kAudioDevicePropertyVolumeDecibelsToScalar,
-                                         scope: scope.asPropertyScope,
+                                         scope: scope.propertyScope,
                                          element: channel) else { return nil }
 
         var inOutVolume: Float32 = 0

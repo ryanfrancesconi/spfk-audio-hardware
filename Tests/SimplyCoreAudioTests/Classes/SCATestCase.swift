@@ -1,4 +1,4 @@
-// Revision History at https://github.com/ryanfrancesconi/SimplyCoreAudio
+// Copyright SimplyCoreAudio. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SimplyCoreAudio
 
 import Foundation
 @testable import SimplyCoreAudio
@@ -6,9 +6,10 @@ import Testing
 
 class SCATestCase {
     var simplyCA: SimplyCoreAudio
-    var defaultInputDevice: AudioDevice?
-    var defaultOutputDevice: AudioDevice?
-    var defaultSystemOutputDevice: AudioDevice?
+
+    private var defaultInputDevice: AudioDevice?
+    private var defaultOutputDevice: AudioDevice?
+    private var defaultSystemOutputDevice: AudioDevice?
 
     public init() async throws {
         simplyCA = SimplyCoreAudio()
@@ -21,15 +22,9 @@ class SCATestCase {
         try? resetNullDeviceState()
     }
 
-    func getNullDevice() throws -> AudioDevice {
-        try #require(
-            AudioDevice.lookup(by: "NullAudioDevice_UID")
-        )
-    }
-
     func tearDown() async throws {
         try resetNullDeviceState()
-        try await Task.sleep(for: .seconds(1))
+        try await wait(sec: 1)
         print(#function)
     }
 
@@ -51,32 +46,10 @@ class SCATestCase {
         device.setVirtualMainVolume(0.5, scope: .input)
     }
 
-    func wait(for notificationName: Notification.Name) async throws -> Notification {
-        let asyncSequence = NotificationCenter.default.notifications(named: notificationName)
-        let iterator = asyncSequence.makeAsyncIterator()
-
-        guard let notification = await iterator.next() else {
-            throw NSError(domain: "failed to get notification", code: 0)
-        }
-
-        print(notification)
-
-        return notification
-    }
-
-    func remove(aggregateDeviceUID deviceUID: String) async throws {
-        if let existingDevice = simplyCA.allAggregateDevices.first(where: { device in
-            device.uid == deviceUID
-        }) {
-            if noErr != simplyCA.removeAggregateDevice(id: existingDevice.id) {
-                Issue.record("Failed to remove existing device")
-            }
-
-            try await Task.sleep(for: .seconds(1))
-            return
-        } else {
-            print("didn't find device of UID", deviceUID)
-        }
+    func getNullDevice() throws -> AudioDevice {
+        try #require(
+            AudioDevice.lookup(by: "NullAudioDevice_UID")
+        )
     }
 }
 
@@ -93,5 +66,11 @@ private extension SCATestCase {
         defaultInputDevice?.isDefaultInputDevice = true
         defaultOutputDevice?.isDefaultOutputDevice = true
         defaultSystemOutputDevice?.isDefaultSystemOutputDevice = true
+    }
+}
+
+extension SCATestCase {
+    public func wait(sec seconds: TimeInterval) async throws {
+        try await Task.sleep(seconds: seconds)
     }
 }
