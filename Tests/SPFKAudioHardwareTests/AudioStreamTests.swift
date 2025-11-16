@@ -1,5 +1,5 @@
 import AudioToolbox
-@testable import SimplyCoreAudio
+@testable import SPFKAudioHardware
 import Testing
 
 class AudioStreamTests: SCATestCase {

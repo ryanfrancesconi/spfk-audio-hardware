@@ -3,7 +3,7 @@
 
 import Foundation
 import Numerics
-@testable import SimplyCoreAudio
+@testable import SPFKAudioHardware
 import Testing
 
 @Suite(.serialized)
