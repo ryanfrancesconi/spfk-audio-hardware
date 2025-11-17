@@ -2,6 +2,7 @@
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import Foundation
+import SPFKBase
 
 extension AudioDevice {
     /// Update the device sample rate and wait for the completion.

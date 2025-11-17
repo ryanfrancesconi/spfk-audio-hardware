@@ -137,8 +137,8 @@ extension AudioHardwareTests {
 }
 
 //    @Test func testHardwareNotificationsAreNotDuplicated() async throws {
-//        let simplyCA2 = SimplyCoreAudio()
-//        let simplyCA3 = SimplyCoreAudio()
+//        let simplyCA2 = AudioHardwareManager()
+//        let simplyCA3 = AudioHardwareManager()
 //
 //        let task1 = Task<Bool, Error> {
 //            let notification = try await wait(for: .deviceListChanged)

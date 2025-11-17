@@ -23,8 +23,8 @@ private let products: [PackageDescription.Product] = [
 ]
 
 private let dependencies: [PackageDescription.Package.Dependency] = [
-    .package(url: "https://github.com/apple/swift-atomics.git", from: "1.1.0"),
-    .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0"),
+    .package(path: "../SPFKBase"),
+
 ]
 
 private let targets: [PackageDescription.Target] = [
@@ -33,8 +33,8 @@ private let targets: [PackageDescription.Target] = [
         name: name,
         dependencies: [
             .target(name: nameC),
-            .product(name: "Atomics", package: "swift-atomics")
-        
+            .byNameItem(name: "SPFKBase", condition: nil),
+
         ]
     ),
     
@@ -58,8 +58,6 @@ private let targets: [PackageDescription.Target] = [
         dependencies: [
             .byNameItem(name: name, condition: nil),
             .byNameItem(name: nameC, condition: nil),
-            .product(name: "Numerics", package: "swift-numerics"),
-            
         ]
     )
 ]
