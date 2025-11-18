@@ -42,7 +42,6 @@ private let targets: [PackageDescription.Target] = [
     .target(
         name: nameC,
         dependencies: [
-//            .target(name: "NAME"),
         ],
         publicHeadersPath: "include",
         cSettings: [

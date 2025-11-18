@@ -4,37 +4,31 @@
 import Foundation
 import Numerics
 @testable import SPFKAudioHardware
+import SPFKBase
 import Testing
 
 @Suite(.serialized)
-final class AudioHardwareTests: SCATestCase {
-    let deviceName = "NullDeviceAggregate"
-    let deviceUID = "NullDeviceAggregate_UID"
+final class AudioHardwareTests: NullDeviceTestCase {
+    let aggregateDeviceName = "NullDeviceAggregate"
+    let aggregateDeviceUID = "NullDeviceAggregate_UID"
 
     @Test func createAndDestroyAggregateDevice() async throws {
-        let nullDevice = try getNullDevice()
-        let uid = "testCreateAggregateAudioDevice-12345"
-
-        guard let device = simplyCA.createAggregateDevice(
-            mainDevice: nullDevice,
-            secondDevice: nil,
-            named: "testCreateAggregateAudioDevice",
-            uid: uid
-        ) else {
-            Issue.record("Failed creating device")
-            return
-        }
+        let device = try #require(try await createAggregateDevice(in: 1))
 
         try await Task.sleep(for: .seconds(1))
 
-        #expect(device.isAggregateDevice)
-        #expect(device.ownedAggregateDevices?.count == 1)
+        let isAggregateDevice = await device.isAggregateDevice
+
+        #expect(isAggregateDevice)
+        await #expect(device.ownedAggregateDevices?.count == 1)
 
         try await wait(sec: 1)
 
-        #expect(noErr == simplyCA.removeAggregateDevice(id: device.id))
+        #expect(noErr == hardware.removeAggregateDevice(id: device.id))
 
         try await wait(sec: 1)
+
+        try await tearDown()
     }
 
     @Test func deviceListChanged() async throws {
@@ -43,12 +37,12 @@ final class AudioHardwareTests: SCATestCase {
 
             guard let hardwareNotification = notification.object as? AudioHardwareNotification else { return false }
 
-            guard case let .deviceListChanged(addedDevices: addedDevices, removedDevices: _) = hardwareNotification else {
+            guard case let .deviceListChanged(event: event) = hardwareNotification else {
                 return false
             }
 
-            let firstAddedDevice = try #require(addedDevices.first)
-            let passed = firstAddedDevice.uid == deviceUID && firstAddedDevice.name == deviceName
+            let firstAddedDevice = try #require(event.addedDevices.first)
+            let passed = firstAddedDevice.uid == aggregateDeviceUID && firstAddedDevice.name == aggregateDeviceName
             return passed
         }
 
@@ -57,7 +51,9 @@ final class AudioHardwareTests: SCATestCase {
         #expect(try await task.value)
         task.cancel()
 
-        #expect(noErr == simplyCA.removeAggregateDevice(id: device.id))
+        #expect(noErr == hardware.removeAggregateDevice(id: device.id))
+
+        try await tearDown()
     }
 
     @Test(arguments: DefaultSelectorType.allCases)
@@ -67,26 +63,36 @@ final class AudioHardwareTests: SCATestCase {
 
         try await promoteAndWaitForEvent(device: aggregateDevice, to: selectorType)
 
-        #expect(AudioDevice.defaultDevice(of: selectorType) == aggregateDevice)
+        await #expect(AudioDevice.defaultDevice(of: selectorType) == aggregateDevice)
 
-        #expect(noErr == simplyCA.removeAggregateDevice(id: aggregateDevice.id))
+        #expect(noErr == hardware.removeAggregateDevice(id: aggregateDevice.id))
+
+        try await tearDown()
     }
 }
 
 extension AudioHardwareTests {
-    func createAggregateDevice(in delay: TimeInterval = 0.2) async throws -> AudioDevice? {
-        let nullDevice = try getNullDevice()
+    func createAggregateDevice(in delay: TimeInterval = 0) async throws -> AudioDevice? {
+        let nullDevice = try #require(nullDevice)
+
+        if let existing = await hardware.allDevices.first(where: {
+            $0.uid == aggregateDeviceUID
+        }) {
+            Log.error("Device exists attempting to remove it...")
+
+            #expect(noErr == hardware.removeAggregateDevice(id: existing.id))
+        }
 
         // make sure this happens after the notification handlers are in place
         if delay > 0 {
             try await Task.sleep(for: .seconds(delay))
         }
 
-        return simplyCA.createAggregateDevice(
+        return try await hardware.createAggregateDevice(
             mainDevice: nullDevice,
             secondDevice: nil,
-            named: deviceName,
-            uid: deviceUID
+            named: aggregateDeviceName,
+            uid: aggregateDeviceUID
         )
     }
 

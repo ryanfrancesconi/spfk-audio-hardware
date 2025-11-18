@@ -7,97 +7,115 @@ import Numerics
 import Testing
 
 @Suite(.serialized)
-final class AudioDeviceTests: SCATestCase {
+final class AudioDeviceTests: NullDeviceTestCase {
     @Test func deviceLookUp() async throws {
-        let device = try getNullDevice()
-        let deviceUID = try #require(device.uid)
+        let nullDevice = try #require(nullDevice)
 
-        #expect(AudioDevice.lookup(by: device.id) == device)
-        #expect(AudioDevice.lookup(by: deviceUID) == device)
+        let deviceUID = try #require(nullDevice.uid)
+
+        await #expect(AudioDevice.lookup(by: nullDevice.id) == nullDevice)
+        await #expect(AudioDevice.lookup(by: deviceUID) == nullDevice)
+        try await tearDown()
     }
 
     @Test(arguments: DefaultSelectorType.allCases)
     func promoteDevice(deviceType: DefaultSelectorType) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
         print(deviceType)
 
-        let err = try device.promote(to: deviceType)
+        let err = try nullDevice.promote(to: deviceType)
         #expect(noErr == err)
-        #expect(device.isDefaultDevice(for: deviceType))
+
+        let isDefaultDevice = await nullDevice.isDefaultDevice(for: deviceType)
+        #expect(isDefaultDevice)
 
         try await wait(sec: 1)
+
+        try await tearDown()
     }
 
     @Test func generalDeviceInformation() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.name == "Null Audio Device")
-        #expect(device.manufacturer == "Apple Inc.")
-        #expect(device.uid == "NullAudioDevice_UID")
-        #expect(device.modelUID == "NullAudioDevice_ModelUID")
-        #expect(device.configurationApplication == "com.apple.audio.AudioMIDISetup")
-        #expect(device.transportType == .virtual)
+        #expect(nullDevice.name == "Null Audio Device")
+        #expect(nullDevice.manufacturer == "Apple Inc.")
+        #expect(nullDevice.uid == "NullAudioDevice_UID")
+        #expect(nullDevice.modelUID == "NullAudioDevice_ModelUID")
+        #expect(nullDevice.configurationApplication == "com.apple.audio.AudioMIDISetup")
+        #expect(nullDevice.transportType == .virtual)
 
-        #expect(!device.isInputOnlyDevice)
-        #expect(!device.isOutputOnlyDevice)
-        #expect(!device.isHidden)
+        let isInputOnlyDevice = await nullDevice.isInputOnlyDevice
+        let isOutputOnlyDevice = await nullDevice.isOutputOnlyDevice
 
-        #expect(device.isJackConnected(scope: .output) == nil)
-        #expect(device.isJackConnected(scope: .input) == nil)
+        #expect(isInputOnlyDevice == false)
+        #expect(isOutputOnlyDevice == false)
+        #expect(!nullDevice.isHidden)
 
-        #expect(device.isAlive)
-        #expect(!device.isRunning)
-        #expect(!device.isRunningSomewhere)
+        #expect(nullDevice.isJackConnected(scope: .output) == nil)
+        #expect(nullDevice.isJackConnected(scope: .input) == nil)
 
-        #expect(device.channels(scope: .output) == 2)
-        #expect(device.channels(scope: .input) == 2)
+        #expect(nullDevice.isAlive)
+        #expect(!nullDevice.isRunning)
+        #expect(!nullDevice.isRunningSomewhere)
 
-        #expect(device.ownedObjectIDs != nil)
-        #expect(device.controlList != nil)
-        #expect(device.relatedDevices != nil)
+        await #expect(nullDevice.channels(scope: .output) == 2)
+        await #expect(nullDevice.channels(scope: .input) == 2)
+
+        #expect(nullDevice.ownedObjectIDs != nil)
+        #expect(nullDevice.controlList != nil)
+        await #expect(nullDevice.relatedDevices != nil)
+
+        try await tearDown()
     }
 
     @Test func lfe() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.shouldOwniSub == nil)
-        device.shouldOwniSub = true
-        #expect(device.shouldOwniSub == nil)
+        #expect(nullDevice.shouldOwniSub == nil)
+        nullDevice.shouldOwniSub = true
+        #expect(nullDevice.shouldOwniSub == nil)
 
-        #expect(device.lfeMute == nil)
-        device.lfeMute = true
-        #expect(device.lfeMute == nil)
+        #expect(nullDevice.lfeMute == nil)
+        nullDevice.lfeMute = true
+        #expect(nullDevice.lfeMute == nil)
 
-        #expect(device.lfeVolume == nil)
-        device.lfeVolume = 1.0
-        #expect(device.lfeVolume == nil)
+        #expect(nullDevice.lfeVolume == nil)
+        nullDevice.lfeVolume = 1.0
+        #expect(nullDevice.lfeVolume == nil)
 
-        #expect(device.lfeVolumeDecibels == nil)
-        device.lfeVolumeDecibels = 6.0
-        #expect(device.lfeVolumeDecibels == nil)
+        #expect(nullDevice.lfeVolumeDecibels == nil)
+        nullDevice.lfeVolumeDecibels = 6.0
+        #expect(nullDevice.lfeVolumeDecibels == nil)
+
+        try await tearDown()
     }
 
     @Test func inputOutputLayout() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.layoutChannels(scope: .output) == 2)
-        #expect(device.layoutChannels(scope: .input) == 2)
+        #expect(nullDevice.layoutChannels(scope: .output) == 2)
+        #expect(nullDevice.layoutChannels(scope: .input) == 2)
 
-        #expect(device.channels(scope: .output) == 2)
-        #expect(device.channels(scope: .input) == 2)
+        await #expect(nullDevice.channels(scope: .output) == 2)
+        await #expect(nullDevice.channels(scope: .input) == 2)
 
-        #expect(!device.isInputOnlyDevice)
-        #expect(!device.isOutputOnlyDevice)
+        let isInputOnlyDevice = await nullDevice.isInputOnlyDevice
+        let isOutputOnlyDevice = await nullDevice.isOutputOnlyDevice
+
+        #expect(!isInputOnlyDevice)
+        #expect(!isOutputOnlyDevice)
+
+        try await tearDown()
     }
 
     @Test func volumeInfo() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
         var volumeInfo: VolumeInfo!
 
-        #expect(device.setMute(false, channel: 0, scope: .output))
+        #expect(nullDevice.setMute(false, channel: 0, scope: .output))
 
-        volumeInfo = device.volumeInfo(channel: 0, scope: .output)
+        volumeInfo = nullDevice.volumeInfo(channel: 0, scope: .output)
         #expect(volumeInfo.hasVolume == true)
         #expect(volumeInfo.canSetVolume == true)
         #expect(volumeInfo.canMute == true)
@@ -105,127 +123,139 @@ final class AudioDeviceTests: SCATestCase {
         #expect(volumeInfo.canPlayThru == false)
         #expect(volumeInfo.isPlayThruSet == false)
 
-        #expect(device.setVolume(0, channel: 0, scope: .output))
-        volumeInfo = device.volumeInfo(channel: 0, scope: .output)
+        #expect(nullDevice.setVolume(0, channel: 0, scope: .output))
+        volumeInfo = nullDevice.volumeInfo(channel: 0, scope: .output)
         #expect(volumeInfo.volume == 0)
 
-        #expect(device.setVolume(0.5, channel: 0, scope: .output))
-        volumeInfo = device.volumeInfo(channel: 0, scope: .output)
+        #expect(nullDevice.setVolume(0.5, channel: 0, scope: .output))
+        volumeInfo = nullDevice.volumeInfo(channel: 0, scope: .output)
         #expect(volumeInfo.volume == 0.5)
 
-        #expect(device.volumeInfo(channel: 1, scope: .output) == nil)
-        #expect(device.volumeInfo(channel: 2, scope: .output) == nil)
-        #expect(device.volumeInfo(channel: 3, scope: .output) == nil)
-        #expect(device.volumeInfo(channel: 4, scope: .output) == nil)
+        #expect(nullDevice.volumeInfo(channel: 1, scope: .output) == nil)
+        #expect(nullDevice.volumeInfo(channel: 2, scope: .output) == nil)
+        #expect(nullDevice.volumeInfo(channel: 3, scope: .output) == nil)
+        #expect(nullDevice.volumeInfo(channel: 4, scope: .output) == nil)
 
-        #expect(device.volumeInfo(channel: 0, scope: .input) != nil)
-        #expect(device.volumeInfo(channel: 1, scope: .input) == nil)
-        #expect(device.volumeInfo(channel: 2, scope: .input) == nil)
-        #expect(device.volumeInfo(channel: 3, scope: .input) == nil)
-        #expect(device.volumeInfo(channel: 4, scope: .input) == nil)
+        #expect(nullDevice.volumeInfo(channel: 0, scope: .input) != nil)
+        #expect(nullDevice.volumeInfo(channel: 1, scope: .input) == nil)
+        #expect(nullDevice.volumeInfo(channel: 2, scope: .input) == nil)
+        #expect(nullDevice.volumeInfo(channel: 3, scope: .input) == nil)
+        #expect(nullDevice.volumeInfo(channel: 4, scope: .input) == nil)
+
+        try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
     func volume(scopeToTest: Scope) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.setVolume(0, channel: 0, scope: scopeToTest))
-        #expect(device.volume(channel: 0, scope: scopeToTest) == 0)
+        #expect(nullDevice.setVolume(0, channel: 0, scope: scopeToTest))
+        #expect(nullDevice.volume(channel: 0, scope: scopeToTest) == 0)
 
-        #expect(device.setVolume(0.5, channel: 0, scope: scopeToTest))
-        #expect(device.volume(channel: 0, scope: scopeToTest) == 0.5)
+        #expect(nullDevice.setVolume(0.5, channel: 0, scope: scopeToTest))
+        #expect(nullDevice.volume(channel: 0, scope: scopeToTest) == 0.5)
 
-        #expect(!device.setVolume(0.5, channel: 1, scope: scopeToTest))
-        #expect(device.volume(channel: 1, scope: scopeToTest) == nil)
+        #expect(!nullDevice.setVolume(0.5, channel: 1, scope: scopeToTest))
+        #expect(nullDevice.volume(channel: 1, scope: scopeToTest) == nil)
 
-        #expect(!device.setVolume(0.5, channel: 2, scope: .output))
-        #expect(device.volume(channel: 2, scope: scopeToTest) == nil)
+        #expect(!nullDevice.setVolume(0.5, channel: 2, scope: .output))
+        #expect(nullDevice.volume(channel: 2, scope: scopeToTest) == nil)
+
+        try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
     func volumeInDecibels(scopeToTest: Scope) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.canSetVolume(channel: 0, scope: scopeToTest))
-        #expect(device.setVolume(0, channel: 0, scope: scopeToTest))
-        #expect(device.volumeInDecibels(channel: 0, scope: scopeToTest) == -96)
-        #expect(device.setVolume(0.5, channel: 0, scope: scopeToTest))
-        #expect(device.volumeInDecibels(channel: 0, scope: scopeToTest) == -70.5)
+        #expect(nullDevice.canSetVolume(channel: 0, scope: scopeToTest))
+        #expect(nullDevice.setVolume(0, channel: 0, scope: scopeToTest))
+        #expect(nullDevice.volumeInDecibels(channel: 0, scope: scopeToTest) == -96)
+        #expect(nullDevice.setVolume(0.5, channel: 0, scope: scopeToTest))
+        #expect(nullDevice.volumeInDecibels(channel: 0, scope: scopeToTest) == -70.5)
 
-        #expect(!device.canSetVolume(channel: 1, scope: scopeToTest))
-        #expect(!device.setVolume(0.5, channel: 1, scope: scopeToTest))
-        #expect(device.volumeInDecibels(channel: 1, scope: scopeToTest) == nil)
+        #expect(!nullDevice.canSetVolume(channel: 1, scope: scopeToTest))
+        #expect(!nullDevice.setVolume(0.5, channel: 1, scope: scopeToTest))
+        #expect(nullDevice.volumeInDecibels(channel: 1, scope: scopeToTest) == nil)
 
-        #expect(!device.canSetVolume(channel: 2, scope: scopeToTest))
-        #expect(!device.setVolume(0.5, channel: 2, scope: scopeToTest))
-        #expect(device.volumeInDecibels(channel: 2, scope: scopeToTest) == nil)
+        #expect(!nullDevice.canSetVolume(channel: 2, scope: scopeToTest))
+        #expect(!nullDevice.setVolume(0.5, channel: 2, scope: scopeToTest))
+        #expect(nullDevice.volumeInDecibels(channel: 2, scope: scopeToTest) == nil)
+
+        try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
     func mute(scopeToTest: Scope) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.canMute(channel: 0, scope: scopeToTest))
-        #expect(device.setMute(true, channel: 0, scope: scopeToTest))
-        #expect(device.isMuted(channel: 0, scope: scopeToTest) == true)
-        #expect(device.setMute(false, channel: 0, scope: scopeToTest))
-        #expect(device.isMuted(channel: 0, scope: scopeToTest) == false)
+        #expect(nullDevice.canMute(channel: 0, scope: scopeToTest))
+        #expect(nullDevice.setMute(true, channel: 0, scope: scopeToTest))
+        #expect(nullDevice.isMuted(channel: 0, scope: scopeToTest) == true)
+        #expect(nullDevice.setMute(false, channel: 0, scope: scopeToTest))
+        #expect(nullDevice.isMuted(channel: 0, scope: scopeToTest) == false)
 
-        #expect(!device.canMute(channel: 1, scope: scopeToTest))
-        #expect(!device.setMute(true, channel: 1, scope: scopeToTest))
-        #expect(device.isMuted(channel: 1, scope: scopeToTest) == nil)
+        #expect(!nullDevice.canMute(channel: 1, scope: scopeToTest))
+        #expect(!nullDevice.setMute(true, channel: 1, scope: scopeToTest))
+        #expect(nullDevice.isMuted(channel: 1, scope: scopeToTest) == nil)
 
-        #expect(!device.canMute(channel: 2, scope: scopeToTest))
-        #expect(!device.setMute(true, channel: 2, scope: scopeToTest))
-        #expect(device.isMuted(channel: 2, scope: scopeToTest) == nil)
+        #expect(!nullDevice.canMute(channel: 2, scope: scopeToTest))
+        #expect(!nullDevice.setMute(true, channel: 2, scope: scopeToTest))
+        #expect(nullDevice.isMuted(channel: 2, scope: scopeToTest) == nil)
+
+        try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
     func mainChannelMute(scope: Scope) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.canMuteMainChannel(scope: scope) == true)
-        #expect(device.setMute(false, channel: 0, scope: scope))
-        #expect(device.isMainChannelMuted(scope: scope) == false)
-        #expect(device.setMute(true, channel: 0, scope: scope))
-        #expect(device.isMainChannelMuted(scope: scope) == true)
+        #expect(nullDevice.canMuteMainChannel(scope: scope) == true)
+        #expect(nullDevice.setMute(false, channel: 0, scope: scope))
+        #expect(nullDevice.isMainChannelMuted(scope: scope) == false)
+        #expect(nullDevice.setMute(true, channel: 0, scope: scope))
+        #expect(nullDevice.isMainChannelMuted(scope: scope) == true)
 
-        #expect(device.canMuteMainChannel(scope: scope) == true)
-        #expect(device.setMute(false, channel: 0, scope: scope))
-        #expect(device.isMainChannelMuted(scope: scope) == false)
-        #expect(device.setMute(true, channel: 0, scope: scope))
-        #expect(device.isMainChannelMuted(scope: scope) == true)
+        #expect(nullDevice.canMuteMainChannel(scope: scope) == true)
+        #expect(nullDevice.setMute(false, channel: 0, scope: scope))
+        #expect(nullDevice.isMainChannelMuted(scope: scope) == false)
+        #expect(nullDevice.setMute(true, channel: 0, scope: scope))
+        #expect(nullDevice.isMainChannelMuted(scope: scope) == true)
+
+        try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
     func preferredChannelsForStereo(scope: Scope) async throws {
-        let device = try getNullDevice()
-        var preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
+        let nullDevice = try #require(nullDevice)
+        var preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
 
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 2)
 
-        #expect(device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
-        preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
+        #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
+        preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 1)
 
-        #expect(device.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
-        preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
+        #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
+        preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
         #expect(preferredChannels.left == 2)
         #expect(preferredChannels.right == 2)
 
-        #expect(device.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: scope))
-        preferredChannels = try #require(device.preferredChannelsForStereo(scope: scope))
+        #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: scope))
+        preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 2)
+
+        try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
     func virtualMainVolumeOutput(scope: Scope) async throws {
-        let nullDevice = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        let devices = simplyCA.allDevices.filter {
+        let devices = await hardware.allDevices.filter {
             $0 != nullDevice &&
                 $0.canSetVirtualMainVolume(scope: scope)
         }
@@ -245,125 +275,151 @@ final class AudioDeviceTests: SCATestCase {
             #expect(dB < 0)
             print(scope, device.name, "dB", dB)
         }
+
+        try await tearDown()
     }
 
     @Test func virtualMainBalance() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(!device.canSetVirtualMainBalance(scope: .output))
-        #expect(!device.canSetVirtualMainBalance(scope: .input))
+        #expect(!nullDevice.canSetVirtualMainBalance(scope: .output))
+        #expect(!nullDevice.canSetVirtualMainBalance(scope: .input))
 
-        #expect(!device.setVirtualMainBalance(0.0, scope: .output))
-        #expect(device.virtualMainBalance(scope: .output) == nil)
+        #expect(!nullDevice.setVirtualMainBalance(0.0, scope: .output))
+        #expect(nullDevice.virtualMainBalance(scope: .output) == nil)
 
-        #expect(!device.setVirtualMainBalance(0.0, scope: .input))
-        #expect(device.virtualMainBalance(scope: .input) == nil)
+        #expect(!nullDevice.setVirtualMainBalance(0.0, scope: .input))
+        #expect(nullDevice.virtualMainBalance(scope: .input) == nil)
+
+        try await tearDown()
     }
 
     @Test func sampleRate() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.nominalSampleRates == [44100, 48000])
+        #expect(nullDevice.nominalSampleRates == [44100, 48000])
 
-        #expect(device.setNominalSampleRate(44100))
+        #expect(nullDevice.setNominalSampleRate(44100))
         try await wait(sec: 1)
 
-        #expect(device.nominalSampleRate == 44100)
-        #expect(device.actualSampleRate == 44100)
+        #expect(nullDevice.nominalSampleRate == 44100)
+        #expect(nullDevice.actualSampleRate == 44100)
 
-        #expect(device.setNominalSampleRate(48000))
+        #expect(nullDevice.setNominalSampleRate(48000))
         try await wait(sec: 1)
 
-        #expect(device.nominalSampleRate == 48000)
-        #expect(device.actualSampleRate == 48000)
+        #expect(nullDevice.nominalSampleRate == 48000)
+        #expect(nullDevice.actualSampleRate == 48000)
+
+        try await tearDown()
     }
 
     @Test func invalidSampleRate() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.nominalSampleRates == [44100, 48000])
-        #expect(!device.setNominalSampleRate(24000))
-        #expect(!device.setNominalSampleRate(96000))
+        #expect(nullDevice.nominalSampleRates == [44100, 48000])
+        #expect(!nullDevice.setNominalSampleRate(24000))
+        #expect(!nullDevice.setNominalSampleRate(96000))
+
+        try await tearDown()
     }
 
     @Test func dataSource() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.dataSource(scope: .output) != nil)
-        #expect(device.dataSource(scope: .input) != nil)
+        #expect(nullDevice.dataSource(scope: .output) != nil)
+        #expect(nullDevice.dataSource(scope: .input) != nil)
+
+        try await tearDown()
     }
 
     @Test func dataSources() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.dataSources(scope: .output) != nil)
-        #expect(device.dataSources(scope: .input) != nil)
+        #expect(nullDevice.dataSources(scope: .output) != nil)
+        #expect(nullDevice.dataSources(scope: .input) != nil)
+
+        try await tearDown()
     }
 
     @Test func dataSourceName() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.dataSourceName(dataSourceID: 0, scope: .output) == "Data Source Item 0")
-        #expect(device.dataSourceName(dataSourceID: 1, scope: .output) == "Data Source Item 1")
-        #expect(device.dataSourceName(dataSourceID: 2, scope: .output) == "Data Source Item 2")
-        #expect(device.dataSourceName(dataSourceID: 3, scope: .output) == "Data Source Item 3")
-        #expect(device.dataSourceName(dataSourceID: 4, scope: .output) == nil)
+        #expect(nullDevice.dataSourceName(dataSourceID: 0, scope: .output) == "Data Source Item 0")
+        #expect(nullDevice.dataSourceName(dataSourceID: 1, scope: .output) == "Data Source Item 1")
+        #expect(nullDevice.dataSourceName(dataSourceID: 2, scope: .output) == "Data Source Item 2")
+        #expect(nullDevice.dataSourceName(dataSourceID: 3, scope: .output) == "Data Source Item 3")
+        #expect(nullDevice.dataSourceName(dataSourceID: 4, scope: .output) == nil)
 
-        #expect(device.dataSourceName(dataSourceID: 0, scope: .input) == "Data Source Item 0")
-        #expect(device.dataSourceName(dataSourceID: 1, scope: .input) == "Data Source Item 1")
-        #expect(device.dataSourceName(dataSourceID: 2, scope: .input) == "Data Source Item 2")
-        #expect(device.dataSourceName(dataSourceID: 3, scope: .input) == "Data Source Item 3")
-        #expect(device.dataSourceName(dataSourceID: 4, scope: .input) == nil)
+        #expect(nullDevice.dataSourceName(dataSourceID: 0, scope: .input) == "Data Source Item 0")
+        #expect(nullDevice.dataSourceName(dataSourceID: 1, scope: .input) == "Data Source Item 1")
+        #expect(nullDevice.dataSourceName(dataSourceID: 2, scope: .input) == "Data Source Item 2")
+        #expect(nullDevice.dataSourceName(dataSourceID: 3, scope: .input) == "Data Source Item 3")
+        #expect(nullDevice.dataSourceName(dataSourceID: 4, scope: .input) == nil)
+
+        try await tearDown()
     }
 
     @Test func clockSource() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.clockSourceID == nil)
-        #expect(device.clockSourceIDs == nil)
-        #expect(device.clockSourceName == nil)
-        #expect(device.clockSourceNames == nil)
-        #expect(device.clockSourceName(clockSourceID: 0) == nil)
-        #expect(!device.setClockSourceID(0))
+        #expect(nullDevice.clockSourceID == nil)
+        #expect(nullDevice.clockSourceIDs == nil)
+        #expect(nullDevice.clockSourceName == nil)
+        #expect(nullDevice.clockSourceNames == nil)
+        #expect(nullDevice.clockSourceName(clockSourceID: 0) == nil)
+        #expect(!nullDevice.setClockSourceID(0))
+
+        try await tearDown()
     }
 
     @Test func totalLatency() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.latency(scope: .output) == 512)
-        #expect(device.latency(scope: .input) == 512)
+        await #expect(nullDevice.latency(scope: .output) == 512)
+        await #expect(nullDevice.latency(scope: .input) == 512)
+
+        try await tearDown()
     }
 
     @Test func safetyOffset() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.safetyOffset(scope: .output) == 0)
-        #expect(device.safetyOffset(scope: .input) == 0)
+        #expect(nullDevice.safetyOffset(scope: .output) == 0)
+        #expect(nullDevice.safetyOffset(scope: .input) == 0)
+
+        try await tearDown()
     }
 
     @Test func bufferFrameSize() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
         // The IO buffer is generally 512 by default. Also the case
         // for the NullAudio.driver
-        #expect(device.bufferFrameSize(scope: .output) == 512)
-        #expect(device.bufferFrameSize(scope: .input) == 512)
+        #expect(nullDevice.bufferFrameSize(scope: .output) == 512)
+        #expect(nullDevice.bufferFrameSize(scope: .input) == 512)
+
+        try await tearDown()
     }
 
     @Test func hogMode() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.hogModePID == -1)
-        #expect(device.setHogMode())
-        #expect(device.hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier))
-        #expect(device.unsetHogMode())
-        #expect(device.hogModePID == -1)
+        #expect(nullDevice.hogModePID == -1)
+        #expect(nullDevice.setHogMode())
+        #expect(nullDevice.hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier))
+        #expect(nullDevice.unsetHogMode())
+        #expect(nullDevice.hogModePID == -1)
+
+        try await tearDown()
     }
 
     @Test func streams() async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        #expect(device.streams(scope: .output)?.count == 1)
-        #expect(device.streams(scope: .input)?.count == 1)
+        await #expect(nullDevice.streams(scope: .output)?.count == 1)
+        await #expect(nullDevice.streams(scope: .input)?.count == 1)
+
+        try await tearDown()
     }
 }

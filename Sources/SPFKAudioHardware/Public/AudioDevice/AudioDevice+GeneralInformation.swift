@@ -1,9 +1,7 @@
-//
-//  AudioDevice+GeneralInformation.swift
-//
-//  Created by Ruben Nine on 20/3/21.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
+import AsyncAlgorithms
 import CoreAudio
 import Foundation
 
@@ -142,15 +140,17 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* An array of `AudioDevice` objects.
     var relatedDevices: [AudioDevice]? {
-        guard let address = validAddress(selector: kAudioDevicePropertyRelatedDevices) else { return nil }
+        get async {
+            guard let address = validAddress(selector: kAudioDevicePropertyRelatedDevices) else { return nil }
 
-        var relatedDevices = [AudioDeviceID]()
-        let status = getPropertyDataArray(address, value: &relatedDevices, andDefaultValue: AudioDeviceID())
+            var relatedDevices = [AudioDeviceID]()
+            let status = getPropertyDataArray(address, value: &relatedDevices, andDefaultValue: AudioDeviceID())
 
-        if noErr == status {
-            return relatedDevices.compactMap { AudioDevice.lookup(by: $0) }
+            if noErr == status {
+                return await relatedDevices.async.compactMap { await AudioDevice.lookup(by: $0) }.toArray()
+            }
+
+            return nil
         }
-
-        return nil
     }
 }

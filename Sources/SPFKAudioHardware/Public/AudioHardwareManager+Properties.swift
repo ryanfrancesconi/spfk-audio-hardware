@@ -13,7 +13,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioObjectID` values.
     public var allDeviceIDs: [AudioObjectID] {
-        hardware.allDeviceIDs
+        get async { await hardware.cache.allDeviceIDs }
     }
 
     /// All the audio devices currently available.
@@ -22,7 +22,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allDevices: [AudioDevice] {
-        hardware.allDevices
+        get async { await hardware.cache.allDevices }
     }
 
     /// All the devices that have at least one input.
@@ -31,7 +31,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allInputDevices: [AudioDevice] {
-        hardware.allInputDevices
+        get async { await hardware.cache.allInputDevices }
     }
 
     /// All the devices that have at least one output.
@@ -40,7 +40,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allOutputDevices: [AudioDevice] {
-        hardware.allOutputDevices
+        get async { await hardware.cache.allOutputDevices }
     }
 
     /// All the devices that support input and output.
@@ -49,43 +49,45 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allIODevices: [AudioDevice] {
-        hardware.allIODevices
+        get async { await hardware.cache.allIODevices }
     }
 
     /// All the devices that are real devices — not aggregate ones.
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allNonAggregateDevices: [AudioDevice] {
-        hardware.allNonAggregateDevices
+        get async { await  hardware.cache.allNonAggregateDevices }
     }
 
     /// All the devices that are aggregate devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allAggregateDevices: [AudioDevice] {
-        hardware.allAggregateDevices
+        get async { await hardware.cache.allAggregateDevices }
     }
+}
 
+extension AudioHardwareManager {
     // MARK: - Default Devices
 
     /// The default input device.
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
     public var defaultInputDevice: AudioDevice? {
-        hardware.defaultInputDevice
+        get async { await hardware.cache.defaultInputDevice }
     }
 
     /// The default output device.
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
     public var defaultOutputDevice: AudioDevice? {
-        hardware.defaultOutputDevice
+        get async { await hardware.cache.defaultOutputDevice }
     }
 
     /// The default system output device.
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
     public var defaultSystemOutputDevice: AudioDevice? {
-        hardware.defaultSystemOutputDevice
+        get async { await hardware.cache.defaultSystemOutputDevice }
     }
 }

@@ -64,7 +64,7 @@ public enum AudioDeviceNotification: Hashable {
     case deviceIOStoppedAbnormally
 }
 
-extension AudioDeviceNotification {
+extension AudioDeviceNotification: PropertyAddressNotification {
     public init?(propertyAddress: AudioObjectPropertyAddress) {
         switch propertyAddress.mSelector {
         case kAudioDevicePropertyNominalSampleRate:

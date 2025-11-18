@@ -6,14 +6,12 @@ import Foundation
 import Testing
 
 @Suite(.serialized)
-final class AudioDeviceNotificationTests: SCATestCase {
-    lazy var nullDevice = try? getNullDevice()
-
+final class AudioDeviceNotificationTests: NullDeviceTestCase {
     @Test(arguments: [48000])
     func sampleRateDidChangeNotification(targetSampleRate: Float64) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
-        let nominalSampleRates = try #require(device.nominalSampleRates)
+        let nominalSampleRates = try #require(nullDevice.nominalSampleRates)
 
         #expect(nominalSampleRates.contains(targetSampleRate))
 
@@ -23,7 +21,7 @@ final class AudioDeviceNotificationTests: SCATestCase {
             return device.nominalSampleRate
         }
 
-        device.setNominalSampleRate(targetSampleRate)
+        nullDevice.setNominalSampleRate(targetSampleRate)
 
         let result = await task.result
 
@@ -40,13 +38,13 @@ final class AudioDeviceNotificationTests: SCATestCase {
 
     @Test(arguments: [Scope.output, Scope.input])
     func volumeDidChangeNotification(scopeToTest: Scope) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
         let task = Task<(channel: UInt32, scope: Scope), Error> {
             try await waitForDeviceOption(named: .deviceVolumeDidChange)
         }
 
-        device.setVirtualMainVolume(1, scope: scopeToTest)
+        nullDevice.setVirtualMainVolume(1, scope: scopeToTest)
 
         let result = await task.result
 
@@ -58,17 +56,19 @@ final class AudioDeviceNotificationTests: SCATestCase {
         case let .failure(error):
             throw error
         }
+
+        try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
     func muteDidChangeNotification(scopeToTest: Scope) async throws {
-        let device = try getNullDevice()
+        let nullDevice = try #require(nullDevice)
 
         let task = Task<(channel: UInt32, scope: Scope), Error> {
             try await waitForDeviceOption(named: .deviceMuteDidChange)
         }
 
-        device.setMute(true, channel: 0, scope: scopeToTest)
+        nullDevice.setMute(true, channel: 0, scope: scopeToTest)
 
         let result = await task.result
 
@@ -81,7 +81,9 @@ final class AudioDeviceNotificationTests: SCATestCase {
             throw error
         }
 
-        #expect(device.isMuted(channel: 0, scope: scopeToTest) == true)
+        #expect(nullDevice.isMuted(channel: 0, scope: scopeToTest) == true)
+
+        try await tearDown()
     }
 }
 

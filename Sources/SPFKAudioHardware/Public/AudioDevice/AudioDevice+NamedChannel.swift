@@ -1,3 +1,6 @@
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+
 import Foundation
 
 extension AudioDevice {
@@ -26,10 +29,10 @@ extension AudioDevice {
     }
 
     /// - Returns: A collection of named channels
-    public func namedChannels(scope: Scope) -> [NamedChannel] {
+    public func namedChannels(scope: Scope) async -> [NamedChannel] {
         var out = [NamedChannel]()
 
-        let channelCount = channels(scope: scope)
+        let channelCount = await channels(scope: scope)
 
         guard channelCount > 0 else { return [] }
 
@@ -44,6 +47,7 @@ extension AudioDevice {
 
             out.append(deviceChannel)
         }
+
         return out
     }
 }

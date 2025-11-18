@@ -1,22 +1,15 @@
-//
-//  AudioStream.swift
-//
-//  Created by Ruben Nine on 13/04/16.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
-import os.log
+import SPFKAudioHardwareC
+import SPFKBase
 
 /// This class represents an audio stream that belongs to an audio object managed by
 /// [Core Audio](https://developer.apple.com/documentation/coreaudio).
-public final class AudioStream: AudioObject {
+public final class AudioStream: AudioObject, AudioPropertyListenerModel {
     // MARK: - Public Properties
-
-    /// This audio stream's identifier.
-    ///
-    /// - Returns: An `AudioObjectID`.
-    public var id: AudioObjectID { objectID }
 
     /// Returns whether this audio stream is enabled and doing I/O.
     ///
@@ -107,7 +100,7 @@ public final class AudioStream: AudioObject {
             var asbd = newValue
 
             if noErr != setStreamPropertyData(kAudioStreamPropertyPhysicalFormat, andValue: &asbd) {
-                os_log("Error setting physicalFormat to %@.", log: .default, type: .debug, String(describing: newValue))
+                Log.debug("Error setting physicalFormat to", newValue)
             }
         }
     }
@@ -129,7 +122,7 @@ public final class AudioStream: AudioObject {
             var asbd = newValue
 
             if noErr != setStreamPropertyData(kAudioStreamPropertyVirtualFormat, andValue: &asbd) {
-                os_log("Error setting virtualFormat to %@.", log: .default, type: .debug, String(describing: newValue))
+                Log.debug("Error setting virtualFormat to", newValue)
             }
         }
     }
@@ -148,7 +141,7 @@ public final class AudioStream: AudioObject {
             mElement: Element.main.propertyElement
         )
 
-        guard AudioObjectHasProperty(id, &address) else { return nil }
+        guard AudioObjectHasProperty(objectID, &address) else { return nil }
         var asrd = [AudioStreamRangedDescription]()
         guard noErr == getPropertyDataArray(address, value: &asrd, andDefaultValue: AudioStreamRangedDescription()) else {
             return nil
@@ -171,7 +164,7 @@ public final class AudioStream: AudioObject {
             mElement: Element.main.propertyElement
         )
 
-        guard AudioObjectHasProperty(id, &address) else { return nil }
+        guard AudioObjectHasProperty(objectID, &address) else { return nil }
         var asrd = [AudioStreamRangedDescription]()
         guard noErr == getPropertyDataArray(address, value: &asrd, andDefaultValue: AudioStreamRangedDescription()) else {
             return nil
@@ -182,23 +175,41 @@ public final class AudioStream: AudioObject {
 
     // MARK: - Private Properties
 
-    private var isRegisteredForNotifications = false
+    /// event broker to avoid AudioDevice needing to subclass NSObject
+    private(set) lazy var listener: AudioPropertyListener? = {
+        var listener = AudioPropertyListener(
+            notificationType: AudioStreamNotification.self,
+            objectID: objectID
+        ) { [weak self] notification in
+            guard let self else { return }
+
+            NotificationCenter.default.post(
+                name: notification.name,
+                object: self,
+            )
+        }
+
+        return listener
+    }()
 
     // MARK: - Lifecycle
 
     /// Initializes an `AudioStream` by providing a valid `AudioObjectID` referencing an existing audio stream.
-    private init?(id: AudioObjectID) {
+    private init(id: AudioObjectID) async throws {
         super.init(objectID: id)
 
-        guard owningObject != nil else { return nil }
+        guard owningObject != nil else {
+            throw NSError(description: "owningObject can't be nil")
+        }
 
-        AudioObjectPool.shared.set(self, for: objectID)
-        registerForNotifications()
+        await startListening()
+
+//        AudioObjectPool.shared.set(self, for: objectID)
+//        startListening()
     }
 
     deinit {
-        AudioObjectPool.shared.remove(objectID)
-        unregisterForNotifications()
+//        AudioObjectPool.shared.remove(objectID)
     }
 }
 
@@ -208,11 +219,16 @@ public extension AudioStream {
     /// Returns an `AudioStream` by providing a valid audio stream identifier.
     ///
     /// - Note: If identifier is not valid, `nil` will be returned.
-    static func lookup(by id: AudioObjectID) -> AudioStream? {
-        var instance: AudioStream? = AudioObjectPool.shared.get(id)
+    static func lookup(by id: AudioObjectID) async -> AudioStream? {
+        var instance: AudioStream? = await AudioObjectPool.shared.get(id)
 
         if instance == nil {
-            instance = AudioStream(id: id)
+            do {
+                instance = try await AudioStream(id: id)
+            } catch {
+                Log.error(error)
+                return nil
+            }
         }
 
         return instance
@@ -291,7 +307,7 @@ private extension AudioStream {
             mElement: Element.main.propertyElement
         )
 
-        guard AudioObjectHasProperty(id, &address) else { return nil }
+        guard AudioObjectHasProperty(objectID, &address) else { return nil }
 
         return getPropertyData(address, andValue: &value)
     }
@@ -315,79 +331,15 @@ private extension AudioStream {
             mElement: Element.main.propertyElement
         )
 
-        guard AudioObjectHasProperty(id, &address) else { return nil }
+        guard AudioObjectHasProperty(objectID, &address) else { return nil }
 
         return setPropertyData(address, andValue: &value)
     }
-
-    // MARK: - Notification Book-keeping
-
-    func registerForNotifications() {
-        if isRegisteredForNotifications {
-            unregisterForNotifications()
-        }
-
-        var address = AudioObjectPropertyAddress(
-            mSelector: kAudioObjectPropertySelectorWildcard,
-            mScope: kAudioObjectPropertyScopeWildcard,
-            mElement: kAudioObjectPropertyElementWildcard
-        )
-
-        if noErr != AudioObjectAddPropertyListener(id, &address, propertyListener, nil) {
-            os_log("Unable to add property listener for %@.", description)
-        } else {
-            isRegisteredForNotifications = true
-        }
-    }
-
-    func unregisterForNotifications() {
-        guard isRegisteredForNotifications else { return }
-
-        var address = AudioObjectPropertyAddress(
-            mSelector: kAudioObjectPropertySelectorWildcard,
-            mScope: kAudioObjectPropertyScopeWildcard,
-            mElement: kAudioObjectPropertyElementWildcard
-        )
-
-        if noErr != AudioObjectRemovePropertyListener(id, &address, propertyListener, nil) {
-            os_log("Unable to add property listener for %@.", description)
-        } else {
-            isRegisteredForNotifications = true
-        }
-    }
 }
-
-// MARK: - CustomStringConvertible Conformance
 
 extension AudioStream: CustomStringConvertible {
     /// Returns a `String` representation of self.
     public var description: String {
-        return "\(name ?? "Stream \(id)") (\(id))"
+        return "\(name ?? "Stream \(objectID)") (\(objectID))"
     }
-}
-
-// MARK: - C Convention Functions
-
-private func propertyListener(objectID: UInt32,
-                              numInAddresses: UInt32,
-                              inAddresses: UnsafePointer<AudioObjectPropertyAddress>,
-                              clientData: Optional<UnsafeMutableRawPointer>) -> Int32 {
-    // Try to get audio object from the pool.
-    guard let obj: AudioStream = AudioObjectPool.shared.get(objectID) else { return kAudioHardwareBadObjectError }
-
-    let address = inAddresses.pointee
-    let notificationCenter = NotificationCenter.default
-
-    switch address.mSelector {
-    case kAudioStreamPropertyIsActive:
-        Task { @MainActor in notificationCenter.post(name: .streamIsActiveDidChange, object: obj) }
-
-    case kAudioStreamPropertyPhysicalFormat:
-        Task { @MainActor in notificationCenter.post(name: .streamPhysicalFormatDidChange, object: obj) }
-
-    default:
-        break
-    }
-
-    return kAudioHardwareNoError
 }

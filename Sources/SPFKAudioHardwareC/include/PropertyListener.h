@@ -14,6 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL isListening;
 @property (nonatomic, weak) id<PropertyListenerDelegate> delegate;
 
+typedef enum {
+    AlreadyListening= 0,
+    AlreadyStopped  = 2001,
+} PropertyListenerErrorCode;
+
 - (nonnull id)initWithObjectId:(AudioObjectID)inObjectID;
 - (OSStatus)start;
 - (OSStatus)stop;

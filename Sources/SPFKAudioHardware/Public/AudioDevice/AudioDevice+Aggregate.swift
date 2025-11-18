@@ -1,8 +1,5 @@
-//
-//  AudioDevice+Aggregate.swift
-//
-//  Created by Ryan Francesconi on 2/24/21.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -12,25 +9,31 @@ import Foundation
 public extension AudioDevice {
     /// - Returns: `true` if this device is an aggregate one, `false` otherwise.
     var isAggregateDevice: Bool {
-        guard let ownedAggregateDevices else { return false }
-        return !ownedAggregateDevices.isEmpty
+        get async {
+            guard let ownedAggregateDevices = await ownedAggregateDevices else { return false }
+            return !ownedAggregateDevices.isEmpty
+        }
     }
 
     /// All the subdevices of this aggregate device
     ///
     /// - Returns: An array of `AudioDevice` objects.
     var ownedAggregateDevices: [AudioDevice]? {
-        guard let ownedObjectIDs else { return nil }
-        return ownedObjectIDs.compactMap { AudioDevice.lookup(by: $0) }
+        get async {
+            guard let ownedObjectIDs else { return nil }
+            return await ownedObjectIDs.async.compactMap { await AudioDevice.lookup(by: $0) }.toArray()
+        }
     }
 
     /// All the subdevices of this aggregate device that support input
     ///
     /// - Returns: An array of `AudioDevice` objects.
     var ownedAggregateInputDevices: [AudioDevice]? {
-        ownedAggregateDevices?.filter {
-            guard let channels = $0.layoutChannels(scope: .input) else { return false }
-            return channels > 0
+        get async {
+            await ownedAggregateDevices?.filter {
+                guard let channels = $0.layoutChannels(scope: .input) else { return false }
+                return channels > 0
+            }
         }
     }
 
@@ -38,9 +41,11 @@ public extension AudioDevice {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     var ownedAggregateOutputDevices: [AudioDevice]? {
-        ownedAggregateDevices?.filter {
-            guard let channels = $0.layoutChannels(scope: .output) else { return false }
-            return channels > 0
+        get async {
+            await ownedAggregateDevices?.filter {
+                guard let channels = $0.layoutChannels(scope: .output) else { return false }
+                return channels > 0
+            }
         }
     }
 }

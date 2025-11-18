@@ -1,8 +1,5 @@
-//
-//  AudioObject.swift
-//
-//  Created by Ruben Nine on 13/04/16.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -13,10 +10,10 @@ import Foundation
 ///
 /// For more information, please refer to [Core Audio](https://developer.apple.com/documentation/coreaudio)'s
 /// documentation or source code.
-public class AudioObject {
+public class AudioObject: AudioObjectModel {
     // MARK: - Internal Properties
 
-    let objectID: AudioObjectID
+    public let objectID: AudioObjectID
 
     // MARK: - Public Properties
 
@@ -49,11 +46,13 @@ public class AudioObject {
     /// The audio device that owns this audio object.
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
-    public lazy var owningDevice: AudioDevice? = {
-        guard let object = owningObject, object.classID == kAudioDeviceClassID else { return nil }
+    public var owningDevice: AudioDevice? {
+        get async {
+            guard let object = owningObject, object.classID == kAudioDeviceClassID else { return nil }
 
-        return AudioDevice.lookup(by: object.objectID)
-    }()
+            return await AudioDevice.lookup(by: object.objectID)
+        }
+    }
 
     /// The audio object's name as reported by Core Audio.
     ///
@@ -67,25 +66,9 @@ public class AudioObject {
         return name as String
     }
 
-    // MARK: - Lifecycle
+    // MARK: - Init
 
     init(objectID: AudioObjectID) {
         self.objectID = objectID
     }
-}
-
-// MARK: - Hashable Conformance
-
-extension AudioObject: Hashable {
-    /// The hash value.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(objectID)
-    }
-}
-
-// MARK: - Equatable Conformance
-
-/// :nodoc:
-public func == (lhs: AudioObject, rhs: AudioObject) -> Bool {
-    return lhs.hashValue == rhs.hashValue
 }

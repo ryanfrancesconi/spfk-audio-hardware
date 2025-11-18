@@ -2,11 +2,12 @@ import AudioToolbox
 @testable import SPFKAudioHardware
 import Testing
 
-class AudioStreamTests: SCATestCase {
-    @Test func testProperties() throws {
-        let device = try getNullDevice()
-        let outputStreams = try #require(device.streams(scope: .output))
-        let inputStreams = try #require(device.streams(scope: .input))
+class AudioStreamTests: NullDeviceTestCase {
+    @Test func testProperties() async throws {
+        let nullDevice = try #require(nullDevice)
+        
+        let outputStreams = try #require(await nullDevice.streams(scope: .output))
+        let inputStreams = try #require(await nullDevice.streams(scope: .input))
 
         #expect(outputStreams.count == 1)
         #expect(inputStreams.count == 1)
@@ -52,5 +53,7 @@ class AudioStreamTests: SCATestCase {
 
         inputStream.physicalFormat = nil
         #expect(inputStream.physicalFormat != nil)
+        
+        try await tearDown()
     }
 }

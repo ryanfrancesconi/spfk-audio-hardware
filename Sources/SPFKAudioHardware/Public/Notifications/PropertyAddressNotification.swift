@@ -1,12 +1,11 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
+import CoreAudio.AudioHardware
 import Foundation
 
-public enum AudioStreamNotification: Hashable {
-    /// Called whenever the audio stream `isActive` flag changes.
-    case streamIsActiveDidChange
+public protocol PropertyAddressNotification {
+    var name: Notification.Name { get }
 
-    /// Called whenever the audio stream physical format changes.
-    case streamPhysicalFormatDidChange
+    init?(propertyAddress: AudioObjectPropertyAddress)
 }

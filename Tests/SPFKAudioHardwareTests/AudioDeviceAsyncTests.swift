@@ -6,12 +6,14 @@ import Foundation
 import Testing
 
 @Suite(.serialized)
-final class AudioDeviceAsyncTests: SCATestCase {
+final class AudioDeviceAsyncTests: NullDeviceTestCase {
     @Test(arguments: [48000])
     func sampleRateDidChangeNotification(targetSampleRate: Float64) async throws {
-        let device = try getNullDevice()
-        try await device.update(sampleRate: targetSampleRate)
+        let nullDevice = try #require(nullDevice)
 
-        #expect(targetSampleRate == device.nominalSampleRate)
+        try await nullDevice.update(sampleRate: targetSampleRate)
+        #expect(targetSampleRate == nullDevice.nominalSampleRate)
+        
+        try await tearDown()
     }
 }

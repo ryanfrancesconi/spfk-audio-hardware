@@ -3,13 +3,13 @@
 
 import CoreAudio
 import Foundation
-import os.log
 import SPFKAudioHardwareC
+import SPFKBase
 
 /// This class represents an audio device managed by [Core Audio](https://developer.apple.com/documentation/coreaudio).
 ///
 /// Devices may be physical or virtual. For a comprehensive list of supported types, please refer to `TransportType`.
-public final class AudioDevice: AudioObject {
+public final class AudioDevice: AudioObject, AudioPropertyListenerModel {
     // MARK: - Static Private Properties
 
     private static let deviceClassIDs: Set<AudioClassID> = [
@@ -24,29 +24,22 @@ public final class AudioDevice: AudioObject {
 
     private var cachedDeviceName: String?
 
-    private var isRegisteredForNotifications: Bool { cListener.isListening }
-
-    private lazy var cListener: PropertyListener = {
-        let cListener = PropertyListener(objectId: objectID)
-        cListener.delegate = listener
-        return cListener
-    }()
-
     /// event broker to avoid AudioDevice needing to subclass NSObject
-    private lazy var listener: AudioDeviceListener = {
-        var listener = AudioDeviceListener { [weak self] audioDeviceNotification in
+    private(set) lazy var listener: AudioPropertyListener? = {
+        var listener = AudioPropertyListener(
+            notificationType: AudioDeviceNotification.self,
+            objectID: objectID
+        ) { [weak self] notification in
             guard let self else { return }
 
-            Task { @MainActor in
-                // userInfo convention:
-                // [deviceVolumeDidChange: deviceVolumeDidChange(channel: AudioObjectPropertyElement, scope: Scope)]
+            // userInfo convention:
+            // [deviceVolumeDidChange: deviceVolumeDidChange(channel: AudioObjectPropertyElement, scope: Scope)]
 
-                NotificationCenter.default.post(
-                    name: audioDeviceNotification.name,
-                    object: self, // This device
-                    userInfo: [audioDeviceNotification.name: audioDeviceNotification]
-                )
-            }
+            NotificationCenter.default.post(
+                name: notification.name,
+                object: self, // This device
+                userInfo: [notification.name: notification]
+            )
         }
 
         return listener
@@ -57,20 +50,25 @@ public final class AudioDevice: AudioObject {
     /// Initializes an `AudioDevice` by providing a valid audio device identifier.
     ///
     /// - Parameter id: An audio device identifier.
-    init?(id: AudioObjectID) {
+    init(id: AudioObjectID) async throws {
         super.init(objectID: id)
 
-        guard let classID, Self.deviceClassIDs.contains(classID) else { return nil }
+        guard let classID else {
+            throw NSError(description: "classID is nil")
+        }
 
-        AudioObjectPool.shared.set(self, for: objectID)
-        registerForNotifications()
+        guard Self.deviceClassIDs.contains(classID) else {
+            throw NSError(description: "Unknown classID (\(classID))")
+        }
 
+        // AudioObjectPool.shared.set(self, for: objectID)
         cachedDeviceName = super.name
+
+        await startListening()
     }
 
     deinit {
-        unregisterForNotifications()
-        AudioObjectPool.shared.remove(objectID)
+        // AudioObjectPool.shared.remove(objectID)
     }
 
     // MARK: - AudioObject Overrides
@@ -79,30 +77,6 @@ public final class AudioDevice: AudioObject {
     ///
     /// - Returns: An audio device's name.
     override public var name: String { super.name ?? cachedDeviceName ?? "<Unknown Device Name>" }
-}
-
-extension AudioDevice {
-    // MARK: - Notification Book-keeping
-
-    func registerForNotifications() {
-        print("registerForNotifications", name)
-        let status = cListener.start()
-
-        guard noErr == status else {
-            print("failed to start listener with error", status)
-            return
-        }
-    }
-
-    func unregisterForNotifications() {
-        print("unregisterForNotifications", name)
-        let status = cListener.stop()
-
-        guard noErr == status else {
-            print("failed to stop listener with error", status)
-            return
-        }
-    }
 }
 
 extension AudioDevice: CustomStringConvertible {

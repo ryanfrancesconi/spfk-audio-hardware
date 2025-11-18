@@ -3,28 +3,15 @@
 
 import CoreAudio.AudioHardware
 import Foundation
+import SPFKBase
 
 extension AudioDevice {
-    public static func defaultDevice(of deviceType: DefaultSelectorType) -> AudioDevice? {
+    public static func defaultDevice(of deviceType: DefaultSelectorType) async -> AudioDevice? {
         let address = AudioDevice.address(selector: deviceType.propertySelector)
         var deviceID = AudioDeviceID()
         let status = AudioDevice.getPropertyData(AudioObjectID(kAudioObjectSystemObject), address: address, andValue: &deviceID)
 
-        return noErr == status ? AudioDevice.lookup(by: deviceID) : nil
-    }
-
-    /// Returns an `AudioDevice` by providing a valid audio device identifier.
-    ///
-    /// - Parameter id: An audio device identifier.
-    /// - Note: If identifier is not valid, `nil` will be returned.
-    public static func lookup(by id: AudioObjectID) -> AudioDevice? {
-        var instance: AudioDevice? = AudioObjectPool.shared.get(id)
-
-        if instance == nil {
-            instance = AudioDevice(id: id)
-        }
-
-        return instance
+        return await noErr == status ? AudioDevice.lookup(by: deviceID) : nil
     }
 
     /// Returns an `AudioDevice` by providing a valid audio device unique identifier.
@@ -32,7 +19,7 @@ extension AudioDevice {
     /// - Parameter uid: An audio device unique identifier.
     ///
     /// - Note: If unique identifier is not valid, `nil` will be returned.
-    public static func lookup(by uid: String) -> AudioDevice? {
+    public static func lookup(by uid: String) async -> AudioDevice? {
         let address = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDeviceForUID,
             mScope: kAudioObjectPropertyScopeGlobal,
@@ -63,6 +50,25 @@ extension AudioDevice {
             return nil
         }
 
-        return lookup(by: deviceID)
+        return await lookup(by: deviceID)
+    }
+
+    /// Returns an `AudioDevice` by providing a valid audio device identifier.
+    ///
+    /// - Parameter id: An audio device identifier.
+    /// - Note: If identifier is not valid, `nil` will be returned.
+    public static func lookup(by id: AudioObjectID) async -> AudioDevice? {
+        var instance: AudioDevice? = await AudioObjectPool.shared.get(id)
+
+        if instance == nil {
+            do {
+                instance = try await AudioDevice(id: id)
+            } catch {
+                Log.error(error)
+                return nil
+            }
+        }
+
+        return instance
     }
 }

@@ -1,8 +1,9 @@
-// Copyright SimplyCoreAudio. All Rights Reserved. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
-import os.log
+import SPFKBase
 
 // MARK: - ↹ Latency Functions
 
@@ -20,10 +21,10 @@ public extension AudioDevice {
     ///
     /// - Returns: A `UInt32` value with the total frames of latency in the device.
     ///
-    func latency(scope: Scope) -> UInt32 {
+    func latency(scope: Scope) async -> UInt32 {
         var sum: UInt32 = 0
 
-        if let allStreams = streams(scope: scope) {
+        if let allStreams = await streams(scope: scope) {
             // sum all of them or just take the first stream?
             // it only ever seems to return 1 stream
             let frames = allStreams.compactMap { $0.latency }
@@ -56,13 +57,13 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* The total summed latency in seconds based on the device's
     /// current sample rate or nil if the sample rate wasn't determined.
-    func presentationLatency(scope: Scope) -> TimeInterval? {
+    func presentationLatency(scope: Scope) async -> TimeInterval? {
         guard let sampleRate = actualSampleRate else {
-            os_log("Unable to get actualSampleRate from device")
+            Log.debug("Unable to get actualSampleRate from device")
             return nil
         }
 
-        let totalFrames = latency(scope: scope)
+        let totalFrames = await latency(scope: scope)
         return TimeInterval(totalFrames) / sampleRate
     }
 }

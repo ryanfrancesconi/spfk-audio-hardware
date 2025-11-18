@@ -1,48 +1,25 @@
-//
-//  AudioObjectPool.swift
-//
-//  Created by Ruben Nine on 20/09/2019.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
 
-// TODO: convert to actor
+actor AudioObjectPool {
+    /// Singleton AudioObjectPool
+    internal static let shared = AudioObjectPool()
 
-class AudioObjectPool {
-    // MARK: - Private Properties
-
-    private var pool = [AudioObjectID: AudioObject]()
-    private lazy var queueLabel = (Bundle.main.bundleIdentifier ?? "SPFKAudioHardware").appending(".audioObjectPool")
-    private lazy var queue = DispatchQueue(label: queueLabel, qos: .default, attributes: .concurrent)
-
-    // MARK: - Static Properties
-
-    static let shared = AudioObjectPool()
-
-    // MARK: - Lifecycle
-
+    private var pool = [AudioObjectID: any AudioObjectModel]()
     private init() {}
-}
 
-// MARK: - Internal Functions
-
-extension AudioObjectPool {
-    func get<O: AudioObject>(_ id: AudioObjectID) -> O? {
-        queue.sync {
-            pool[id] as? O
-        }
+    func get<O: AudioObjectModel>(_ id: AudioObjectID) -> O? {
+        pool[id] as? O
     }
 
-    func set<O: AudioObject>(_ audioObject: O, for id: AudioObjectID) {
-        queue.sync(flags: .barrier) {
-            pool[id] = audioObject
-        }
+    func set<O: AudioObjectModel>(_ audioObject: O, for id: AudioObjectID) {
+        pool[id] = audioObject
     }
 
     func remove(_ id: AudioObjectID) {
-        queue.async(flags: .barrier) { [weak self] in
-            self?.pool.removeValue(forKey: id)
-        }
+        pool.removeValue(forKey: id)
     }
 }

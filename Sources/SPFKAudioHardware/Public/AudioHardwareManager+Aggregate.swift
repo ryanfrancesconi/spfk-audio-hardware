@@ -1,13 +1,9 @@
-//
-//  SimplyCoreAudio+Aggregate.swift
-//
-//
-//  Created by Ruben Nine on 4/4/21.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import Foundation
-import os.log
+import SPFKBase
 
 // MARK: - Create and Destroy Aggregate Devices
 
@@ -23,8 +19,10 @@ extension AudioHardwareManager {
         secondDevice: AudioDevice?,
         named name: String,
         uid: String
-    ) -> AudioDevice? {
-        guard let mainDeviceUID = mainDevice.uid else { return nil }
+    ) async throws -> AudioDevice {
+        guard let mainDeviceUID = mainDevice.uid else {
+            throw NSError(description: "Failed to get main device's UID")
+        }
 
         var deviceList: [[String: Any]] = [
             [kAudioSubDeviceUIDKey: mainDeviceUID],
@@ -43,14 +41,17 @@ extension AudioHardwareManager {
         ]
 
         var deviceID: AudioDeviceID = 0
-        let error = AudioHardwareCreateAggregateDevice(desc as CFDictionary, &deviceID)
+        let status = AudioHardwareCreateAggregateDevice(desc as CFDictionary, &deviceID)
 
-        guard error == noErr else {
-            os_log("Failed creating aggregate device with error: %d.", log: .default, type: .debug, error)
-            return nil
+        guard status == noErr else {
+            throw NSError(description: "Failed creating aggregate device with error: \(status.fourCharCodeToString() ?? "\(status)")")
         }
 
-        return AudioDevice.lookup(by: deviceID)
+        guard let newDevice = await AudioDevice.lookup(by: deviceID) else {
+            throw NSError(description: "Failed creating aggregate device")
+        }
+
+        return newDevice
     }
 
     /// Destroy the given audio aggregate device.

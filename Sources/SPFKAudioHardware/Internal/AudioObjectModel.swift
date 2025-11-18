@@ -1,148 +1,30 @@
-//
-//  AudioObject+Helpers.swift
-//
-//  Created by Ruben Nine on 20/09/2019.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
-import os.log
+import SPFKBase
 
-// MARK: - Class Functions
+public protocol AudioObjectModel: Hashable {
+    var objectID: AudioObjectID { get }
+}
 
-extension AudioObject {
-    class func address(selector: AudioObjectPropertySelector,
-                       scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
-                       element: AudioObjectPropertyElement = Element.main.propertyElement) -> AudioObjectPropertyAddress {
-        AudioObjectPropertyAddress(mSelector: selector, mScope: scope, mElement: element)
+extension AudioObjectModel {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.hashValue == rhs.hashValue
     }
 
-    class func getPropertyDataSize<Q>(_ objectID: AudioObjectID,
-                                      address: AudioObjectPropertyAddress,
-                                      qualifierDataSize: UInt32?,
-                                      qualifierData: inout [Q],
-                                      andSize size: inout UInt32) -> (OSStatus) {
-        var theAddress = address
-
-        return AudioObjectGetPropertyDataSize(objectID,
-                                              &theAddress,
-                                              qualifierDataSize ?? UInt32(0),
-                                              &qualifierData,
-                                              &size)
-    }
-
-    class func getPropertyDataSize<Q>(_ objectID: AudioObjectID,
-                                      address: AudioObjectPropertyAddress,
-                                      qualifierDataSize: UInt32?,
-                                      qualifierData: inout Q,
-                                      andSize size: inout UInt32) -> (OSStatus) {
-        var theAddress = address
-
-        return AudioObjectGetPropertyDataSize(objectID,
-                                              &theAddress,
-                                              qualifierDataSize ?? UInt32(0),
-                                              &qualifierData,
-                                              &size)
-    }
-
-    class func getPropertyDataSize(_ objectID: AudioObjectID,
-                                   address: AudioObjectPropertyAddress,
-                                   andSize size: inout UInt32) -> (OSStatus) {
-        var nilValue: ExpressibleByNilLiteral?
-
-        return getPropertyDataSize(objectID,
-                                   address: address,
-                                   qualifierDataSize: nil,
-                                   qualifierData: &nilValue,
-                                   andSize: &size)
-    }
-
-    class func getPropertyData<T>(_ objectID: AudioObjectID,
-                                  address: AudioObjectPropertyAddress,
-                                  andValue value: inout T) -> OSStatus {
-        var theAddress = address
-        var size = UInt32(MemoryLayout<T>.size)
-
-        return AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &value)
-    }
-
-    class func getPropertyDataArray<T, Q>(_ objectID: AudioObjectID,
-                                          address: AudioObjectPropertyAddress,
-                                          qualifierDataSize: UInt32?,
-                                          qualifierData: inout Q,
-                                          value: inout [T],
-                                          andDefaultValue defaultValue: T) -> OSStatus {
-        var size = UInt32(0)
-
-        let sizeStatus = getPropertyDataSize(objectID,
-                                             address: address,
-                                             qualifierDataSize: qualifierDataSize,
-                                             qualifierData: &qualifierData,
-                                             andSize: &size)
-
-        if noErr == sizeStatus {
-            value = [T](repeating: defaultValue, count: Int(size) / MemoryLayout<T>.size)
-        } else {
-            return sizeStatus
-        }
-
-        var theAddress = address
-
-        return AudioObjectGetPropertyData(objectID,
-                                          &theAddress,
-                                          qualifierDataSize ?? UInt32(0),
-                                          &qualifierData,
-                                          &size,
-                                          &value)
-    }
-
-    class func getPropertyDataArray<T, Q>(_ objectID: AudioObjectID,
-                                          address: AudioObjectPropertyAddress,
-                                          qualifierDataSize: UInt32?,
-                                          qualifierData: inout [Q],
-                                          value: inout [T],
-                                          andDefaultValue defaultValue: T) -> OSStatus {
-        var size = UInt32(0)
-        let sizeStatus = getPropertyDataSize(objectID,
-                                             address: address,
-                                             qualifierDataSize: qualifierDataSize,
-                                             qualifierData: &qualifierData,
-                                             andSize: &size)
-
-        if noErr == sizeStatus {
-            value = [T](repeating: defaultValue, count: Int(size) / MemoryLayout<T>.size)
-        } else {
-            return sizeStatus
-        }
-
-        var theAddress = address
-
-        return AudioObjectGetPropertyData(objectID,
-                                          &theAddress,
-                                          qualifierDataSize ?? UInt32(0),
-                                          &qualifierData,
-                                          &size,
-                                          &value)
-    }
-
-    class func getPropertyDataArray<T>(_ objectID: AudioObjectID,
-                                       address: AudioObjectPropertyAddress,
-                                       value: inout [T],
-                                       andDefaultValue defaultValue: T) -> OSStatus {
-        var nilValue: ExpressibleByNilLiteral?
-
-        return getPropertyDataArray(objectID,
-                                    address: address,
-                                    qualifierDataSize: nil,
-                                    qualifierData: &nilValue,
-                                    value: &value,
-                                    andDefaultValue: defaultValue)
+    /// The hash value.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(objectID)
     }
 }
 
+
+
 // MARK: - Instance Functions
 
-extension AudioObject {
+extension AudioObjectModel {
     func getPropertyDataSize<Q>(_ objectID: AudioObjectID,
                                 address: AudioObjectPropertyAddress,
                                 qualifierDataSize: UInt32?,
@@ -309,10 +191,7 @@ extension AudioObject {
         case noErr:
             return value
         default:
-            os_log("Unable to get property with address (%@). Status: %@",
-                   log: .default,
-                   type: .debug,
-                   String(describing: address), status)
+            Log.error("Unable to get property with address (\(address)). Status: \(status)")
             return nil
         }
     }
@@ -350,9 +229,11 @@ extension AudioObject {
         if let unwrappedValue = value as? Bool {
             var newValue: UInt32 = unwrappedValue == true ? 1 : 0
             status = setPropertyData(address, andValue: &newValue)
+
         } else if let unwrappedValue = value as? String {
             var newValue: CFString = unwrappedValue as CFString
             status = setPropertyData(address, andValue: &newValue)
+
         } else {
             var newValue = value
             status = setPropertyData(address, andValue: &newValue)

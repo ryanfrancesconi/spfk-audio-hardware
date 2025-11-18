@@ -1,8 +1,5 @@
-//
-//  AudioDevice+IOLayout.swift
-//
-//  Created by Ruben Nine on 20/3/21.
-//
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -14,14 +11,24 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` when the device is input only, `false` otherwise.
     var isInputOnlyDevice: Bool {
-        return channels(scope: .output) == 0 && channels(scope: .input) > 0
+        get async {
+            let output = await channels(scope: .output) > 0
+            let input = await channels(scope: .input) > 0
+
+            return !output && input
+        }
     }
 
     /// Whether the device has only outputs but no inputs.
     ///
     /// - Returns: `true` when the device is output only, `false` otherwise.
     var isOutputOnlyDevice: Bool {
-        return channels(scope: .input) == 0 && channels(scope: .output) > 0
+        get async {
+            let output = await channels(scope: .output) > 0
+            let input = await channels(scope: .input) > 0
+
+            return output && !input
+        }
     }
 
     /// The number of layout channels for a given scope.
@@ -44,8 +51,8 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: A `UInt32` with the number of channels.
-    func channels(scope: Scope) -> UInt32 {
-        guard let streams = streams(scope: scope) else { return 0 }
+    func channels(scope: Scope) async -> UInt32 {
+        guard let streams = await streams(scope: scope) else { return 0 }
 
         return streams.map { $0.physicalFormat?.mChannelsPerFrame ?? 0 }.reduce(0, +)
     }

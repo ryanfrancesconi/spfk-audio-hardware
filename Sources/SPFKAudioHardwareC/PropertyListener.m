@@ -32,8 +32,8 @@ OSStatus devicePropertyChangedListener(
 
 - (OSStatus)start {
     if (_isListening) {
-        printf("already listening\n");
-        return noErr;
+        printf("Error: already listening\n");
+        return AlreadyListening;
     }
 
     AudioObjectPropertyAddress propertyAddress = {
@@ -49,17 +49,17 @@ OSStatus devicePropertyChangedListener(
         (__bridge void *_Nullable)(self)
         );
 
-    printf("start, status %i\n", status);
+    printf("start, %i, status %i\n", _inObjectID, status);
 
     _isListening = true;
-    
+
     return status;
 }
 
 - (OSStatus)stop {
     if (!_isListening) {
-        printf("wasn't listening\n");
-        return noErr;
+        printf("Error: wasn't listening\n");
+        return AlreadyStopped;
     }
 
     AudioObjectPropertyAddress propertyAddress = {
@@ -75,7 +75,7 @@ OSStatus devicePropertyChangedListener(
         (__bridge void *_Nullable)(self)
         );
 
-    printf("stop, status %i\n", status);
+    printf("stop, %i, status %i\n", _inObjectID, status);
 
     _isListening = false;
 

@@ -3,74 +3,41 @@
 
 import CoreAudio
 import Foundation
-import os.log
 import SPFKAudioHardwareC
+import SPFKBase
 
-final class AudioHardware: NSObject {
-    // MARK: - Fileprivate Properties
+final class AudioHardware {
+    var cache: AudioDeviceCache { listener.cache }
 
-    var cachedDevices = [AudioDevice]()
-
-    // TODO: remove queue
-    fileprivate lazy var queueLabel = (Bundle.main.bundleIdentifier ?? "SPFKAudioHardware").appending(".audioHardware")
-    lazy var queue = DispatchQueue(label: queueLabel, qos: .default, attributes: .concurrent)
-
-    // MARK: - Private Properties
-
-    private lazy var cListener: PropertyListener = {
-        let cListener = PropertyListener(objectId: AudioObjectID(kAudioObjectSystemObject))
-        cListener.delegate = self
-        return cListener
-    }()
-
-    deinit {
-        cListener.delegate = nil
+    var listener = AudioHardwareListener { notification in
+        NotificationCenter.default.post(
+            name: notification.name,
+            object: notification,
+            userInfo: nil
+        )
     }
 }
 
 // MARK: - Internal Functions
 
 extension AudioHardware {
-    public var isRegisteredForNotifications: Bool {
-        cListener.isListening == true
-    }
+    func startListening() async {
+        Log.debug("start")
 
-    func enableDeviceMonitoring() {
-        registerForNotifications()
-        updateKnownDevices(adding: allDevices, andRemoving: [])
-    }
-
-    func disableDeviceMonitoring() {
-        updateKnownDevices(adding: [], andRemoving: cachedDevices)
-        unregisterForNotifications()
-    }
-
-    func updateKnownDevices(adding addedDevices: [AudioDevice], andRemoving removedDevices: [AudioDevice]) {
-        queue.async(flags: .barrier) { [weak self] in
-            self?.cachedDevices.append(contentsOf: addedDevices)
-            self?.cachedDevices.removeAll { removedDevices.contains($0) }
-        }
-    }
-}
-
-private extension AudioHardware {
-    // MARK: - Notification Book-keeping
-
-    func registerForNotifications() {
-        let status = cListener.start()
-
-        guard noErr == status else {
-            print("failed to start listener with error", status)
-            return
+        do {
+            try await listener.start()
+        } catch {
+            Log.error(error)
         }
     }
 
-    func unregisterForNotifications() {
-        let status = cListener.stop()
+    func stopListening() async {
+        Log.debug("stop")
 
-        guard noErr == status else {
-            print("failed to stop listener with error", status)
-            return
+        do {
+            try await listener.stop()
+        } catch {
+            Log.error(error)
         }
     }
 }

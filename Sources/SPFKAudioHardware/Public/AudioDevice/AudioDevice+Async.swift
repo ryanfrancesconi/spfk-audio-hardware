@@ -15,6 +15,9 @@ extension AudioDevice {
 
         let task = Task<Float64?, Error> {
             let notification: Notification = try await NotificationCenter.wait(for: .deviceNominalSampleRateDidChange)
+
+            Log.debug(notification)
+
             let device = notification.object as? AudioDevice
             return device?.nominalSampleRate
         }
