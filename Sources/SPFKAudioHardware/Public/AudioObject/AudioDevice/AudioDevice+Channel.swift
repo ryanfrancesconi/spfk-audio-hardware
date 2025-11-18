@@ -171,11 +171,6 @@ public extension AudioDevice {
         isMuted(channel: Element.main.propertyElement, scope: scope)
     }
 
-    @available(*, deprecated, renamed: "isMainChannelMuted")
-    func isMasterChannelMuted(scope: Scope) -> Bool? {
-        return isMainChannelMuted(scope: scope)
-    }
-
     /// Whether a channel can be muted for a given scope.
     ///
     /// - Parameter channel: A channel.
@@ -201,11 +196,6 @@ public extension AudioDevice {
         guard canMute(channel: preferredChannelsForStereo.1, scope: scope) else { return false }
 
         return true
-    }
-
-    @available(*, deprecated, renamed: "canMuteMainChannel")
-    func canMuteMasterChannel(scope: Scope) -> Bool? {
-        return canMuteMainChannel(scope: scope)
     }
 
     /// Whether a channel's volume can be set for a given scope.
@@ -247,7 +237,7 @@ public extension AudioDevice {
                                          scope: scope.propertyScope) else { return false }
 
         var preferredChannels = [channels.left, channels.right]
-        let status = setPropertyData(address, andValue: &preferredChannels)
+        let status = setPropertyDataArray(address, andValue: &preferredChannels)
 
         return noErr == status
     }

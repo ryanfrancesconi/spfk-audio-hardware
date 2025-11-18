@@ -9,12 +9,10 @@ import SPFKBase
 final class AudioHardware {
     var cache: AudioDeviceCache { listener.cache }
 
-    var listener = AudioHardwareListener { notification in
-        NotificationCenter.default.post(
-            name: notification.name,
-            object: notification,
-            userInfo: nil
-        )
+    var eventHandler: ((AudioHardwareNotification) -> Void)?
+
+    lazy var listener = AudioHardwareListener { [weak self] in
+        self?.eventHandler?($0)
     }
 }
 

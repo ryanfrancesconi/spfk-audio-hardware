@@ -1,6 +1,7 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
+import CoreAudio
 import Foundation
 @testable import SPFKAudioHardware
 import Testing
@@ -17,7 +18,10 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
 
         let task = Task<Float64?, Error> {
             let notification: Notification = try await NotificationCenter.wait(for: .deviceNominalSampleRateDidChange)
-            let device = try #require(notification.object as? AudioDevice)
+
+            let id: AudioObjectID = try #require(notification.userInfo?["id"] as? AudioObjectID)
+            let device: AudioDevice = try #require(await AudioDevice.lookup(by: id))
+
             return device.nominalSampleRate
         }
 

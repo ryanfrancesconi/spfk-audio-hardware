@@ -6,11 +6,7 @@ import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
-/// This class represents an audio stream that belongs to an audio object managed by
-/// [Core Audio](https://developer.apple.com/documentation/coreaudio).
-public final class AudioStream: AudioObject, AudioPropertyListenerModel {
-    // MARK: - Public Properties
-
+extension AudioStream {
     /// Returns whether this audio stream is enabled and doing I/O.
     ///
     /// - Returns: `true` when enabled, `false` otherwise.
@@ -126,13 +122,10 @@ public final class AudioStream: AudioObject, AudioPropertyListenerModel {
             }
         }
     }
+}
 
-    /// All the available physical formats for this audio stream.
-    ///
-    /// - SeeAlso: `availableVirtualFormats`
-    ///
-    /// - Returns: *(optional)* An array of `AudioStreamRangedDescription` structs.
-    public lazy var availablePhysicalFormats: [AudioStreamRangedDescription]? = {
+extension AudioStream {
+    func getAvailablePhysicalFormats() -> [AudioStreamRangedDescription]? {
         guard let scope else { return nil }
 
         var address = AudioObjectPropertyAddress(
@@ -142,20 +135,16 @@ public final class AudioStream: AudioObject, AudioPropertyListenerModel {
         )
 
         guard AudioObjectHasProperty(objectID, &address) else { return nil }
+
         var asrd = [AudioStreamRangedDescription]()
         guard noErr == getPropertyDataArray(address, value: &asrd, andDefaultValue: AudioStreamRangedDescription()) else {
             return nil
         }
 
         return asrd
-    }()
+    }
 
-    /// All the available virtual formats for this audio stream.
-    ///
-    /// - SeeAlso: `availablePhysicalFormats`
-    ///
-    /// - Returns: *(optional)* An array of `AudioStreamRangedDescription` structs.
-    public lazy var availableVirtualFormats: [AudioStreamRangedDescription]? = {
+    func getAvailableVirtualFormats() -> [AudioStreamRangedDescription]? {
         guard let scope else { return nil }
 
         var address = AudioObjectPropertyAddress(
@@ -165,123 +154,13 @@ public final class AudioStream: AudioObject, AudioPropertyListenerModel {
         )
 
         guard AudioObjectHasProperty(objectID, &address) else { return nil }
+
         var asrd = [AudioStreamRangedDescription]()
         guard noErr == getPropertyDataArray(address, value: &asrd, andDefaultValue: AudioStreamRangedDescription()) else {
             return nil
         }
 
         return asrd
-    }()
-
-    // MARK: - Private Properties
-
-    /// event broker to avoid AudioDevice needing to subclass NSObject
-    private(set) lazy var listener: AudioPropertyListener? = {
-        var listener = AudioPropertyListener(
-            notificationType: AudioStreamNotification.self,
-            objectID: objectID
-        ) { [weak self] notification in
-            guard let self else { return }
-
-            NotificationCenter.default.post(
-                name: notification.name,
-                object: self,
-            )
-        }
-
-        return listener
-    }()
-
-    // MARK: - Lifecycle
-
-    /// Initializes an `AudioStream` by providing a valid `AudioObjectID` referencing an existing audio stream.
-    private init(id: AudioObjectID) async throws {
-        super.init(objectID: id)
-
-        guard owningObject != nil else {
-            throw NSError(description: "owningObject can't be nil")
-        }
-
-        await startListening()
-
-//        AudioObjectPool.shared.set(self, for: objectID)
-//        startListening()
-    }
-
-    deinit {
-//        AudioObjectPool.shared.remove(objectID)
-    }
-}
-
-// MARK: - Public Functions
-
-public extension AudioStream {
-    /// Returns an `AudioStream` by providing a valid audio stream identifier.
-    ///
-    /// - Note: If identifier is not valid, `nil` will be returned.
-    static func lookup(by id: AudioObjectID) async -> AudioStream? {
-        var instance: AudioStream? = await AudioObjectPool.shared.get(id)
-
-        if instance == nil {
-            do {
-                instance = try await AudioStream(id: id)
-            } catch {
-                Log.error(error)
-                return nil
-            }
-        }
-
-        return instance
-    }
-
-    /// All the available physical formats for this audio stream matching the current physical format's sample rate.
-    ///
-    /// - Note: By default, both mixable and non-mixable streams are returned, however,  non-mixable
-    /// streams can be filtered out by setting `includeNonMixable` to `false`.
-    ///
-    /// - Parameter includeNonMixable: Whether to include non-mixable streams in the returned array. Defaults to `true`.
-    ///
-    /// - SeeAlso: `availableVirtualFormatsMatchingCurrentNominalSampleRate(_:)`
-    ///
-    /// - Returns: *(optional)* An array of `AudioStreamBasicDescription` structs.
-    func availablePhysicalFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
-        guard let physicalFormats = availablePhysicalFormats, let physicalFormat else { return nil }
-
-        var filteredFormats = physicalFormats.filter { format -> Bool in
-            format.mSampleRateRange.mMinimum >= physicalFormat.mSampleRate &&
-                format.mSampleRateRange.mMaximum <= physicalFormat.mSampleRate
-        }.map { $0.mFormat }
-
-        if !includeNonMixable {
-            filteredFormats = filteredFormats.filter { $0.mFormatFlags & kAudioFormatFlagIsNonMixable == 0 }
-        }
-
-        return filteredFormats
-    }
-
-    /// All the available virtual formats for this audio stream matching the current virtual format's sample rate.
-    ///
-    /// - Note: By default, both mixable and non-mixable streams are returned, however,  non-mixable
-    /// streams can be filtered out by setting `includeNonMixable` to `false`.
-    ///
-    /// - Parameter includeNonMixable: Whether to include non-mixable streams in the returned array. Defaults to `true`.
-    ///
-    /// - SeeAlso: `availablePhysicalFormatsMatchingCurrentNominalSampleRate(_:)`
-    ///
-    /// - Returns: *(optional)* An array of `AudioStreamBasicDescription` structs.
-    func availableVirtualFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
-        guard let virtualFormats = availableVirtualFormats, let virtualFormat else { return nil }
-
-        var filteredFormats = virtualFormats.filter { format -> Bool in
-            format.mSampleRateRange.mMinimum >= virtualFormat.mSampleRate &&
-                format.mSampleRateRange.mMaximum <= virtualFormat.mSampleRate
-        }.map { $0.mFormat }
-
-        if !includeNonMixable {
-            filteredFormats = filteredFormats.filter { $0.mFormatFlags & kAudioFormatFlagIsNonMixable == 0 }
-        }
-
-        return filteredFormats
     }
 }
 
@@ -334,12 +213,5 @@ private extension AudioStream {
         guard AudioObjectHasProperty(objectID, &address) else { return nil }
 
         return setPropertyData(address, andValue: &value)
-    }
-}
-
-extension AudioStream: CustomStringConvertible {
-    /// Returns a `String` representation of self.
-    public var description: String {
-        return "\(name ?? "Stream \(objectID)") (\(objectID))"
     }
 }

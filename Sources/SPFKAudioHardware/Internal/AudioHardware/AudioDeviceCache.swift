@@ -18,6 +18,7 @@ actor AudioDeviceCache {
 
         let systemObjectID = AudioObjectID(kAudioObjectSystemObject)
         var allIDs = [AudioObjectID]()
+
         let status = AudioDevice.getPropertyDataArray(
             systemObjectID,
             address: address,
@@ -30,53 +31,65 @@ actor AudioDeviceCache {
 
     var allDevices: [AudioDevice] {
         get async {
-            await allDeviceIDs.async.compactMap {
+            let ids = allDeviceIDs
+
+            let allDevices = await ids.async.compactMap {
                 await AudioDevice.lookup(by: $0)
             }.toArray()
+
+            return allDevices
         }
     }
 }
 
 extension AudioDeviceCache {
-    func unregisterKnownDevices() async {
+    func unregister() async throws {
         let allDevices = await allDevices
 
         Log.debug("unregister", allDevices.count, "devices")
 
-        for device in allDevices {
-            await device.stopListening()
-        }
+        try await AudioObjectPool.shared.removeAll()
     }
 
-    func update() async -> DeviceStatusEvent {
+    func update() async throws -> DeviceStatusEvent {
+        let latestDeviceList = await allDevices
+
         // Obtain added and removed devices.
         var addedDevices: [AudioDevice] = []
         var removedDevices: [AudioDevice] = []
-
-        let latestDeviceList = await allDevices
 
         addedDevices = latestDeviceList.filter { !cachedDevices.contains($0) }
         removedDevices = cachedDevices.filter { !latestDeviceList.contains($0) }
 
         let status = DeviceStatusEvent(addedDevices: addedDevices, removedDevices: removedDevices)
 
+        try Task.checkCancellation()
+
         // Add new devices & remove old ones.
-        updateKnownDevices(status)
+        try await updateKnownDevices(status)
+
+        Log.debug("+added \(addedDevices.count) -removed \(removedDevices.count)")
 
         return status
     }
 
-    func updateKnownDevices(_ devices: DeviceStatusEvent) {
+    private func updateKnownDevices(_ devices: DeviceStatusEvent) async throws {
         cachedDevices.append(contentsOf: devices.addedDevices)
         cachedDevices.removeAll { devices.removedDevices.contains($0) }
+
+        for device in devices.removedDevices {
+            try await AudioObjectPool.shared.remove(device.id)
+        }
+
+        await AudioObjectPool.shared.startListening()
     }
 
-    func start() async {
-        await updateKnownDevices(DeviceStatusEvent(addedDevices: allDevices))
+    func start() async throws {
+        try await updateKnownDevices(DeviceStatusEvent(addedDevices: allDevices))
     }
 
-    func stop() {
-        updateKnownDevices(DeviceStatusEvent(removedDevices: cachedDevices))
+    func stop() async throws {
+        try await updateKnownDevices(DeviceStatusEvent(removedDevices: cachedDevices))
     }
 }
 
@@ -108,7 +121,13 @@ extension AudioDeviceCache {
 
     var allNonAggregateDevices: [AudioDevice] {
         get async {
-            await allDevices.async.filter { await !$0.isAggregateDevice }.toArray()
+            await allDevices.async.filter {
+                guard let classID = $0.classID else { return false }
+                let isNotAggregate = await !$0.isAggregateDevice
+
+                return AudioDevice.isSupported(classID: classID) && isNotAggregate
+
+            }.toArray()
         }
     }
 
@@ -128,7 +147,7 @@ extension AudioDeviceCache {
 
     var defaultOutputDevice: AudioDevice? {
         get async {
-            await AudioDevice.defaultDevice(of: .alertOutput)
+            await AudioDevice.defaultDevice(of: .defaultOutput)
         }
     }
 

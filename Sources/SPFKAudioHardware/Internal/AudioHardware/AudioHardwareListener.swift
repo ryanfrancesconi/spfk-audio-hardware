@@ -20,6 +20,7 @@ class AudioHardwareListener: NSObject {
     }()
 
     var cache = AudioDeviceCache()
+    var updateTask: Task<Void, Error>?
 
     init(eventHandler: ((AudioHardwareNotification) -> Void)?) {
         super.init()
@@ -38,11 +39,11 @@ class AudioHardwareListener: NSObject {
             throw NSError(description: "failed to start hardware monitoring with error \(status)")
         }
 
-        await cache.start()
+        try await cache.start()
     }
 
     func stop() async throws {
-        await cache.stop()
+        try await cache.stop()
 
         let status = cListener.stop()
 
@@ -59,33 +60,33 @@ extension AudioHardwareListener: SPFKAudioHardwareC.PropertyListenerDelegate {
         _ propertyListener: PropertyListener,
         eventReceived propertyAddress: AudioObjectPropertyAddress
     ) {
-        Task {
-            switch propertyAddress.mSelector {
-            case kAudioObjectPropertyOwnedObjects:
-
+        switch propertyAddress.mSelector {
+        case kAudioObjectPropertyOwnedObjects:
+            updateTask?.cancel()
+            updateTask = Task<Void, Error> {
                 // Obtain added and removed devices.
-                let event = await cache.update()
-
+                let event = try await cache.update()
                 let notification: AudioHardwareNotification = .deviceListChanged(event: event)
-
-                await send(notification: notification)
-
-            case kAudioHardwarePropertyDefaultInputDevice:
-                await send(notification: .defaultInputDeviceChanged)
-
-            case kAudioHardwarePropertyDefaultOutputDevice:
-                await send(notification: .defaultOutputDeviceChanged)
-
-            case kAudioHardwarePropertyDefaultSystemOutputDevice:
-                await send(notification: .defaultSystemOutputDeviceChanged)
-
-            default:
-                break
+                send(notification: notification)
             }
+
+        case kAudioHardwarePropertyDefaultInputDevice:
+            send(notification: .defaultInputDeviceChanged)
+
+        case kAudioHardwarePropertyDefaultOutputDevice:
+            send(notification: .defaultOutputDeviceChanged)
+
+        case kAudioHardwarePropertyDefaultSystemOutputDevice:
+            send(notification: .defaultSystemOutputDeviceChanged)
+
+        default:
+            break
         }
     }
 
-    @MainActor private func send(notification: AudioHardwareNotification) {
-        eventHandler?(notification)
+    private func send(notification: AudioHardwareNotification) {
+        Task { @MainActor in
+            eventHandler?(notification)
+        }
     }
 }

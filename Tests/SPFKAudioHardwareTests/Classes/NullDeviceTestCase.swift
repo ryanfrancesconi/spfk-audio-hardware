@@ -28,7 +28,7 @@ class NullDeviceTestCase: SCATestCase {
         // try await wait(sec: 0.5)
         Log.debug("tearDown complete")
     }
-    
+
     deinit {
         Log.debug("- { NullDeviceTestCase }")
     }
@@ -49,5 +49,79 @@ class NullDeviceTestCase: SCATestCase {
         nullDevice.setVolume(0.5, channel: 0, scope: .input)
         nullDevice.setVirtualMainVolume(0.5, scope: .output)
         nullDevice.setVirtualMainVolume(0.5, scope: .input)
+    }
+}
+
+extension NullDeviceTestCase {
+    static let aggregateDeviceName = "NullDeviceAggregate"
+    static let aggregateDeviceUID = "NullDeviceAggregate_UID"
+
+    func createAggregateDevice(in delay: TimeInterval = 0) async throws -> AudioDevice? {
+        let nullDevice = try #require(nullDevice)
+
+        if let existing = await hardware.allDevices.first(where: {
+            $0.uid == Self.aggregateDeviceUID
+        }) {
+            Log.error("Device exists attempting to remove it...")
+
+            #expect(noErr == hardware.removeAggregateDevice(id: existing.id))
+        }
+
+        // make sure this happens after the notification handlers are in place
+        if delay > 0 {
+            try await Task.sleep(for: .seconds(delay))
+        }
+
+        return try await hardware.createAggregateDevice(
+            mainDevice: nullDevice,
+            secondDevice: nil,
+            named: Self.aggregateDeviceName,
+            uid: Self.aggregateDeviceUID
+        )
+    }
+
+    func promoteAndWaitForEvent(device: AudioDevice, to selectorType: DefaultSelectorType) async throws {
+        let notificationName = selectorType.notificationName
+
+        let action = Task<OSStatus?, Error> {
+            try await Task.sleep(for: .seconds(0.5))
+            let status = try device.promote(to: selectorType)
+            return status
+        }
+
+        let success = try await withThrowingTaskGroup(of: Bool.self, returning: Bool.self) { taskGroup in
+
+            // wait task
+            taskGroup.addTask {
+                print("waiting for", notificationName)
+                let notification = try await NotificationCenter.wait(for: notificationName)
+
+                return notification.name == notificationName
+            }
+
+            // timeout check
+            taskGroup.addTask {
+                try await Task.sleep(for: .seconds(5))
+                print("* Test timed out")
+                return false
+            }
+
+            let value = try await taskGroup.next() == true
+            taskGroup.cancelAll()
+
+            return value
+        }
+
+        #expect(success)
+
+        let result = await action.result
+
+        switch result {
+        case let .success(status):
+            #expect(noErr == status)
+
+        case let .failure(error):
+            throw error
+        }
     }
 }

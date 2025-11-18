@@ -18,11 +18,15 @@ public final class AudioHardwareManager {
     private static var sharedHardware: AudioHardware!
     private static let instances = ManagedAtomic<Int>(0)
 
+    public var eventHandler: ((AudioHardwareNotification) -> Void)?
+
     // MARK: - Private Properties
 
     let hardware: AudioHardware
 
     private var instanceId: Int
+
+    public var postNotifications: Bool = true
 
     // MARK: - Lifecycle
 
@@ -38,6 +42,20 @@ public final class AudioHardwareManager {
 
         hardware = Self.sharedHardware
 
+        hardware.eventHandler = { [weak self] notification in
+            guard let self else { return }
+
+            eventHandler?(notification)
+
+            guard postNotifications else { return }
+
+            NotificationCenter.default.post(
+                name: notification.name,
+                object: notification,
+                userInfo: nil
+            )
+        }
+
         Log.debug("+ { \(self) }")
     }
 
@@ -45,7 +63,12 @@ public final class AudioHardwareManager {
         Self.instances.wrappingDecrement(ordering: .acquiring)
 
         if Self.instances.load(ordering: .acquiring) == 0 {
-            await Self.sharedHardware.cache.unregisterKnownDevices()
+            do {
+                try await Self.sharedHardware.cache.unregister()
+            } catch {
+                Log.error(error)
+            }
+            
             await Self.sharedHardware.stopListening()
 
             Self.sharedHardware = nil

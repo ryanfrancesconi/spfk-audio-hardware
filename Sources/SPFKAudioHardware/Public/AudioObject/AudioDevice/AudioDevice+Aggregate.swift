@@ -10,6 +10,8 @@ public extension AudioDevice {
     /// - Returns: `true` if this device is an aggregate one, `false` otherwise.
     var isAggregateDevice: Bool {
         get async {
+            guard classID == kAudioAggregateDeviceClassID else { return false }
+            
             guard let ownedAggregateDevices = await ownedAggregateDevices else { return false }
             return !ownedAggregateDevices.isEmpty
         }
@@ -20,8 +22,13 @@ public extension AudioDevice {
     /// - Returns: An array of `AudioDevice` objects.
     var ownedAggregateDevices: [AudioDevice]? {
         get async {
+            guard classID == kAudioAggregateDeviceClassID else { return nil }
+
             guard let ownedObjectIDs else { return nil }
-            return await ownedObjectIDs.async.compactMap { await AudioDevice.lookup(by: $0) }.toArray()
+            
+            return await ownedObjectIDs.async.compactMap {
+                await AudioDevice.lookup(by: $0)
+            }.toArray()
         }
     }
 

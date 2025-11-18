@@ -56,7 +56,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allNonAggregateDevices: [AudioDevice] {
-        get async { await  hardware.cache.allNonAggregateDevices }
+        get async { await hardware.cache.allNonAggregateDevices }
     }
 
     /// All the devices that are aggregate devices.

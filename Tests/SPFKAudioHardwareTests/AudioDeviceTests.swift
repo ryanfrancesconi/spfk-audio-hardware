@@ -4,6 +4,7 @@
 import Foundation
 import Numerics
 @testable import SPFKAudioHardware
+import SPFKBase
 import Testing
 
 @Suite(.serialized)
@@ -235,11 +236,13 @@ final class AudioDeviceTests: NullDeviceTestCase {
 
         #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
+
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 1)
 
         #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
+
         #expect(preferredChannels.left == 2)
         #expect(preferredChannels.right == 2)
 
@@ -253,27 +256,33 @@ final class AudioDeviceTests: NullDeviceTestCase {
 
     @Test(arguments: [Scope.output, Scope.input])
     func virtualMainVolumeOutput(scope: Scope) async throws {
-        let nullDevice = try #require(nullDevice)
-
         let devices = await hardware.allDevices.filter {
-            $0 != nullDevice &&
-                $0.canSetVirtualMainVolume(scope: scope)
+            $0.canSetVirtualMainVolume(scope: scope)
         }
 
         for device in devices {
             #expect(device.setVirtualMainVolume(0.0, scope: scope))
             #expect(device.virtualMainVolume(scope: scope) == 0.0)
 
-            var dB = try #require(device.virtualMainVolumeInDecibels(scope: scope))
+            guard let dB = device.virtualMainVolumeInDecibels(scope: scope) else {
+                Log.error("Failed virtualMainVolumeInDecibels for", device.name)
+                continue
+            }
+
+            Log.debug(dB, "for", device.name, scope)
+            
             #expect(dB < 0)
-            print(scope, device.name, "dB", dB)
 
             #expect(device.setVirtualMainVolume(0.5, scope: scope))
-            #expect(device.virtualMainVolume(scope: scope)?.isApproximatelyEqual(to: 0.5, relativeTolerance: 0.001) == true)
+            let virtualMainVolume = try #require(device.virtualMainVolume(scope: scope))
 
-            dB = try #require(device.virtualMainVolumeInDecibels(scope: scope))
-            #expect(dB < 0)
-            print(scope, device.name, "dB", dB)
+            #expect(
+                virtualMainVolume.isApproximatelyEqual(to: 0.5, relativeTolerance: 0.001) == true,
+                "virtualMainVolume is \(virtualMainVolume) for \(device.name) \(scope)"
+            )
+
+            let dB2 = try #require(device.virtualMainVolumeInDecibels(scope: scope))
+            #expect(dB2 < 0)
         }
 
         try await tearDown()

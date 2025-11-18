@@ -4,6 +4,7 @@
 import CoreAudio
 import Foundation
 import SPFKAudioHardwareC
+import SPFKBase
 
 class AudioPropertyListener: NSObject {
     let objectID: AudioObjectID
@@ -28,20 +29,25 @@ class AudioPropertyListener: NSObject {
         self.eventHandler = eventHandler
     }
 
+    deinit {
+        Log.debug("- { \(self) }")
+    }
+
     func start() throws {
-        // will lazy create here when referenced
         let status = cListener.start()
+        guard status != PropertyListenerErrorCode.AlreadyListening.rawValue else { return }
 
         guard noErr == status else {
-            throw NSError(description: "failed to start listening for \(notificationType) with error \(status)")
+            throw NSError(description: "failed to start listening for (\(notificationType)) with error (\(status.fourCharCodeToString()))")
         }
     }
 
     func stop() throws {
         let status = cListener.stop()
+        guard status != PropertyListenerErrorCode.AlreadyStopped.rawValue else { return }
 
         guard noErr == status else {
-            throw NSError(description: "failed to stop listening for \(notificationType) with error \(status)")
+            throw NSError(description: "failed to stop listening for (\(notificationType)) with error (\(status.fourCharCodeToString()))")
         }
     }
 }

@@ -9,7 +9,10 @@ extension AudioDevice {
     public static func defaultDevice(of deviceType: DefaultSelectorType) async -> AudioDevice? {
         let address = AudioDevice.address(selector: deviceType.propertySelector)
         var deviceID = AudioDeviceID()
-        let status = AudioDevice.getPropertyData(AudioObjectID(kAudioObjectSystemObject), address: address, andValue: &deviceID)
+
+        let status = AudioDevice.getPropertyData(AudioObjectID(kAudioObjectSystemObject),
+                                                 address: address,
+                                                 andValue: &deviceID)
 
         return await noErr == status ? AudioDevice.lookup(by: deviceID) : nil
     }
@@ -51,24 +54,5 @@ extension AudioDevice {
         }
 
         return await lookup(by: deviceID)
-    }
-
-    /// Returns an `AudioDevice` by providing a valid audio device identifier.
-    ///
-    /// - Parameter id: An audio device identifier.
-    /// - Note: If identifier is not valid, `nil` will be returned.
-    public static func lookup(by id: AudioObjectID) async -> AudioDevice? {
-        var instance: AudioDevice? = await AudioObjectPool.shared.get(id)
-
-        if instance == nil {
-            do {
-                instance = try await AudioDevice(id: id)
-            } catch {
-                Log.error(error)
-                return nil
-            }
-        }
-
-        return instance
     }
 }

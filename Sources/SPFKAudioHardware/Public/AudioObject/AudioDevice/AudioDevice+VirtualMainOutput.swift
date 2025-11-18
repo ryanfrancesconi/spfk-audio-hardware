@@ -20,11 +20,6 @@ public extension AudioDevice {
         return true
     }
 
-    @available(*, deprecated, renamed: "canSetVirtualMainVolume")
-    func canSetVirtualMasterVolume(scope: Scope) -> Bool {
-        return canSetVirtualMainVolume(scope: scope)
-    }
-
     /// Sets the virtual main volume for a given scope.
     ///
     /// - Parameter volume: The new volume as a scalar value ranging from 0 to 1.
@@ -37,11 +32,6 @@ public extension AudioDevice {
         return setProperty(address: address, value: volume)
     }
 
-    @available(*, deprecated, renamed: "setVirtualMainVolume")
-    @discardableResult func setVirtualMasterVolume(_ volume: Float32, scope: Scope) -> Bool {
-        return setVirtualMainVolume(volume, scope: scope)
-    }
-
     /// The virtual main scalar volume for a given scope.
     ///
     /// - Parameter scope: A scope.
@@ -52,11 +42,6 @@ public extension AudioDevice {
                                          scope: scope.propertyScope) else { return nil }
 
         return getProperty(address: address)
-    }
-
-    @available(*, deprecated, renamed: "virtualMainVolume")
-    func virtualMasterVolume(scope: Scope) -> Float32? {
-        return virtualMainVolume(scope: scope)
     }
 
     /// The virtual main volume in decibels for a given scope.
@@ -106,11 +91,6 @@ public extension AudioDevice {
         return getProperty(address: address)
     }
 
-    @available(*, deprecated, renamed: "virtualMainBalance")
-    func virtualMasterBalance(scope: Scope) -> Float32? {
-        return virtualMainBalance(scope: scope)
-    }
-
     /// Sets the new virtual main balance for a given scope.
     ///
     /// The range is from 0 (all power to the left) to 1 (all power to the right) with the value of 0.5 signifying
@@ -125,10 +105,5 @@ public extension AudioDevice {
                                          scope: scope.propertyScope) else { return false }
 
         return setProperty(address: address, value: value)
-    }
-
-    @available(*, deprecated, renamed: "setVirtualMainBalance")
-    @discardableResult func setVirtualMasterBalance(_ value: Float32, scope: Scope) -> Bool {
-        return setVirtualMainBalance(value, scope: scope)
     }
 }

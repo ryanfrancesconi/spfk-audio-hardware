@@ -21,6 +21,8 @@ public extension AudioDevice {
 
         guard noErr == getPropertyDataArray(address, value: &streamIDs, andDefaultValue: 0) else { return nil }
 
-        return await streamIDs.async.compactMap { await AudioStream.lookup(by: $0) }.toArray()
+        return await streamIDs.async.compactMap {
+            await AudioStream.lookup(by: $0)
+        }.toArray()
     }
 }

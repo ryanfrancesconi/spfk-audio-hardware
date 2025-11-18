@@ -44,7 +44,7 @@ extension AudioHardwareManager {
         let status = AudioHardwareCreateAggregateDevice(desc as CFDictionary, &deviceID)
 
         guard status == noErr else {
-            throw NSError(description: "Failed creating aggregate device with error: \(status.fourCharCodeToString() ?? "\(status)")")
+            throw NSError(description: "Failed creating aggregate device with error: (\(status.fourCharCodeToString()))")
         }
 
         guard let newDevice = await AudioDevice.lookup(by: deviceID) else {

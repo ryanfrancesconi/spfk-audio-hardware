@@ -1,6 +1,7 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
+import CoreAudio
 import Foundation
 import SPFKBase
 
@@ -18,8 +19,13 @@ extension AudioDevice {
 
             Log.debug(notification)
 
-            let device = notification.object as? AudioDevice
-            return device?.nominalSampleRate
+            guard let id: AudioObjectID = notification.userInfo?["id"] as? AudioObjectID,
+                  id == objectID,
+                  let device: AudioDevice = await AudioDevice.lookup(by: id) else {
+                return nil
+            }
+
+            return device.nominalSampleRate
         }
 
         guard setNominalSampleRate(sampleRate) else {
