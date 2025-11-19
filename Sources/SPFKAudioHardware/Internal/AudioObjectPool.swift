@@ -6,8 +6,9 @@ import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
-actor AudioObjectPool {
-    /// Singleton AudioObjectPool
+/// Singleton AudioObjectPool which manages devices. Everything is internal except
+/// for the lookup()
+public actor AudioObjectPool {
     internal static let shared = AudioObjectPool()
 
     private var pool = [AudioObjectID: any AudioPropertyListenerModel]()
@@ -106,5 +107,28 @@ extension AudioObjectPool {
             name: notification.name,
             object: notification
         )
+    }
+}
+
+extension AudioObjectPool {
+    /// Returns an `AudioPropertyListenerModel` by providing a valid audio device identifier.
+    ///
+    /// - Parameter id: An audio device identifier.
+    /// - Note: If identifier is not valid, `nil` will be returned.
+    public func lookup<O: AudioPropertyListenerModel>(by id: AudioObjectID) async -> O? {
+        if let device: O = get(id) {
+            return device
+        }
+
+        do {
+            let device = try await O(objectID: id)
+            try insert(device, for: id)
+            return device
+
+        } catch {
+            Log.error(error)
+        }
+
+        return nil
     }
 }

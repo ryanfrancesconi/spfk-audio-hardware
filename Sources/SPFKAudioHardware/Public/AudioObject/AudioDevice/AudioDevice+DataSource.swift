@@ -4,7 +4,7 @@
 import CoreAudio
 import Foundation
 
-// MARK: - ⚄ Data Source Functions
+// MARK: - Data Source Functions
 
 public extension AudioDevice {
     /// A list of item IDs for the currently selected data sources.

@@ -6,7 +6,7 @@ import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
-class AudioHardwareListener: NSObject {
+final class AudioHardwareListener: NSObject {
     var eventHandler: ((AudioHardwareNotification) -> Void)?
 
     let objectID: AudioObjectID = AudioObjectID(kAudioObjectSystemObject)
@@ -22,7 +22,7 @@ class AudioHardwareListener: NSObject {
     var cache = AudioDeviceCache()
     var updateTask: Task<Void, Error>?
 
-    init(eventHandler: ((AudioHardwareNotification) -> Void)?) {
+    init(eventHandler: ((AudioHardwareNotification) -> Void)? = nil) {
         super.init()
         self.eventHandler = eventHandler
     }

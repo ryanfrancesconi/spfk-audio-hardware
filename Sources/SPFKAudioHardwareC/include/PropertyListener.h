@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(int, PropertyListenerErrorCode) {
     AlreadyListening = 0,
-    AlreadyStopped = 2001,
+    AlreadyStopped = 1,
 };
 
 - (nonnull id)initWithObjectId:(AudioObjectID)inObjectID;

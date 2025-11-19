@@ -15,7 +15,7 @@ extension AudioDevice {
         }
 
         let task = Task<Float64?, Error> {
-            let notification: Notification = try await NotificationCenter.wait(for: .deviceNominalSampleRateDidChange)
+            let notification: Notification = try await NotificationCenter.wait(for: .deviceNominalSampleRateDidChange, timeout: 5)
 
             Log.debug(notification)
 
@@ -27,7 +27,7 @@ extension AudioDevice {
                 return nil
             }
 
-            guard let device = await AudioDevice.lookup(by: objectID) else {
+            guard let device: AudioDevice = await AudioObjectPool.shared.lookup(by: objectID) else {
                 return nil
             }
 

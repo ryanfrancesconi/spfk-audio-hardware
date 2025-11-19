@@ -5,7 +5,7 @@ import AsyncAlgorithms
 import CoreAudio
 import Foundation
 
-// MARK: - ♨︎ Stream Functions
+// MARK: - Stream Functions
 
 public extension AudioDevice {
     /// Returns a list of streams for a given scope.

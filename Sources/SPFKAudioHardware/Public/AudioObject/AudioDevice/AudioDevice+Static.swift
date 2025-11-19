@@ -14,7 +14,7 @@ extension AudioDevice {
                                                  address: address,
                                                  andValue: &deviceID)
 
-        return await noErr == status ? AudioDevice.lookup(by: deviceID) : nil
+        return await noErr == status ? AudioObjectPool.shared.lookup(by: deviceID) : nil
     }
 
     /// Returns an `AudioDevice` by providing a valid audio device unique identifier.
@@ -53,6 +53,6 @@ extension AudioDevice {
             return nil
         }
 
-        return await lookup(by: deviceID)
+        return await AudioObjectPool.shared.lookup(by: deviceID)
     }
 }

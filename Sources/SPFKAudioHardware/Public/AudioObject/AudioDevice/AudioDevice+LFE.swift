@@ -4,7 +4,7 @@
 import CoreAudio
 import Foundation
 
-// MARK: - 💣 LFE (Low Frequency Effects) Functions
+// MARK: - LFE (Low Frequency Effects) Functions
 
 public extension AudioDevice {
     /// Whether the audio device should claim ownership of any attached iSub or not.

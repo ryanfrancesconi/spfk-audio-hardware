@@ -5,13 +5,13 @@ import CoreAudio.AudioHardware
 
 public enum AudioHardwareNotification: Hashable, Sendable {
     /// Called whenever the default system output device changes.
-    case defaultSystemOutputDeviceChanged // objectID: AudioObjectID)
+    case defaultSystemOutputDeviceChanged
 
     /// Called whenever the default input device changes.
-    case defaultInputDeviceChanged // (objectID: AudioObjectID)
+    case defaultInputDeviceChanged
 
     /// Called whenever the default output device changes.
-    case defaultOutputDeviceChanged // (objectID: AudioObjectID)
+    case defaultOutputDeviceChanged
 
     /// Called whenever the list of hardware devices and device subdevices changes.
     /// (i.e., devices that are part of *Aggregate* or *Multi-Output* devices.)

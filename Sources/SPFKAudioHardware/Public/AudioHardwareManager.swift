@@ -15,14 +15,14 @@ import SPFKBase
 public final class AudioHardwareManager {
     // MARK: - Private Static Properties
 
-    private static var sharedHardware: AudioHardware!
+    private static var sharedHardware: AudioHardwareListener!
     private static let instances = ManagedAtomic<Int>(0)
 
     public var eventHandler: ((AudioHardwareNotification) -> Void)?
 
     // MARK: - Private Properties
 
-    let hardware: AudioHardware
+    let hardware: AudioHardwareListener
 
     private var instanceId: Int
 
@@ -34,8 +34,13 @@ public final class AudioHardwareManager {
         instanceId = Self.instances.load(ordering: .acquiring)
 
         if instanceId == 0 {
-            Self.sharedHardware = AudioHardware()
-            await Self.sharedHardware.startListening()
+            Self.sharedHardware = AudioHardwareListener()
+
+            do {
+                try await Self.sharedHardware.start()
+            } catch {
+                Log.error(error)
+            }
         }
 
         Self.instances.wrappingIncrement(ordering: .acquiring)
@@ -64,7 +69,7 @@ public final class AudioHardwareManager {
 
         if Self.instances.load(ordering: .acquiring) == 0 {
             do {
-                await Self.sharedHardware.stopListening()
+                try await Self.sharedHardware.stop()
 
                 try await Self.sharedHardware.cache.unregister()
             } catch {

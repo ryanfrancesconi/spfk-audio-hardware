@@ -26,9 +26,11 @@ public extension AudioDevice {
 
             guard let ownedObjectIDs else { return nil }
             
-            return await ownedObjectIDs.async.compactMap {
-                await AudioDevice.lookup(by: $0)
+            let devices: [AudioDevice] = await ownedObjectIDs.async.compactMap {
+                await AudioObjectPool.shared.lookup(by: $0)
             }.toArray()
+            
+            return devices
         }
     }
 

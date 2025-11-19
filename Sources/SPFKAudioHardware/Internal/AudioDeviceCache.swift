@@ -33,8 +33,8 @@ actor AudioDeviceCache {
         get async {
             let ids = allDeviceIDs
 
-            let allDevices = await ids.async.compactMap {
-                await AudioDevice.lookup(by: $0)
+            let allDevices: [AudioDevice] = await ids.async.compactMap {
+                await AudioObjectPool.shared.lookup(by: $0)
             }.toArray()
 
             return allDevices

@@ -14,7 +14,7 @@ final class AudioDeviceTests: NullDeviceTestCase {
 
         let deviceUID = try #require(nullDevice.uid)
 
-        await #expect(AudioDevice.lookup(by: nullDevice.id) == nullDevice)
+        await #expect(AudioObjectPool.shared.lookup(by: nullDevice.id) == nullDevice)
         await #expect(AudioDevice.lookup(by: deviceUID) == nullDevice)
         try await tearDown()
     }

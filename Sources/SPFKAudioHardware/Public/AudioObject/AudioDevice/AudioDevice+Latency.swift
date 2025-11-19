@@ -5,7 +5,7 @@ import CoreAudio
 import Foundation
 import SPFKBase
 
-// MARK: - ↹ Latency Functions
+// MARK: - Latency Functions
 
 public extension AudioDevice {
     /// Convenience function to return the total latency in frames of an AudioDevice

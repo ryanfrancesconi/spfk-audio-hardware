@@ -4,7 +4,7 @@
 import CoreAudio
 import Foundation
 
-// MARK: - ⇄ Input/Output Layout Functions
+// MARK: - Input/Output Layout Functions
 
 public extension AudioDevice {
     /// Whether the device has only inputs but no outputs.
@@ -83,5 +83,28 @@ public extension AudioDevice {
                                          scope: scope.propertyScope) else { return nil }
 
         return getProperty(address: address)
+    }
+
+    /// - Returns: A collection of named channels
+    func namedChannels(scope: Scope) async -> [AudioDeviceNamedChannel] {
+        var out = [AudioDeviceNamedChannel]()
+
+        let channelCount = await channels(scope: scope)
+
+        guard channelCount > 0 else { return [] }
+
+        for i in 0 ..< channelCount {
+            let string = name(channel: i, scope: scope)?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let deviceChannel = AudioDeviceNamedChannel(
+                channel: i,
+                name: string,
+                scope: scope
+            )
+
+            out.append(deviceChannel)
+        }
+
+        return out
     }
 }

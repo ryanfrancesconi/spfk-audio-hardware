@@ -4,7 +4,7 @@
 import CoreAudio
 import Foundation
 
-// MARK: - 🐗 Hog Mode Functions
+// MARK: - Hog Mode Functions
 
 public extension AudioDevice {
     /// Indicates the `pid` that currently owns exclusive access to the audio device or

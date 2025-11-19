@@ -4,7 +4,7 @@
 import CoreAudio
 import Foundation
 
-// MARK: - ♺ Volume Conversion Functions
+// MARK: - Volume Conversion Functions
 
 public extension AudioDevice {
     /// Converts a scalar volume to a decibel *(dbFS)* volume for the given channel and scope.
