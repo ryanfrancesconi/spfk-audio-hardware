@@ -22,9 +22,7 @@ public extension AudioDevice {
         var inOutVolume: Float32 = 0
         let status = getPropertyData(address, andValue: &inOutVolume)
 
-        //  print(address, status, inOutVolume, kAudioDevicePropertyVolumeScalarToDecibels)
-
-        return noErr == status ? inOutVolume : nil
+        return kAudioHardwareNoError == status ? inOutVolume : nil
     }
 
     /// Converts a relative decibel *(dbFS)* volume to a scalar volume for the given channel and scope.
@@ -42,6 +40,6 @@ public extension AudioDevice {
         var inOutVolume: Float32 = 0
         let status = getPropertyData(address, andValue: &inOutVolume)
 
-        return noErr == status ? inOutVolume : nil
+        return kAudioHardwareNoError == status ? inOutVolume : nil
     }
 }

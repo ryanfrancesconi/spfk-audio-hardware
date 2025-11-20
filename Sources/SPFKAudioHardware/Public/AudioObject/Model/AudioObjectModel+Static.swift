@@ -13,17 +13,16 @@ extension AudioObjectModel {
                                          qualifierDataSize: UInt32?,
                                          qualifierData: inout [UInt32],
                                          andSize size: inout UInt32) -> OSStatus {
-        var theAddress = address
+        var address = address
         var qualifierData = qualifierData
         let qualifierDataSize = qualifierDataSize ?? UInt32(0)
 
         let status: OSStatus = AudioObjectGetPropertyDataSize(objectID,
-                                                              &theAddress,
+                                                              &address,
                                                               qualifierDataSize,
                                                               &qualifierData,
                                                               &size)
 
-        assert(status == kAudioHardwareNoError)
         return status
     }
 
@@ -32,109 +31,96 @@ extension AudioObjectModel {
                                        qualifierDataSize: UInt32?,
                                        qualifierData: inout Q,
                                        andSize size: inout UInt32) -> OSStatus {
-        var theAddress = address
+        var address = address
         var qualifierData = qualifierData
 
         let status: OSStatus = withUnsafeMutablePointer(to: &qualifierData) { qualifierDataPtr in
             AudioObjectGetPropertyDataSize(objectID,
-                                           &theAddress,
+                                           &address,
                                            qualifierDataSize ?? UInt32(0),
                                            qualifierDataPtr,
                                            &size)
         }
 
-        assert(status == kAudioHardwareNoError)
         return status
     }
 }
 
 extension AudioObjectModel {
-//    static func address(selector: AudioObjectPropertySelector,
-//                        scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
-//                        element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain) -> AudioObjectPropertyAddress {
-//        AudioObjectPropertyAddress(mSelector: selector, mScope: scope, mElement: element)
-//    }
-
-//    static func address(selector: AudioObjectPropertySelector,
-//                        scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
-//                        element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain) -> AudioObjectPropertyAddress {
-//        AudioObjectPropertyAddress(selector: selector, scope: scope, element: element)
-//    }
-
     static func getPropertyData<T>(_ objectID: AudioObjectID,
                                    address: AudioObjectPropertyAddress,
                                    andValue value: inout T) -> OSStatus {
-        var theAddress = address
-        var size = UInt32(MemoryLayout<T>.size)
-        var status: OSStatus = kAudioHardwareBadObjectError
-
-        func verify<Q>(status: OSStatus, localValue: Q) -> OSStatus {
+        /// check the output of AudioObjectGetPropertyData and set the inout value T
+        func verify<Q>(status: OSStatus, typedValue: Q) -> OSStatus {
             guard status == kAudioHardwareNoError else { return status }
-
-            guard let unwrapped = localValue as? T else { return kAudioHardwareBadObjectError }
-            // assign inout T
-            value = unwrapped
+            guard let erasedValue = typedValue as? T else { return kAudioHardwareBadObjectError }
+            value = erasedValue // assign inout T
             return status
         }
 
-        // TODO: what is a better way to do this? a macro?
+        // `AudioObjectGetPropertyData` doesn't want object types as generics.
+        // These are the explicit types that currently in use.
+        // Is there a better way to handle this?
+
+        var address = address
+        var size = UInt32(MemoryLayout<T>.size)
+        let inQualifierDataSize: UInt32 = 0
 
         if value as? String != nil {
             // CFString must be handled differently
-            return getPropertyStringData(objectID, address: address, andValue: &value)
+            return getStringPropertyData(objectID, address: address, andValue: &value)
 
-        } else if var localValue = value as? UInt32 {
-            status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &localValue)
-            status = verify(status: status, localValue: localValue)
+        } else if var typedValue = value as? UInt32 {
+            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            return verify(status: status, typedValue: typedValue)
 
-        } else if var localValue = value as? Int32 {
-            status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &localValue)
-            status = verify(status: status, localValue: localValue)
+        } else if var typedValue = value as? Int32 {
+            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            return verify(status: status, typedValue: typedValue)
 
-        } else if var localValue = value as? Float32 {
-            status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &localValue)
-            status = verify(status: status, localValue: localValue)
+        } else if var typedValue = value as? Float32 {
+            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            return verify(status: status, typedValue: typedValue)
 
-        } else if var localValue = value as? Float64 {
-            status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &localValue)
-            status = verify(status: status, localValue: localValue)
+        } else if var typedValue = value as? Float64 {
+            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            return verify(status: status, typedValue: typedValue)
 
-        } else if var localValue = value as? AudioValueTranslation {
-            status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &localValue)
-            status = verify(status: status, localValue: localValue)
+        } else if var typedValue = value as? AudioValueTranslation {
+            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            return verify(status: status, typedValue: typedValue)
 
-        } else if var localValue = value as? AudioStreamBasicDescription {
-            status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &localValue)
-            status = verify(status: status, localValue: localValue)
+        } else if var typedValue = value as? AudioStreamBasicDescription {
+            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            return verify(status: status, typedValue: typedValue)
 
-        } else if var localValue = value as? AudioChannelLayout {
-            status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, &localValue)
-            status = verify(status: status, localValue: localValue)
+        } else if var typedValue = value as? AudioChannelLayout {
+            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            return verify(status: status, typedValue: typedValue)
 
         } else {
             assertionFailure("Unhandled type: \(value.self) \(value)")
         }
 
-        return status
+        return kAudioHardwareBadObjectError
     }
 
-    private static func getPropertyStringData<T>(_ objectID: AudioObjectID,
+    private static func getStringPropertyData<T>(_ objectID: AudioObjectID,
                                                  address: AudioObjectPropertyAddress,
                                                  andValue value: inout T) -> OSStatus {
-        guard let localValue = value as? String else { return kAudioHardwareBadObjectError }
+        guard let string = value as? String else { return kAudioHardwareBadObjectError }
 
-        var theAddress = address
+        var address = address
         var size = UInt32(MemoryLayout<T>.size)
-        var cfValue = localValue as CFString
+        var cfString = string as CFString
 
-        let returnValue = withUnsafeMutablePointer(to: &cfValue) { ptr in
-            let status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, ptr)
+        let returnValue = withUnsafeMutablePointer(to: &cfString) { cfStringPTR in
+            let status = AudioObjectGetPropertyData(objectID, &address, UInt32(0), nil, &size, cfStringPTR)
             guard status == kAudioHardwareNoError else { return status }
 
-            guard let unwrapped = ptr.pointee as? T else { return kAudioHardwareBadObjectError }
+            guard let erasedValue = cfStringPTR.pointee as? T else { return kAudioHardwareBadObjectError }
 
-            // assign inout T
-            value = unwrapped
+            value = erasedValue // assign inout T
 
             return status
         }
@@ -163,12 +149,12 @@ extension AudioObjectModel {
             return sizeStatus
         }
 
-        var theAddress = address
+        var address = address
         let qualifierDataSize = qualifierDataSize ?? UInt32(0)
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
             guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
-            return AudioObjectGetPropertyData(objectID, &theAddress, qualifierDataSize, &qualifierData, &size, baseAddress)
+            return AudioObjectGetPropertyData(objectID, &address, qualifierDataSize, &qualifierData, &size, baseAddress)
         }
 
         return status
@@ -195,12 +181,12 @@ extension AudioObjectModel {
     static func setPropertyData<T>(_ objectID: AudioObjectID,
                                    address: AudioObjectPropertyAddress,
                                    andValue value: inout T) -> OSStatus {
-        var theAddress = address
+        var address = address
         let size = UInt32(MemoryLayout<T>.size)
         var value = value
 
         let status: OSStatus = withUnsafeMutablePointer(to: &value) { valuePtr in
-            AudioObjectSetPropertyData(objectID, &theAddress, UInt32(0), nil, size, valuePtr)
+            AudioObjectSetPropertyData(objectID, &address, UInt32(0), nil, size, valuePtr)
         }
 
         return status
@@ -209,12 +195,12 @@ extension AudioObjectModel {
     static func setPropertyDataArray<T>(_ objectID: AudioObjectID,
                                         address: AudioObjectPropertyAddress,
                                         andValue value: inout [T]) -> OSStatus {
-        var theAddress = address
+        var address = address
         let size = UInt32(value.count * MemoryLayout<T>.size)
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
             guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
-            return AudioObjectSetPropertyData(objectID, &theAddress, UInt32(0), nil, size, baseAddress)
+            return AudioObjectSetPropertyData(objectID, &address, UInt32(0), nil, size, baseAddress)
         }
 
         return status

@@ -72,8 +72,11 @@ public extension AudioDevice {
     /// - Parameter sampleRate: The new nominal sample rate.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setNominalSampleRate(_ sampleRate: Float64) -> Bool {
-        guard let address = validAddress(selector: kAudioDevicePropertyNominalSampleRate) else { return false }
+    @discardableResult func setNominalSampleRate(_ sampleRate: Float64) -> OSStatus {
+        guard let address = validAddress(selector: kAudioDevicePropertyNominalSampleRate) else {
+            return kAudioHardwareBadObjectError
+        }
+
         return setProperty(address: address, value: sampleRate)
     }
 }

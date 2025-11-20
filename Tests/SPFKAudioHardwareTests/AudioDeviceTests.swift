@@ -1,6 +1,7 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
 
+import CoreAudio
 import Foundation
 import Numerics
 @testable import SPFKAudioHardware
@@ -69,7 +70,7 @@ final class AudioDeviceTests: NullDeviceTestCase {
         try await tearDown()
     }
 
-    @Test func lfe() async throws {
+    @Test func lowFrequencyEffects() async throws {
         let nullDevice = try #require(nullDevice)
 
         #expect(nullDevice.shouldOwniSub == nil)
@@ -113,7 +114,7 @@ final class AudioDeviceTests: NullDeviceTestCase {
         let nullDevice = try #require(nullDevice)
         var volumeInfo: VolumeInfo!
 
-        #expect(nullDevice.setMute(false, channel: 0, scope: .output))
+        #expect(kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: .output))
 
         volumeInfo = nullDevice.volumeInfo(channel: 0, scope: .output)
         #expect(volumeInfo.hasVolume == true)
@@ -123,11 +124,11 @@ final class AudioDeviceTests: NullDeviceTestCase {
         #expect(volumeInfo.canPlayThru == false)
         #expect(volumeInfo.isPlayThruSet == false)
 
-        #expect(nullDevice.setVolume(0, channel: 0, scope: .output))
+        #expect(kAudioHardwareNoError == nullDevice.setVolume(0, channel: 0, scope: .output))
         volumeInfo = nullDevice.volumeInfo(channel: 0, scope: .output)
         #expect(volumeInfo.volume == 0)
 
-        #expect(nullDevice.setVolume(0.5, channel: 0, scope: .output))
+        #expect(kAudioHardwareNoError == nullDevice.setVolume(0.5, channel: 0, scope: .output))
         volumeInfo = nullDevice.volumeInfo(channel: 0, scope: .output)
         #expect(volumeInfo.volume == 0.5)
 
@@ -149,16 +150,16 @@ final class AudioDeviceTests: NullDeviceTestCase {
     func volume(scopeToTest: Scope) async throws {
         let nullDevice = try #require(nullDevice)
 
-        #expect(nullDevice.setVolume(0, channel: 0, scope: scopeToTest))
+        #expect(kAudioHardwareNoError == nullDevice.setVolume(0, channel: 0, scope: scopeToTest))
         #expect(nullDevice.volume(channel: 0, scope: scopeToTest) == 0)
 
-        #expect(nullDevice.setVolume(0.5, channel: 0, scope: scopeToTest))
+        #expect(kAudioHardwareNoError == nullDevice.setVolume(0.5, channel: 0, scope: scopeToTest))
         #expect(nullDevice.volume(channel: 0, scope: scopeToTest) == 0.5)
 
-        #expect(!nullDevice.setVolume(0.5, channel: 1, scope: scopeToTest))
+        #expect(kAudioHardwareNoError != nullDevice.setVolume(0.5, channel: 1, scope: scopeToTest))
         #expect(nullDevice.volume(channel: 1, scope: scopeToTest) == nil)
 
-        #expect(!nullDevice.setVolume(0.5, channel: 2, scope: .output))
+        #expect(kAudioHardwareNoError != nullDevice.setVolume(0.5, channel: 2, scope: .output))
         #expect(nullDevice.volume(channel: 2, scope: scopeToTest) == nil)
 
         try await tearDown()
@@ -169,17 +170,17 @@ final class AudioDeviceTests: NullDeviceTestCase {
         let nullDevice = try #require(nullDevice)
 
         #expect(nullDevice.canSetVolume(channel: 0, scope: scopeToTest))
-        #expect(nullDevice.setVolume(0, channel: 0, scope: scopeToTest))
+        #expect(kAudioHardwareNoError == nullDevice.setVolume(0, channel: 0, scope: scopeToTest))
         #expect(nullDevice.volumeInDecibels(channel: 0, scope: scopeToTest) == -96)
-        #expect(nullDevice.setVolume(0.5, channel: 0, scope: scopeToTest))
+        #expect(kAudioHardwareNoError == nullDevice.setVolume(0.5, channel: 0, scope: scopeToTest))
         #expect(nullDevice.volumeInDecibels(channel: 0, scope: scopeToTest) == -70.5)
 
         #expect(!nullDevice.canSetVolume(channel: 1, scope: scopeToTest))
-        #expect(!nullDevice.setVolume(0.5, channel: 1, scope: scopeToTest))
+        #expect(kAudioHardwareNoError != nullDevice.setVolume(0.5, channel: 1, scope: scopeToTest))
         #expect(nullDevice.volumeInDecibels(channel: 1, scope: scopeToTest) == nil)
 
         #expect(!nullDevice.canSetVolume(channel: 2, scope: scopeToTest))
-        #expect(!nullDevice.setVolume(0.5, channel: 2, scope: scopeToTest))
+        #expect(kAudioHardwareNoError != nullDevice.setVolume(0.5, channel: 2, scope: scopeToTest))
         #expect(nullDevice.volumeInDecibels(channel: 2, scope: scopeToTest) == nil)
 
         try await tearDown()
@@ -190,17 +191,17 @@ final class AudioDeviceTests: NullDeviceTestCase {
         let nullDevice = try #require(nullDevice)
 
         #expect(nullDevice.canMute(channel: 0, scope: scopeToTest))
-        #expect(nullDevice.setMute(true, channel: 0, scope: scopeToTest))
+        #expect(kAudioHardwareNoError == nullDevice.setMute(true, channel: 0, scope: scopeToTest))
         #expect(nullDevice.isMuted(channel: 0, scope: scopeToTest) == true)
-        #expect(nullDevice.setMute(false, channel: 0, scope: scopeToTest))
+        #expect(kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: scopeToTest))
         #expect(nullDevice.isMuted(channel: 0, scope: scopeToTest) == false)
 
         #expect(!nullDevice.canMute(channel: 1, scope: scopeToTest))
-        #expect(!nullDevice.setMute(true, channel: 1, scope: scopeToTest))
+        #expect(kAudioHardwareNoError != nullDevice.setMute(true, channel: 1, scope: scopeToTest))
         #expect(nullDevice.isMuted(channel: 1, scope: scopeToTest) == nil)
 
         #expect(!nullDevice.canMute(channel: 2, scope: scopeToTest))
-        #expect(!nullDevice.setMute(true, channel: 2, scope: scopeToTest))
+        #expect(kAudioHardwareNoError != nullDevice.setMute(true, channel: 2, scope: scopeToTest))
         #expect(nullDevice.isMuted(channel: 2, scope: scopeToTest) == nil)
 
         try await tearDown()
@@ -211,15 +212,15 @@ final class AudioDeviceTests: NullDeviceTestCase {
         let nullDevice = try #require(nullDevice)
 
         #expect(nullDevice.canMuteMainChannel(scope: scope) == true)
-        #expect(nullDevice.setMute(false, channel: 0, scope: scope))
+        #expect(kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: scope))
         #expect(nullDevice.isMainChannelMuted(scope: scope) == false)
-        #expect(nullDevice.setMute(true, channel: 0, scope: scope))
+        #expect(kAudioHardwareNoError == nullDevice.setMute(true, channel: 0, scope: scope))
         #expect(nullDevice.isMainChannelMuted(scope: scope) == true)
 
         #expect(nullDevice.canMuteMainChannel(scope: scope) == true)
-        #expect(nullDevice.setMute(false, channel: 0, scope: scope))
+        #expect(kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: scope))
         #expect(nullDevice.isMainChannelMuted(scope: scope) == false)
-        #expect(nullDevice.setMute(true, channel: 0, scope: scope))
+        #expect(kAudioHardwareNoError == nullDevice.setMute(true, channel: 0, scope: scope))
         #expect(nullDevice.isMainChannelMuted(scope: scope) == true)
 
         try await tearDown()
@@ -233,19 +234,19 @@ final class AudioDeviceTests: NullDeviceTestCase {
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 2)
 
-        #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
+        #expect(kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
 
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 1)
 
-        #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
+        #expect(kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
 
         #expect(preferredChannels.left == 2)
         #expect(preferredChannels.right == 2)
 
-        #expect(nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: scope))
+        #expect(kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 2)
@@ -260,7 +261,7 @@ final class AudioDeviceTests: NullDeviceTestCase {
         }
 
         for device in devices {
-            #expect(device.setVirtualMainVolume(0.0, scope: scope))
+            #expect(kAudioHardwareNoError == device.setVirtualMainVolume(0.0, scope: scope))
             #expect(device.virtualMainVolume(scope: scope) == 0.0)
 
             guard let dB = device.virtualMainVolumeInDecibels(scope: scope) else {
@@ -269,10 +270,10 @@ final class AudioDeviceTests: NullDeviceTestCase {
             }
 
             Log.debug(dB, "for", device.name, scope)
-            
-            #expect(dB < 0)
 
-            #expect(device.setVirtualMainVolume(0.5, scope: scope))
+            #expect(dB < 0) // this value is different for different devices
+
+            #expect(kAudioHardwareNoError == device.setVirtualMainVolume(0.5, scope: scope))
             let virtualMainVolume = try #require(device.virtualMainVolume(scope: scope))
 
             #expect(
@@ -293,10 +294,10 @@ final class AudioDeviceTests: NullDeviceTestCase {
         #expect(!nullDevice.canSetVirtualMainBalance(scope: .output))
         #expect(!nullDevice.canSetVirtualMainBalance(scope: .input))
 
-        #expect(!nullDevice.setVirtualMainBalance(0.0, scope: .output))
+        #expect(kAudioHardwareNoError != nullDevice.setVirtualMainBalance(0.0, scope: .output))
         #expect(nullDevice.virtualMainBalance(scope: .output) == nil)
 
-        #expect(!nullDevice.setVirtualMainBalance(0.0, scope: .input))
+        #expect(kAudioHardwareNoError != nullDevice.setVirtualMainBalance(0.0, scope: .input))
         #expect(nullDevice.virtualMainBalance(scope: .input) == nil)
 
         try await tearDown()
@@ -307,13 +308,13 @@ final class AudioDeviceTests: NullDeviceTestCase {
 
         #expect(nullDevice.nominalSampleRates == [44100, 48000])
 
-        #expect(nullDevice.setNominalSampleRate(44100))
+        #expect(kAudioHardwareNoError == nullDevice.setNominalSampleRate(44100))
         try await wait(sec: 1)
 
         #expect(nullDevice.nominalSampleRate == 44100)
         #expect(nullDevice.actualSampleRate == 44100)
 
-        #expect(nullDevice.setNominalSampleRate(48000))
+        #expect(kAudioHardwareNoError == nullDevice.setNominalSampleRate(48000))
         try await wait(sec: 1)
 
         #expect(nullDevice.nominalSampleRate == 48000)
@@ -326,8 +327,8 @@ final class AudioDeviceTests: NullDeviceTestCase {
         let nullDevice = try #require(nullDevice)
 
         #expect(nullDevice.nominalSampleRates == [44100, 48000])
-        #expect(!nullDevice.setNominalSampleRate(24000))
-        #expect(!nullDevice.setNominalSampleRate(96000))
+        #expect(kAudioHardwareNoError != nullDevice.setNominalSampleRate(24000))
+        #expect(kAudioHardwareNoError != nullDevice.setNominalSampleRate(96000))
 
         try await tearDown()
     }
@@ -376,7 +377,7 @@ final class AudioDeviceTests: NullDeviceTestCase {
         #expect(nullDevice.clockSourceName == nil)
         #expect(nullDevice.clockSourceNames == nil)
         #expect(nullDevice.clockSourceName(clockSourceID: 0) == nil)
-        #expect(!nullDevice.setClockSourceID(0))
+        #expect(kAudioHardwareNoError != nullDevice.setClockSourceID(0))
 
         try await tearDown()
     }
@@ -414,9 +415,9 @@ final class AudioDeviceTests: NullDeviceTestCase {
         let nullDevice = try #require(nullDevice)
 
         #expect(nullDevice.hogModePID == -1)
-        #expect(nullDevice.setHogMode())
+        #expect(kAudioHardwareNoError == nullDevice.setHogMode())
         #expect(nullDevice.hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier))
-        #expect(nullDevice.unsetHogMode())
+        #expect(kAudioHardwareNoError == nullDevice.unsetHogMode())
         #expect(nullDevice.hogModePID == -1)
 
         try await tearDown()

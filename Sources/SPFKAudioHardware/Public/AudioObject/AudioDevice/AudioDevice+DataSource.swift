@@ -11,8 +11,10 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `UInt32` array containing all the item IDs.
     func dataSource(scope: Scope) -> [UInt32]? {
-        guard let address = validAddress(selector: kAudioDevicePropertyDataSource,
-                                         scope: scope.propertyScope) else { return nil }
+        guard let address = validAddress(
+            selector: kAudioDevicePropertyDataSource,
+            scope: scope.propertyScope
+        ) else { return nil }
 
         var dataSourceIDs = [UInt32]()
         let status = getPropertyDataArray(address, value: &dataSourceIDs, andDefaultValue: 0)
@@ -26,8 +28,10 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `UInt32` array containing all the item IDs.
     func dataSources(scope: Scope) -> [UInt32]? {
-        guard let address = validAddress(selector: kAudioDevicePropertyDataSources,
-                                         scope: scope.propertyScope) else { return nil }
+        guard let address = validAddress(
+            selector: kAudioDevicePropertyDataSources,
+            scope: scope.propertyScope
+        ) else { return nil }
 
         var dataSourceIDs = [UInt32]()
         let status = getPropertyDataArray(address, value: &dataSourceIDs, andDefaultValue: 0)
@@ -44,12 +48,12 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `String` with the data source name.
     func dataSourceName(dataSourceID: UInt32, scope: Scope) -> String? {
         var name: CFString = "" as CFString
-        var mDataSourceID = dataSourceID
+        var dataSourceID = dataSourceID
 
-        let status: OSStatus = withUnsafeMutablePointer(to: &mDataSourceID) { mDataSourceIDPtr in
+        let status: OSStatus = withUnsafeMutablePointer(to: &dataSourceID) { dataSourceIDPtr in
             withUnsafeMutablePointer(to: &name) { namePtr in
                 var translation = AudioValueTranslation(
-                    mInputData: mDataSourceIDPtr,
+                    mInputData: dataSourceIDPtr,
                     mInputDataSize: UInt32(MemoryLayout<UInt32>.size),
                     mOutputData: namePtr,
                     mOutputDataSize: UInt32(MemoryLayout<CFString>.size)

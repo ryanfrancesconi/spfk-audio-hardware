@@ -70,7 +70,7 @@ extension AudioObjectPropertyListener {
             objectID: objectID,
             propertyAddress: propertyAddress
         ) else {
-            Log.error("unmatched notification type for propertyAddress:", propertyAddress)
+            // ignore unhandled events
             return
         }
 

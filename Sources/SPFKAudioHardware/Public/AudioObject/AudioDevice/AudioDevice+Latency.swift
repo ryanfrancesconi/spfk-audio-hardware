@@ -117,9 +117,11 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult
-    func setBufferFrameSize(_ frameSize: UInt32, scope: Scope) -> Bool {
-        guard let address = validAddress(selector: kAudioDevicePropertyBufferFrameSize,
-                                         scope: scope.propertyScope) else { return false }
+    func setBufferFrameSize(_ frameSize: UInt32, scope: Scope) -> OSStatus {
+        guard let address = validAddress(
+            selector: kAudioDevicePropertyBufferFrameSize,
+            scope: scope.propertyScope
+        ) else { return kAudioHardwareBadObjectError }
 
         return setProperty(address: address, value: frameSize)
     }
@@ -142,8 +144,10 @@ public extension AudioDevice {
               let firstRange = ranges.first else { return nil }
 
         // limit it to these common sizes
-        let possibleBufferSizes: [UInt32] = [16, 32, 64, 128, 256,
-                                             512, 1024, 2048, 4096]
+        let possibleBufferSizes: [UInt32] = [
+            16, 32, 64, 128, 256,
+            512, 1024, 2048, 4096,
+        ]
 
         guard let lowerBound = possibleBufferSizes.first,
               let upperBound = possibleBufferSizes.last else { return nil }

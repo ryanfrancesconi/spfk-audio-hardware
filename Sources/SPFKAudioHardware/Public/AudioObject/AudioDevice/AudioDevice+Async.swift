@@ -34,8 +34,10 @@ extension AudioDevice {
             return device.nominalSampleRate
         }
 
-        guard setNominalSampleRate(sampleRate) else {
-            throw NSError(description: "Failed to update device sample rate to \(sampleRate).")
+        let status = setNominalSampleRate(sampleRate)
+
+        guard kAudioHardwareNoError == status else {
+            throw NSError(description: "(kAudioDevicePropertyNominalSampleRate) Action failed to update \(name)'s sample rate to \(sampleRate) with error \(status.fourCharCodeToString()).")
         }
 
         let result = await task.result
@@ -43,7 +45,7 @@ extension AudioDevice {
         switch result {
         case let .success(newSampleRate):
             guard let newSampleRate, sampleRate == newSampleRate else {
-                throw NSError(description: "Failed to update device sample rate to \(sampleRate).")
+                throw NSError(description: "Device wasn't updated. Failed to update \(name)'s sample rate to \(sampleRate).")
             }
 
         case let .failure(error):
@@ -52,4 +54,6 @@ extension AudioDevice {
 
         // OK
     }
+    
+    // TODO: more setters
 }

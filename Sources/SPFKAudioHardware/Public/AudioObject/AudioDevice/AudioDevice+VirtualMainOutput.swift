@@ -14,8 +14,10 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` when the volume can be set, `false` otherwise.
     func canSetVirtualMainVolume(scope: Scope) -> Bool {
-        guard validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-                           scope: scope.propertyScope) != nil else { return false }
+        guard validAddress(
+            selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+            scope: scope.propertyScope
+        ) != nil else { return false }
 
         return true
     }
@@ -25,9 +27,11 @@ public extension AudioDevice {
     /// - Parameter volume: The new volume as a scalar value ranging from 0 to 1.
     /// - Parameter scope: A scope.
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> Bool {
-        guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-                                         scope: scope.propertyScope) else { return false }
+    @discardableResult func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> OSStatus {
+        guard let address = validAddress(
+            selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+            scope: scope.propertyScope
+        ) else { return kAudioHardwareBadObjectError }
 
         return setProperty(address: address, value: volume)
     }
@@ -38,8 +42,10 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `Float32` value with the scalar volume.
     func virtualMainVolume(scope: Scope) -> Float32? {
-        guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-                                         scope: scope.propertyScope) else { return nil }
+        guard let address = validAddress(
+            selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+            scope: scope.propertyScope
+        ) else { return nil }
 
         return getProperty(address: address)
     }
@@ -70,8 +76,10 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` when the balance can be set, `false` otherwise.
     func canSetVirtualMainBalance(scope: Scope) -> Bool {
-        guard validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
-                           scope: scope.propertyScope) != nil else { return false }
+        guard validAddress(
+            selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
+            scope: scope.propertyScope
+        ) != nil else { return false }
 
         return true
     }
@@ -85,8 +93,10 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `Float32` value with the stereo balance.
     func virtualMainBalance(scope: Scope) -> Float32? {
-        guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
-                                         scope: scope.propertyScope) else { return nil }
+        guard let address = validAddress(
+            selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
+            scope: scope.propertyScope
+        ) else { return nil }
 
         return getProperty(address: address)
     }
@@ -100,9 +110,11 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setVirtualMainBalance(_ value: Float32, scope: Scope) -> Bool {
-        guard let address = validAddress(selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
-                                         scope: scope.propertyScope) else { return false }
+    @discardableResult func setVirtualMainBalance(_ value: Float32, scope: Scope) -> OSStatus {
+        guard let address = validAddress(
+            selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
+            scope: scope.propertyScope
+        ) else { return kAudioHardwareBadObjectError }
 
         return setProperty(address: address, value: value)
     }

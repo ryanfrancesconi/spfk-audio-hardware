@@ -89,7 +89,6 @@ extension AudioObjectModel {
 
         guard let address = validAddress(selector: kAudioObjectPropertyName) else { return nil }
         guard kAudioHardwareNoError == getPropertyData(address, andValue: &name) else { return nil }
-
         return name as String
     }
 }
@@ -101,7 +100,9 @@ extension AudioObjectModel {
         element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain
     ) -> AudioObjectPropertyAddress? {
         var address = AudioObjectPropertyAddress(selector: selector, scope: scope, element: element)
+
         guard AudioObjectHasProperty(objectID, &address) else { return nil }
+
         return address
     }
 }
@@ -143,7 +144,9 @@ extension AudioObjectModel {
                                  andValue value: inout [T]) -> OSStatus {
         Self.setPropertyDataArray(objectID, address: address, andValue: &value)
     }
+}
 
+extension AudioObjectModel {
     private func getProperty<T>(address: AudioObjectPropertyAddress, defaultValue: T) -> T? {
         var value = defaultValue
         let status = getPropertyData(address, andValue: &value)
@@ -177,7 +180,7 @@ extension AudioObjectModel {
         return Bool(value)
     }
 
-    func setProperty<T>(address: AudioObjectPropertyAddress, value: T) -> Bool {
+    func setProperty<T>(address: AudioObjectPropertyAddress, value: T) -> OSStatus {
         let status: OSStatus
 
         if let unwrappedValue = value as? Bool {
@@ -193,11 +196,6 @@ extension AudioObjectModel {
             status = setPropertyData(address, andValue: &newValue)
         }
 
-        guard status == kAudioHardwareNoError else {
-            Log.error("Failed to setProperty with status \(status.fourCharCodeToString())")
-            return false
-        }
-
-        return true
+        return status
     }
 }

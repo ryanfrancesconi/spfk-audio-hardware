@@ -19,8 +19,8 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `String` containing the clock source name.
     var clockSourceName: String? {
-        guard let sourceID = clockSourceID else { return nil }
-        return clockSourceName(clockSourceID: sourceID)
+        guard let clockSourceID else { return nil }
+        return clockSourceName(clockSourceID: clockSourceID)
     }
 
     /// A list of all the clock source identifiers available for this audio device.
@@ -40,7 +40,7 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `String` array containing all the clock source names.
     var clockSourceNames: [String]? {
-        guard let clockSourceIDs = clockSourceIDs else { return nil }
+        guard let clockSourceIDs else { return nil }
 
         return clockSourceIDs.map {
             // We expect clockSourceNameForClockSourceID to never fail in this case,
@@ -56,12 +56,12 @@ public extension AudioDevice {
     /// - Returns: *(optional)* A `String` with the source clock name.
     func clockSourceName(clockSourceID: UInt32) -> String? {
         var name: CFString = "" as CFString
-        var mClockSourceID = clockSourceID
+        var clockSourceID = clockSourceID
 
-        let status: OSStatus = withUnsafeMutablePointer(to: &mClockSourceID) { mClockSourceIDPtr in
+        let status: OSStatus = withUnsafeMutablePointer(to: &clockSourceID) { clockSourceIDPtr in
             withUnsafeMutablePointer(to: &name) { namePtr in
                 var translation = AudioValueTranslation(
-                    mInputData: mClockSourceIDPtr,
+                    mInputData: clockSourceIDPtr,
                     mInputDataSize: UInt32(MemoryLayout<UInt32>.size),
                     mOutputData: namePtr,
                     mOutputDataSize: UInt32(MemoryLayout<CFString>.size)
@@ -85,8 +85,8 @@ public extension AudioDevice {
     /// - Parameter clockSourceID: A clock source ID.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setClockSourceID(_ clockSourceID: UInt32) -> Bool {
-        guard let address = validAddress(selector: kAudioDevicePropertyClockSource) else { return false }
+    @discardableResult func setClockSourceID(_ clockSourceID: UInt32) -> OSStatus {
+        guard let address = validAddress(selector: kAudioDevicePropertyClockSource) else { return kAudioHardwareBadObjectError }
         return setProperty(address: address, value: clockSourceID)
     }
 }

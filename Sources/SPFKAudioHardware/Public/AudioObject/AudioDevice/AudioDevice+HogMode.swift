@@ -4,7 +4,7 @@
 import CoreAudio
 import Foundation
 
-// MARK: - Hog Mode Functions
+// MARK: - Hog Mode Functions 'oink'
 
 public extension AudioDevice {
     /// Indicates the `pid` that currently owns exclusive access to the audio device or
@@ -12,8 +12,10 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `pid_t` value.
     var hogModePID: pid_t? {
-        guard let address = validAddress(selector: kAudioDevicePropertyHogMode,
-                                         scope: kAudioObjectPropertyScopeWildcard) else { return nil }
+        guard let address = validAddress(
+            selector: kAudioDevicePropertyHogMode,
+            scope: kAudioObjectPropertyScopeWildcard
+        ) else { return nil }
 
         var pid = pid_t()
         let status = getPropertyData(address, andValue: &pid)
@@ -24,9 +26,11 @@ public extension AudioDevice {
     /// Toggles hog mode on/off
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    private func toggleHogMode() -> Bool {
-        guard let address = validAddress(selector: kAudioDevicePropertyHogMode,
-                                         scope: kAudioObjectPropertyScopeWildcard) else { return false }
+    private func toggleHogMode() -> OSStatus {
+        guard let address = validAddress(
+            selector: kAudioDevicePropertyHogMode,
+            scope: kAudioObjectPropertyScopeWildcard
+        ) else { return kAudioHardwareBadObjectError }
 
         return setProperty(address: address, value: 0)
     }
@@ -36,8 +40,8 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult
-    func setHogMode() -> Bool {
-        guard hogModePID != pid_t(ProcessInfo.processInfo.processIdentifier) else { return false }
+    func setHogMode() -> OSStatus {
+        guard hogModePID != pid_t(ProcessInfo.processInfo.processIdentifier) else { return kAudioHardwareBadObjectError }
 
         return toggleHogMode()
     }
@@ -47,8 +51,8 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult
-    func unsetHogMode() -> Bool {
-        guard hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier) else { return false }
+    func unsetHogMode() -> OSStatus {
+        guard hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier) else { return kAudioHardwareBadObjectError }
 
         return toggleHogMode()
     }

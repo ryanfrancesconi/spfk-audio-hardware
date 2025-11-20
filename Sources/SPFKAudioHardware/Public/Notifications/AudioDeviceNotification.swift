@@ -121,6 +121,10 @@ extension AudioDeviceNotification: PropertyAddressNotification {
         case kAudioDevicePropertyIOStoppedAbnormally:
             self = .deviceIOStoppedAbnormally(objectID: objectID)
 
+        case kAudioAggregateDevicePropertyMainSubDevice:
+            Log.error("kAudioAggregateDevicePropertyMainSubDevice")
+            return nil
+
         default:
             Log.error("AudioDeviceNotification: unhandled mSelector (\(propertyAddress.mSelector.fourCharCodeToString() ?? "nil"))")
             return nil

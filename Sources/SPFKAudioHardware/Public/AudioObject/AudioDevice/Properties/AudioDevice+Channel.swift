@@ -7,7 +7,7 @@ import Foundation
 /// Represents a pair of stereo channel numbers.
 public typealias StereoPair = (left: UInt32, right: UInt32)
 
-// MARK: - ⇉ Individual Channel Functions
+// MARK: - Individual Channel Functions
 
 public extension AudioDevice {
     /// A `VolumeInfo` struct containing information about a particular channel and scope combination.
@@ -125,10 +125,10 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setVolume(_ volume: Float32, channel: UInt32, scope: Scope) -> Bool {
+    @discardableResult func setVolume(_ volume: Float32, channel: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyVolumeScalar,
                                          scope: scope.propertyScope,
-                                         element: channel) else { return false }
+                                         element: channel) else { return kAudioHardwareBadObjectError }
 
         return setProperty(address: address, value: volume)
     }
@@ -140,10 +140,10 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setMute(_ shouldMute: Bool, channel: UInt32, scope: Scope) -> Bool {
+    @discardableResult func setMute(_ shouldMute: Bool, channel: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyMute,
                                          scope: scope.propertyScope,
-                                         element: channel) else { return false }
+                                         element: channel) else { return kAudioHardwareBadObjectError }
 
         return setProperty(address: address, value: shouldMute)
     }
@@ -232,13 +232,13 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setPreferredChannelsForStereo(channels: StereoPair, scope: Scope) -> Bool {
-        guard let address = validAddress(selector: kAudioDevicePropertyPreferredChannelsForStereo,
-                                         scope: scope.propertyScope) else { return false }
+    @discardableResult func setPreferredChannelsForStereo(channels: StereoPair, scope: Scope) -> OSStatus {
+        guard let address = validAddress(
+            selector: kAudioDevicePropertyPreferredChannelsForStereo,
+            scope: scope.propertyScope
+        ) else { return kAudioHardwareBadObjectError }
 
         var preferredChannels = [channels.left, channels.right]
-        let status = setPropertyDataArray(address, andValue: &preferredChannels)
-
-        return noErr == status
+        return setPropertyDataArray(address, andValue: &preferredChannels)
     }
 }
