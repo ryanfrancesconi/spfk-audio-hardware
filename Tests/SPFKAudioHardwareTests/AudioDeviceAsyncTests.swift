@@ -7,14 +7,5 @@ import Testing
 
 @Suite(.serialized)
 final class AudioDeviceAsyncTests: NullDeviceTestCase {
-    @Test(arguments: [48000])
-    func sampleRateDidChangeNotification(targetSampleRate: Float64) async throws {
-        let nullDevice = try #require(nullDevice)
 
-        try await nullDevice.update(sampleRate: targetSampleRate)
-
-        #expect(targetSampleRate == nullDevice.nominalSampleRate)
-
-        try await tearDown()
-    }
 }

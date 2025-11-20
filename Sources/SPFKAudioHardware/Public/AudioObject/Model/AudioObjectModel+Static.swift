@@ -23,7 +23,7 @@ extension AudioObjectModel {
                                                               &qualifierData,
                                                               &size)
 
-        assert(status == noErr)
+        assert(status == kAudioHardwareNoError)
         return status
     }
 
@@ -43,29 +43,35 @@ extension AudioObjectModel {
                                            &size)
         }
 
-        assert(status == noErr)
+        assert(status == kAudioHardwareNoError)
         return status
     }
 }
 
 extension AudioObjectModel {
-    static func address(selector: AudioObjectPropertySelector,
-                        scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
-                        element: AudioObjectPropertyElement = Element.main.propertyElement) -> AudioObjectPropertyAddress {
-        AudioObjectPropertyAddress(mSelector: selector, mScope: scope, mElement: element)
-    }
+//    static func address(selector: AudioObjectPropertySelector,
+//                        scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
+//                        element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain) -> AudioObjectPropertyAddress {
+//        AudioObjectPropertyAddress(mSelector: selector, mScope: scope, mElement: element)
+//    }
+
+//    static func address(selector: AudioObjectPropertySelector,
+//                        scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
+//                        element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain) -> AudioObjectPropertyAddress {
+//        AudioObjectPropertyAddress(selector: selector, scope: scope, element: element)
+//    }
 
     static func getPropertyData<T>(_ objectID: AudioObjectID,
                                    address: AudioObjectPropertyAddress,
                                    andValue value: inout T) -> OSStatus {
         var theAddress = address
         var size = UInt32(MemoryLayout<T>.size)
-        var status: OSStatus = -1
+        var status: OSStatus = kAudioHardwareBadObjectError
 
         func verify<Q>(status: OSStatus, localValue: Q) -> OSStatus {
-            guard status == noErr else { return status }
+            guard status == kAudioHardwareNoError else { return status }
 
-            guard let unwrapped = localValue as? T else { return -1 }
+            guard let unwrapped = localValue as? T else { return kAudioHardwareBadObjectError }
             // assign inout T
             value = unwrapped
             return status
@@ -115,7 +121,7 @@ extension AudioObjectModel {
     private static func getPropertyStringData<T>(_ objectID: AudioObjectID,
                                                  address: AudioObjectPropertyAddress,
                                                  andValue value: inout T) -> OSStatus {
-        guard let localValue = value as? String else { return -1 }
+        guard let localValue = value as? String else { return kAudioHardwareBadObjectError }
 
         var theAddress = address
         var size = UInt32(MemoryLayout<T>.size)
@@ -123,9 +129,9 @@ extension AudioObjectModel {
 
         let returnValue = withUnsafeMutablePointer(to: &cfValue) { ptr in
             let status = AudioObjectGetPropertyData(objectID, &theAddress, UInt32(0), nil, &size, ptr)
-            guard status == noErr else { return status }
+            guard status == kAudioHardwareNoError else { return status }
 
-            guard let unwrapped = ptr.pointee as? T else { return -1 }
+            guard let unwrapped = ptr.pointee as? T else { return kAudioHardwareBadObjectError }
 
             // assign inout T
             value = unwrapped
@@ -151,7 +157,7 @@ extension AudioObjectModel {
                                                   qualifierData: &qualifierData,
                                                   andSize: &size)
 
-        if noErr == sizeStatus {
+        if kAudioHardwareNoError == sizeStatus {
             value = [T](repeating: defaultValue, count: Int(size) / MemoryLayout<T>.size)
         } else {
             return sizeStatus
@@ -161,7 +167,7 @@ extension AudioObjectModel {
         let qualifierDataSize = qualifierDataSize ?? UInt32(0)
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
-            guard let baseAddress = bufferPtr.baseAddress else { return -1 }
+            guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
             return AudioObjectGetPropertyData(objectID, &theAddress, qualifierDataSize, &qualifierData, &size, baseAddress)
         }
 
@@ -207,7 +213,7 @@ extension AudioObjectModel {
         let size = UInt32(value.count * MemoryLayout<T>.size)
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
-            guard let baseAddress = bufferPtr.baseAddress else { return -1 }
+            guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
             return AudioObjectSetPropertyData(objectID, &theAddress, UInt32(0), nil, size, baseAddress)
         }
 

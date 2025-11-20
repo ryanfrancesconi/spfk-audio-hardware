@@ -58,7 +58,7 @@ public extension AudioDevice {
                 let address = AudioObjectPropertyAddress(
                     mSelector: kAudioDevicePropertyDataSourceNameForIDCFString,
                     mScope: scope.propertyScope,
-                    mElement: Element.main.propertyElement
+                    mElement: kAudioObjectPropertyElementMain
                 )
 
                 return getPropertyData(address, andValue: &translation)

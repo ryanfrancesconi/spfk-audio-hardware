@@ -135,7 +135,7 @@ extension AudioStream {
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioStreamPropertyAvailablePhysicalFormats,
             mScope: scope.propertyScope,
-            mElement: Element.main.propertyElement
+            mElement: kAudioObjectPropertyElementMain
         )
 
         guard AudioObjectHasProperty(objectID, &address) else { return nil }
@@ -158,7 +158,7 @@ extension AudioStream {
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioStreamPropertyAvailableVirtualFormats,
             mScope: scope.propertyScope,
-            mElement: Element.main.propertyElement
+            mElement: kAudioObjectPropertyElementMain
         )
 
         guard AudioObjectHasProperty(objectID, &address) else { return nil }
@@ -191,7 +191,7 @@ private extension AudioStream {
         var address = AudioObjectPropertyAddress(
             mSelector: selector,
             mScope: scope.propertyScope,
-            mElement: Element.main.propertyElement
+            mElement: kAudioObjectPropertyElementMain
         )
 
         guard AudioObjectHasProperty(objectID, &address) else { return nil }
@@ -215,7 +215,7 @@ private extension AudioStream {
         var address = AudioObjectPropertyAddress(
             mSelector: selector,
             mScope: scope.propertyScope,
-            mElement: Element.main.propertyElement
+            mElement: kAudioObjectPropertyElementMain
         )
 
         guard AudioObjectHasProperty(objectID, &address) else { return nil }

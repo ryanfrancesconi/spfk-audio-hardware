@@ -3,6 +3,7 @@
 
 import CoreAudio.AudioHardware
 import Foundation
+import SPFKBase
 
 public enum AudioDeviceNotification: Hashable, Sendable {
     /// Called whenever the audio device's sample rate changes.
@@ -121,6 +122,7 @@ extension AudioDeviceNotification: PropertyAddressNotification {
             self = .deviceIOStoppedAbnormally(objectID: objectID)
 
         default:
+            Log.error("AudioDeviceNotification: unhandled mSelector (\(propertyAddress.mSelector.fourCharCodeToString() ?? "nil"))")
             return nil
         }
     }
@@ -202,6 +204,6 @@ extension AudioDeviceNotification {
             id = objectID
         }
 
-        return await AudioDevice.lookup(by: id)
+        return await AudioObjectPool.shared.lookup(id: id)
     }
 }

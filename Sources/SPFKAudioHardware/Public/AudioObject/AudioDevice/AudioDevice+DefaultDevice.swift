@@ -24,7 +24,7 @@ extension AudioDevice {
     /// - Parameter deviceType: `AudioObjectPropertySelector`
     /// - Returns: `OSStatus` with error or noErr if succeeds
     @discardableResult private func promote(to type: AudioObjectPropertySelector) -> OSStatus {
-        let address = Self.address(selector: type)
+        let address = AudioObjectPropertyAddress(selector: type)
 
         var deviceID = UInt32(id)
 

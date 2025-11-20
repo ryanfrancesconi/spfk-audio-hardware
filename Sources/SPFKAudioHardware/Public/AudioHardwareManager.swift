@@ -15,14 +15,14 @@ import SPFKBase
 public final class AudioHardwareManager {
     // MARK: - Private Static Properties
 
-    private static var sharedHardware: AudioHardwareListener!
+    private static var sharedObserver: AudioHardwareObserver!
     private static let instances = ManagedAtomic<Int>(0)
 
     public var eventHandler: ((AudioHardwareNotification) -> Void)?
 
     // MARK: - Private Properties
 
-    let hardware: AudioHardwareListener
+    let observer: AudioHardwareObserver
 
     private var instanceId: Int
 
@@ -34,10 +34,10 @@ public final class AudioHardwareManager {
         instanceId = Self.instances.load(ordering: .acquiring)
 
         if instanceId == 0 {
-            Self.sharedHardware = AudioHardwareListener()
+            Self.sharedObserver = AudioHardwareObserver()
 
             do {
-                try await Self.sharedHardware.start()
+                try await Self.sharedObserver.start()
             } catch {
                 Log.error(error)
             }
@@ -45,9 +45,9 @@ public final class AudioHardwareManager {
 
         Self.instances.wrappingIncrement(ordering: .acquiring)
 
-        hardware = Self.sharedHardware
+        observer = Self.sharedObserver
 
-        hardware.eventHandler = { [weak self] notification in
+        observer.eventHandler = { [weak self] notification in
             guard let self else { return }
 
             eventHandler?(notification)
@@ -69,14 +69,13 @@ public final class AudioHardwareManager {
 
         if Self.instances.load(ordering: .acquiring) == 0 {
             do {
-                try await Self.sharedHardware.stop()
-
-                try await Self.sharedHardware.cache.unregister()
+                try await Self.sharedObserver.stop()
+                try await Self.sharedObserver.cache.unregister()
             } catch {
                 Log.error(error)
             }
 
-            Self.sharedHardware = nil
+            Self.sharedObserver = nil
 
             Log.debug("- { \(self) }")
         }

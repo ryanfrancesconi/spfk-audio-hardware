@@ -7,14 +7,14 @@ import SPFKBase
 
 extension AudioDevice {
     public static func defaultDevice(of deviceType: DefaultSelectorType) async -> AudioDevice? {
-        let address = AudioDevice.address(selector: deviceType.propertySelector)
+        let address = AudioObjectPropertyAddress(selector: deviceType.propertySelector)
         var deviceID = AudioDeviceID()
 
         let status = AudioDevice.getPropertyData(AudioObjectID(kAudioObjectSystemObject),
                                                  address: address,
                                                  andValue: &deviceID)
 
-        return await noErr == status ? AudioObjectPool.shared.lookup(by: deviceID) : nil
+        return await noErr == status ? AudioObjectPool.shared.lookup(id: deviceID) : nil
     }
 
     /// Returns an `AudioDevice` by providing a valid audio device unique identifier.
@@ -22,11 +22,11 @@ extension AudioDevice {
     /// - Parameter uid: An audio device unique identifier.
     ///
     /// - Note: If unique identifier is not valid, `nil` will be returned.
-    public static func lookup(by uid: String) async -> AudioDevice? {
+    public static func lookup(uid: String) async -> AudioDevice? {
         let address = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDeviceForUID,
             mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: Element.main.propertyElement
+            mElement: kAudioObjectPropertyElementMain
         )
 
         var deviceID = kAudioObjectUnknown
@@ -53,6 +53,6 @@ extension AudioDevice {
             return nil
         }
 
-        return await AudioObjectPool.shared.lookup(by: deviceID)
+        return await AudioObjectPool.shared.lookup(id: deviceID)
     }
 }

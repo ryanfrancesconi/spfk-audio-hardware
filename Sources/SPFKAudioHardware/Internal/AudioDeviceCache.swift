@@ -13,7 +13,7 @@ actor AudioDeviceCache {
         let address = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDevices,
             mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: Element.main.propertyElement
+            mElement: kAudioObjectPropertyElementMain
         )
 
         let systemObjectID = AudioObjectID(kAudioObjectSystemObject)
@@ -34,7 +34,7 @@ actor AudioDeviceCache {
             let ids = allDeviceIDs
 
             let allDevices: [AudioDevice] = await ids.async.compactMap {
-                await AudioObjectPool.shared.lookup(by: $0)
+                await AudioObjectPool.shared.lookup(id: $0)
             }.toArray()
 
             return allDevices

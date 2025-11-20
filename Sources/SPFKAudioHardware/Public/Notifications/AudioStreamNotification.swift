@@ -3,6 +3,7 @@
 
 import CoreAudio.AudioHardware
 import Foundation
+import SPFKBase
 
 public enum AudioStreamNotification: Hashable, Sendable {
     /// Called whenever the audio stream `isActive` flag changes.
@@ -22,6 +23,7 @@ extension AudioStreamNotification: PropertyAddressNotification {
             self = .streamPhysicalFormatDidChange(objectID: objectID)
 
         default:
+            Log.error("AudioStreamNotification: unhandled mSelector (\(propertyAddress.mSelector.fourCharCodeToString() ?? "nil"))")
             return nil
         }
     }

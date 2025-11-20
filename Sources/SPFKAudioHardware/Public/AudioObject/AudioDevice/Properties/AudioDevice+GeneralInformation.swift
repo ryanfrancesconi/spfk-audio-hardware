@@ -148,7 +148,7 @@ public extension AudioDevice {
             let status = getPropertyDataArray(address, value: &relatedDevices, andDefaultValue: AudioDeviceID())
 
             if noErr == status {
-                return await relatedDevices.async.compactMap { await AudioObjectPool.shared.lookup(by: $0) }.toArray()
+                return await relatedDevices.async.compactMap { await AudioObjectPool.shared.lookup(id: $0) }.toArray()
             }
 
             return nil

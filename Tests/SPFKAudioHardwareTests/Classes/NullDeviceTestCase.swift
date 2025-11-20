@@ -17,7 +17,7 @@ class NullDeviceTestCase: SCATestCase {
 
     override public init() async throws {
         try await super.init()
-        nullDevice = await AudioDevice.lookup(by: nullDevice_uid)
+        nullDevice = await AudioDevice.lookup(uid: nullDevice_uid)
         try await resetNullDeviceState()
     }
 

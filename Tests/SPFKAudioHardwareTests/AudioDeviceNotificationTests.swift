@@ -8,6 +8,17 @@ import Testing
 
 @Suite(.serialized)
 final class AudioDeviceNotificationTests: NullDeviceTestCase {
+    @Test(arguments: [48000])
+    func sampleRateDidChangeNotification(targetSampleRate: Float64) async throws {
+        let nullDevice = try #require(nullDevice)
+
+        try await nullDevice.update(sampleRate: targetSampleRate)
+
+        #expect(targetSampleRate == nullDevice.nominalSampleRate)
+
+        try await tearDown()
+    }
+
     @Test(arguments: [Scope.output, Scope.input])
     func volumeDidChangeNotification(scopeToTest: Scope) async throws {
         let nullDevice = try #require(nullDevice)
@@ -56,6 +67,16 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         }
 
         #expect(nullDevice.isMuted(channel: 0, scope: scopeToTest) == true)
+
+        try await tearDown()
+    }
+
+    @Test func deviceListening() async throws {
+        await AudioObjectPool.shared.stopListening()
+        try await wait(sec: 0.2)
+        await AudioObjectPool.shared.startListening()
+        try await wait(sec: 0.2)
+        await AudioObjectPool.shared.stopListening()
 
         try await tearDown()
     }

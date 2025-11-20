@@ -27,7 +27,7 @@ public extension AudioDevice {
             guard let ownedObjectIDs, ownedObjectIDs.isNotEmpty else { return nil }
             
             let devices: [AudioDevice] = await ownedObjectIDs.async.compactMap {
-                await AudioObjectPool.shared.lookup(by: $0)
+                await AudioObjectPool.shared.lookup(id: $0)
             }.toArray()
             
             return devices

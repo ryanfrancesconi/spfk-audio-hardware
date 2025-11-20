@@ -6,7 +6,11 @@ import Foundation
 
 /// Indicates the scope used by an `AudioDevice` or `AudioStream`.
 ///
-/// Please notice that `AudioStream` only supports `input` and `output` scopes,
+/// The scope specifies the section of the object in which to look for the property,
+/// such as input, output, global, etc. Note that each class has a different set of
+/// scopes. A subclass inherits its superclass's set of scopes.
+///
+/// - Please note that `AudioStream` only supports `input` and `output` scopes,
 /// whether as `AudioDevice` may, additionally, support `global` and `playthrough`.
 public enum Scope: Sendable {
     /// The AudioObjectPropertyScope for properties that apply to the object as a
@@ -38,12 +42,18 @@ public enum Scope: Sendable {
 extension Scope {
     var propertyScope: AudioObjectPropertyScope {
         switch self {
-        case .global: return kAudioObjectPropertyScopeGlobal
-        case .input: return kAudioObjectPropertyScopeInput
-        case .output: return kAudioObjectPropertyScopeOutput
-        case .playthrough: return kAudioObjectPropertyScopePlayThrough
-        case .main: return kAudioObjectPropertyElementMain
-        case .wildcard: return kAudioObjectPropertyScopeWildcard
+        case .global:
+            kAudioObjectPropertyScopeGlobal
+        case .input:
+            kAudioObjectPropertyScopeInput
+        case .output:
+            kAudioObjectPropertyScopeOutput
+        case .playthrough:
+            kAudioObjectPropertyScopePlayThrough
+        case .main:
+            kAudioObjectPropertyElementMain
+        case .wildcard:
+            kAudioObjectPropertyScopeWildcard
         }
     }
 
@@ -63,10 +73,6 @@ extension Scope {
             self = .wildcard
         default:
             // Note, the default is only here to satisfy the switch to be exhaustive.
-            // It already defines the complete set of AudioObjectPropertyScope from
-            // AudioHardware.h, so it's pretty unlikely this would be returned. The
-            // only case should be if Apple adds a new scope type - which seems fairly
-            // unlikely
             self = .wildcard
         }
     }

@@ -11,11 +11,10 @@ import Testing
 final class AudioDeviceTests: NullDeviceTestCase {
     @Test func deviceLookUp() async throws {
         let nullDevice = try #require(nullDevice)
-
         let deviceUID = try #require(nullDevice.uid)
 
-        await #expect(AudioObjectPool.shared.lookup(by: nullDevice.id) == nullDevice)
-        await #expect(AudioDevice.lookup(by: deviceUID) == nullDevice)
+        await #expect(AudioObjectPool.shared.lookup(id: nullDevice.id) == nullDevice)
+        await #expect(AudioDevice.lookup(uid: deviceUID) == nullDevice)
         try await tearDown()
     }
 

@@ -44,7 +44,7 @@ extension AudioObjectModel {
 
         var acid = AudioClassID()
 
-        guard noErr == getPropertyData(address, andValue: &acid) else { return nil }
+        guard kAudioHardwareNoError == getPropertyData(address, andValue: &acid) else { return nil }
 
         return acid
     }
@@ -57,7 +57,7 @@ extension AudioObjectModel {
 
         var objectID = AudioObjectID()
 
-        guard noErr == getPropertyData(address, andValue: &objectID) else { return nil }
+        guard kAudioHardwareNoError == getPropertyData(address, andValue: &objectID) else { return nil }
 
         return try await AudioObjectOwner(objectID: objectID)
     }
@@ -77,7 +77,7 @@ extension AudioObjectModel {
                 return nil
             }
 
-            return await AudioDevice.lookup(by: object.objectID)
+            return await AudioObjectPool.shared.lookup(id: object.objectID)
         }
     }
 
@@ -88,9 +88,21 @@ extension AudioObjectModel {
         var name: CFString = "" as CFString
 
         guard let address = validAddress(selector: kAudioObjectPropertyName) else { return nil }
-        guard noErr == getPropertyData(address, andValue: &name) else { return nil }
+        guard kAudioHardwareNoError == getPropertyData(address, andValue: &name) else { return nil }
 
         return name as String
+    }
+}
+
+extension AudioObjectModel {
+    func validAddress(
+        selector: AudioObjectPropertySelector,
+        scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
+        element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain
+    ) -> AudioObjectPropertyAddress? {
+        var address = AudioObjectPropertyAddress(selector: selector, scope: scope, element: element)
+        guard AudioObjectHasProperty(objectID, &address) else { return nil }
+        return address
     }
 }
 
@@ -132,21 +144,11 @@ extension AudioObjectModel {
         Self.setPropertyDataArray(objectID, address: address, andValue: &value)
     }
 
-    func validAddress(selector: AudioObjectPropertySelector,
-                      scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
-                      element: AudioObjectPropertyElement = Element.main.propertyElement) -> AudioObjectPropertyAddress? {
-        var address = Self.address(selector: selector, scope: scope, element: element)
-
-        guard AudioObjectHasProperty(objectID, &address) else { return nil }
-
-        return address
-    }
-
     private func getProperty<T>(address: AudioObjectPropertyAddress, defaultValue: T) -> T? {
         var value = defaultValue
         let status = getPropertyData(address, andValue: &value)
 
-        guard status == noErr else {
+        guard status == kAudioHardwareNoError else {
             Log.error("Failed to getProperty at address (\(address) with status (\(status.fourCharCodeToString())")
             return nil
         }
@@ -191,7 +193,7 @@ extension AudioObjectModel {
             status = setPropertyData(address, andValue: &newValue)
         }
 
-        guard status == noErr else {
+        guard status == kAudioHardwareNoError else {
             Log.error("Failed to setProperty with status \(status.fourCharCodeToString())")
             return false
         }

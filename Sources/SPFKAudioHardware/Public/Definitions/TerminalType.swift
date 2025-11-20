@@ -54,33 +54,33 @@ extension TerminalType {
     static func from(_ constant: UInt32) -> TerminalType {
         switch constant {
         case kAudioStreamTerminalTypeLine:
-            return .line
+            .line
         case kAudioStreamTerminalTypeDigitalAudioInterface:
-            return .digitalAudioInterface
+            .digitalAudioInterface
         case kAudioStreamTerminalTypeSpeaker:
-            return .speaker
+            .speaker
         case kAudioStreamTerminalTypeHeadphones:
-            return .headphones
+            .headphones
         case kAudioStreamTerminalTypeLFESpeaker:
-            return .lfeSpeaker
+            .lfeSpeaker
         case kAudioStreamTerminalTypeReceiverSpeaker:
-            return .receiverSpeaker
+            .receiverSpeaker
         case kAudioStreamTerminalTypeMicrophone:
-            return .microphone
+            .microphone
         case kAudioStreamTerminalTypeHeadsetMicrophone:
-            return .headsetMicrophone
+            .headsetMicrophone
         case kAudioStreamTerminalTypeReceiverMicrophone:
-            return .receiverMicrophone
+            .receiverMicrophone
         case kAudioStreamTerminalTypeTTY:
-            return .tty
+            .tty
         case kAudioStreamTerminalTypeHDMI:
-            return .hdmi
+            .hdmi
         case kAudioStreamTerminalTypeDisplayPort:
-            return .displayPort
+            .displayPort
         case kAudioStreamTerminalTypeUnknown:
             fallthrough
         default:
-            return .unknown
+            .unknown
         }
     }
 }

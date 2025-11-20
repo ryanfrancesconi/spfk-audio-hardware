@@ -8,6 +8,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// objc bridging option with delegate
+/// will likely delete this.
 @interface PropertyListener : NSObject
 
 @property (nonatomic) AudioObjectID inObjectID;

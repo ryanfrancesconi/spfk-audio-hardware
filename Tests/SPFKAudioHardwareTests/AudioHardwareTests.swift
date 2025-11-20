@@ -34,7 +34,7 @@ final class AudioHardwareTests: NullDeviceTestCase {
 
             guard let hardwareNotification = notification.object as? AudioHardwareNotification else { return false }
 
-            guard case let .deviceListChanged(event: event) = hardwareNotification else {
+            guard case let .deviceListChanged(objectID: _, event: event) = hardwareNotification else {
                 return false
             }
 

@@ -27,7 +27,7 @@ extension AudioDevice {
                 return nil
             }
 
-            guard let device: AudioDevice = await AudioObjectPool.shared.lookup(by: objectID) else {
+            guard let device: AudioDevice = await AudioObjectPool.shared.lookup(id: objectID) else {
                 return nil
             }
 
