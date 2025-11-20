@@ -6,7 +6,7 @@ import Foundation
 import SPFKBase
 import Testing
 
-class NullDeviceTestCase: SCATestCase {
+class NullDeviceTestCase: AudioHardwareTestCase {
     let nullDevice_name = "Null Audio Device"
     let nullDevice_manufacturer = "Apple Inc."
     let nullDevice_uid = "NullAudioDevice_UID"

@@ -56,7 +56,7 @@ extension AudioDeviceCache {
     func update() async throws -> DeviceStatusEvent {
         let latestDeviceList = await allDevices
 
-        // Obtain added and removed devices.
+        // compare added and removed devices.
         var addedDevices: [AudioDevice] = []
         var removedDevices: [AudioDevice] = []
 

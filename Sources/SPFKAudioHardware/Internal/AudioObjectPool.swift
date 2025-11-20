@@ -6,7 +6,7 @@ import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
-/// Singleton AudioObjectPool which manages devices. Everything is internal except
+/// Singleton AudioObjectPool which stores devices and streams. Everything is internal except
 /// for the lookup()
 public actor AudioObjectPool {
     public static let shared = AudioObjectPool()

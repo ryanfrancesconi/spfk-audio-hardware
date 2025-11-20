@@ -6,7 +6,7 @@ import Foundation
 import SPFKBase
 import Testing
 
-class SCATestCase {
+class AudioHardwareTestCase {
     var hardwareManager: AudioHardwareManager
 
     private var defaultInputDevice: AudioDevice?
@@ -30,7 +30,7 @@ class SCATestCase {
 
 // MARK: - Private Functions
 
-private extension SCATestCase {
+private extension AudioHardwareTestCase {
     func saveDefaultDevices() async {
         defaultInputDevice = await hardwareManager.defaultInputDevice
         defaultOutputDevice = await hardwareManager.defaultOutputDevice
@@ -44,7 +44,7 @@ private extension SCATestCase {
     }
 }
 
-extension SCATestCase {
+extension AudioHardwareTestCase {
     public func wait(sec seconds: TimeInterval) async throws {
         try await Task.sleep(seconds: seconds)
     }

@@ -5,5 +5,5 @@ import Foundation
 @testable import SPFKAudioHardware
 import Testing
 
-extension SCATestCase {
+extension AudioHardwareTestCase {
 }
