@@ -8,13 +8,13 @@ import SPFKBase
 
 /// Singleton AudioObjectPool which stores devices and streams. Everything is internal except
 /// for the lookup()
-public actor AudioObjectPool {
+public actor AudioObjectPool: Sendable {
     public static let shared = AudioObjectPool()
 
     private var pool = [AudioObjectID: any AudioPropertyListenerModel]()
     private var listeners = [AudioObjectID: AudioObjectPropertyListener]()
 
-    public static var postNotifications: Bool = true
+    //public static var postNotifications: Bool = true
 
     private init() {}
 
@@ -108,7 +108,7 @@ extension AudioObjectPool {
     private func received(id: AudioObjectID, notification: any PropertyAddressNotification) {
         Log.debug("🔊 \(id)", notification)
 
-        guard Self.postNotifications else { return }
+        //guard Self.postNotifications else { return }
 
         NotificationCenter.default.post(
             name: notification.name,

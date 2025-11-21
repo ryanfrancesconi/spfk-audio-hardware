@@ -11,7 +11,9 @@ final class AudioObjectPropertyListener {
     var eventHandler: ((any PropertyAddressNotification) -> Void)?
 
     private func send(notification: any PropertyAddressNotification) {
-        Task { @MainActor in eventHandler?(notification) }
+        guard let eventHandler else { return }
+        
+        Task { @MainActor in eventHandler(notification) }
     }
 
     public private(set) var isListening: Bool = false
