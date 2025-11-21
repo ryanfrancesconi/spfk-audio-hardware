@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import Foundation
@@ -7,7 +7,7 @@ import Foundation
 extension AudioHardwareManager {
     // MARK: - Device Enumeration
 
-    /// All the audio device identifiers currently available.
+    /// All the audio device object identifiers currently available.
     ///
     /// - Note: This list may also include *Aggregate* and *Multi-Output* devices.
     ///
@@ -30,8 +30,8 @@ extension AudioHardwareManager {
     /// - Note: This list may also include *Aggregate* devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var allInputDevices: [AudioDevice] {
-        get async { await observer.cache.allInputDevices }
+    public var inputDevices: [AudioDevice] {
+        get async { await observer.cache.inputDevices }
     }
 
     /// All the devices that have at least one output.
@@ -39,8 +39,8 @@ extension AudioHardwareManager {
     /// - Note: The list may also include *Aggregate* and *Multi-Output* devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var allOutputDevices: [AudioDevice] {
-        get async { await observer.cache.allOutputDevices }
+    public var outputDevices: [AudioDevice] {
+        get async { await observer.cache.outputDevices }
     }
 
     /// All the devices that support input and output.
@@ -72,6 +72,10 @@ extension AudioHardwareManager {
     public var bluetoothDevices: [AudioDevice] {
         get async { await observer.cache.bluetoothDevices }
     }
+
+    public var splitDevices: [SplitAudioDevice] {
+        get async { await observer.cache.splitDevices }
+    }
 }
 
 extension AudioHardwareManager {
@@ -96,5 +100,25 @@ extension AudioHardwareManager {
     /// - Returns: *(optional)* An `AudioDevice`.
     public var defaultSystemOutputDevice: AudioDevice? {
         get async { await observer.cache.defaultSystemOutputDevice }
+    }
+}
+
+extension AudioHardwareManager {
+    public static func setSystemInputMute(_ shouldMute: Bool) -> OSStatus {
+        let address = AudioObjectPropertyAddress(
+            selector: kAudioHardwarePropertyProcessInputMute,
+            scope: kAudioObjectPropertyScopeInput,
+            element: kAudioObjectPropertyElementMain
+        )
+
+        var isMuted: UInt32 = shouldMute ? 1 : 0
+
+        let status = AudioDevice.setPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            address: address,
+            andValue: &isMuted
+        )
+
+        return status
     }
 }

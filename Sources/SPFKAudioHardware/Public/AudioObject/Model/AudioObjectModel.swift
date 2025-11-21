@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -73,7 +73,7 @@ extension AudioObjectModel {
             }
 
             guard object.isAudioDevice else {
-                Log.error("object.classID \(classID?.fourCharCodeToString() ?? String(describing: classID)) isn't an Audio Device")
+                Log.error("object.classID \(classID?.fourCC ?? String(describing: classID)) isn't an Audio Device")
                 return nil
             }
 
@@ -152,7 +152,7 @@ extension AudioObjectModel {
         let status = getPropertyData(address, andValue: &value)
 
         guard status == kAudioHardwareNoError else {
-            Log.error("Failed to getProperty at address (\(address) with status (\(status.fourCharCodeToString())")
+            Log.error("Failed to getProperty at address (\(address) with status (\(status.fourCC)")
             return nil
         }
 

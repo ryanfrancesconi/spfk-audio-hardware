@@ -1,6 +1,7 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
+import CoreAudio
 import Foundation
 import Numerics
 @testable import SPFKAudioHardware
@@ -10,20 +11,14 @@ import Testing
 @Suite(.serialized)
 final class AudioHardwareTests: NullDeviceTestCase {
     @Test func createAndDestroyAggregateDevice() async throws {
-        let device = try #require(try await createAggregateDevice(in: 0))
-
-        // try await wait(sec: 1)
+        let device = try await createAggregateDevice(in: 0)
 
         let isAggregateDevice = await device.isAggregateDevice
 
         #expect(isAggregateDevice)
         await #expect(device.ownedAggregateDevices?.count == 1)
 
-        // try await wait(sec: 1)
-
-        #expect(noErr == hardwareManager.removeAggregateDevice(id: device.id))
-
-        // try await wait(sec: 1)
+        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: device.id))
 
         try await tearDown()
     }
@@ -43,12 +38,12 @@ final class AudioHardwareTests: NullDeviceTestCase {
             return passed
         }
 
-        let device = try #require(try await createAggregateDevice(in: 1))
+        let device = try await createAggregateDevice(in: 1)
 
         #expect(try await task.value)
         task.cancel()
 
-        #expect(noErr == hardwareManager.removeAggregateDevice(id: device.id))
+        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: device.id))
 
         try await tearDown()
     }
@@ -56,13 +51,13 @@ final class AudioHardwareTests: NullDeviceTestCase {
     @Test(arguments: DefaultSelectorType.allCases)
     func defaultIODeviceChanged(selectorType: DefaultSelectorType) async throws {
         // this is the event that will trigger
-        let aggregateDevice = try #require(try await createAggregateDevice(in: 0))
+        let aggregateDevice = try await createAggregateDevice(in: 0)
 
         try await promoteAndWaitForEvent(device: aggregateDevice, to: selectorType)
 
         await #expect(AudioDevice.defaultDevice(of: selectorType) == aggregateDevice)
 
-        #expect(noErr == hardwareManager.removeAggregateDevice(id: aggregateDevice.id))
+        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: aggregateDevice.id))
 
         try await tearDown()
     }

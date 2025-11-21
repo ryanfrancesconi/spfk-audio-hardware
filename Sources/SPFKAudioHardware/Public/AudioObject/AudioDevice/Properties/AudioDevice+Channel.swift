@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -125,7 +125,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setVolume(_ volume: Float32, channel: UInt32, scope: Scope) -> OSStatus {
+    func setVolume(_ volume: Float32, channel: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyVolumeScalar,
                                          scope: scope.propertyScope,
                                          element: channel) else { return kAudioHardwareBadObjectError }
@@ -140,7 +140,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setMute(_ shouldMute: Bool, channel: UInt32, scope: Scope) -> OSStatus {
+    func setMute(_ shouldMute: Bool, channel: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyMute,
                                          scope: scope.propertyScope,
                                          element: channel) else { return kAudioHardwareBadObjectError }
@@ -232,7 +232,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setPreferredChannelsForStereo(channels: StereoPair, scope: Scope) -> OSStatus {
+    func setPreferredChannelsForStereo(channels: StereoPair, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioDevicePropertyPreferredChannelsForStereo,
             scope: scope.propertyScope

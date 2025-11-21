@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import AudioToolbox
 import CoreAudio
@@ -27,7 +27,7 @@ public extension AudioDevice {
     /// - Parameter volume: The new volume as a scalar value ranging from 0 to 1.
     /// - Parameter scope: A scope.
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> OSStatus {
+    func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
             scope: scope.propertyScope
@@ -110,7 +110,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setVirtualMainBalance(_ value: Float32, scope: Scope) -> OSStatus {
+    func setVirtualMainBalance(_ value: Float32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
             scope: scope.propertyScope

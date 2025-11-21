@@ -1,9 +1,10 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import AsyncAlgorithms
 import CoreAudio
 import Foundation
+import OTCore
 import SPFKBase
 
 actor AudioDeviceCache {
@@ -99,7 +100,7 @@ extension AudioDeviceCache {
 }
 
 extension AudioDeviceCache {
-    var allInputDevices: [AudioDevice] {
+    var inputDevices: [AudioDevice] {
         get async {
             await allDevices.async.filter {
                 await $0.channels(scope: .input) > 0
@@ -107,7 +108,7 @@ extension AudioDeviceCache {
         }
     }
 
-    var allOutputDevices: [AudioDevice] {
+    var outputDevices: [AudioDevice] {
         get async {
             await allDevices.async.filter { await $0.channels(scope: .output) > 0 }.toArray()
         }
@@ -142,9 +143,34 @@ extension AudioDeviceCache {
         }
     }
 
-    public var bluetoothDevices: [AudioDevice] {
+    var bluetoothDevices: [AudioDevice] {
         get async {
             await allDevices.filter { $0.transportType == .bluetooth }
+        }
+    }
+
+    /// Search for input and output devices that have matching `modelUID` values such
+    /// as for bluetooth headphones that have an integrated mic which is registered as
+    /// a different device.
+    var splitDevices: [SplitAudioDevice] {
+        get async {
+            var out = [SplitAudioDevice]()
+
+            let allDevices = await allDevices
+
+            let modelUIDs = allDevices.compactMap { $0.modelUID }.removingDuplicates()
+
+            for modelUIDs in modelUIDs {
+                let matches = allDevices.filter { $0.modelUID == modelUIDs }
+
+                let input = await matches.async.first { await $0.isInputOnlyDevice }
+                let output = await matches.async.first { await $0.isOutputOnlyDevice }
+
+                if let input, let output, let device = try? SplitAudioDevice(input: input, output: output) {
+                    out.append(device)
+                }
+            }
+            return out
         }
     }
 }

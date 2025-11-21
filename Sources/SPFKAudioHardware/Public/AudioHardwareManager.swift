@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import Atomics
 import CoreAudio
@@ -13,53 +13,35 @@ import SPFKBase
 /// - Important: If you are interested in receiving hardware-related notifications, remember to keep a strong reference
 /// to an object of this class.
 public final class AudioHardwareManager {
-    // MARK: - Private Static Properties
-
-    private static var sharedObserver: AudioHardwareObserver!
-    private static let instances = ManagedAtomic<Int>(0)
-
     public var eventHandler: ((AudioHardwareNotification) -> Void)?
-
-    // MARK: - Private Properties
-
-    let observer: AudioHardwareObserver
-
-    private var instanceId: Int
-
     public var postNotifications: Bool = true
 
+    var observer: AudioHardwareObserver { AudioHardwareObserver.shared }
+
     // MARK: - Lifecycle
+
+    private static let instances = ManagedAtomic<Int>(0)
+    private var instanceId: Int
 
     public init() async {
         instanceId = Self.instances.load(ordering: .acquiring)
 
         if instanceId == 0 {
-            Self.sharedObserver = AudioHardwareObserver()
+            observer.eventHandler = { [weak self] notification in
+                guard let self else { return }
+                send(notification: notification)
+            }
 
             do {
-                try await Self.sharedObserver.start()
+                try await observer.start()
             } catch {
                 Log.error(error)
             }
+
+            Log.debug("🏁 (shared) + { \(self) }")
         }
 
         Self.instances.wrappingIncrement(ordering: .acquiring)
-
-        observer = Self.sharedObserver
-
-        observer.eventHandler = { [weak self] notification in
-            guard let self else { return }
-
-            eventHandler?(notification)
-
-            guard postNotifications else { return }
-
-            NotificationCenter.default.post(
-                name: notification.name,
-                object: notification,
-                userInfo: nil
-            )
-        }
 
         Log.debug("+ { \(self) }")
     }
@@ -69,16 +51,27 @@ public final class AudioHardwareManager {
 
         if Self.instances.load(ordering: .acquiring) == 0 {
             do {
-                try await Self.sharedObserver.stop()
-                try await Self.sharedObserver.cache.unregister()
+                observer.eventHandler = nil
+                try await observer.stop()
+                try await observer.cache.unregister()
             } catch {
                 Log.error(error)
             }
 
-            Self.sharedObserver = nil
-
-            Log.debug("- { \(self) }")
+            Log.debug("⛔️ (shared) - { \(self) }")
         }
+    }
+
+    private func send(notification: AudioHardwareNotification) {
+        eventHandler?(notification)
+
+        guard postNotifications else { return }
+
+        NotificationCenter.default.post(
+            name: notification.name,
+            object: notification,
+            userInfo: nil
+        )
     }
 
     deinit {

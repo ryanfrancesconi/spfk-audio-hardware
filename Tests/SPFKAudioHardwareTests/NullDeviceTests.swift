@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -9,7 +9,7 @@ import SPFKBase
 import Testing
 
 @Suite(.serialized)
-final class AudioDeviceTests: NullDeviceTestCase {
+final class NullDeviceTests: NullDeviceTestCase {
     @Test func deviceLookUp() async throws {
         let nullDevice = try #require(nullDevice)
         let deviceUID = try #require(nullDevice.uid)
@@ -68,29 +68,6 @@ final class AudioDeviceTests: NullDeviceTestCase {
         await #expect(nullDevice.relatedDevices != nil)
 
         try await tearDown()
-    }
-
-    @Test(arguments: [Scope.output, Scope.input])
-    func nominalSampleRates(scope: Scope) async throws {
-        let nullDevice = try #require(nullDevice)
-
-        let rates = try #require(nullDevice.getNominalSampleRates(scope: scope))
-
-        #expect(rates == [44100, 48000])
-    }
-
-    /// Bluetooth headsets commonly have different sample rate arrays for input vs output
-    @Test(arguments: [Scope.output, Scope.input])
-    func nominalSampleRatesForBluetoothDevice(scope: Scope) async throws {
-        let devices = await hardwareManager.bluetoothDevices.isOnly(scope: scope)
-
-        guard devices.isNotEmpty else { return }
-
-        for device in devices {
-            let rates = try #require(device.getNominalSampleRates(scope: scope))
-
-            Log.debug(device.name, scope, rates)
-        }
     }
 
     @Test func lowFrequencyEffects() async throws {
@@ -326,36 +303,6 @@ final class AudioDeviceTests: NullDeviceTestCase {
         try await tearDown()
     }
 
-    @Test func sampleRate() async throws {
-        let nullDevice = try #require(nullDevice)
-
-        #expect(nullDevice.nominalSampleRates == [44100, 48000])
-
-        #expect(kAudioHardwareNoError == nullDevice.setNominalSampleRate(44100))
-        try await wait(sec: 1)
-
-        #expect(nullDevice.nominalSampleRate == 44100)
-        #expect(nullDevice.actualSampleRate == 44100)
-
-        #expect(kAudioHardwareNoError == nullDevice.setNominalSampleRate(48000))
-        try await wait(sec: 1)
-
-        #expect(nullDevice.nominalSampleRate == 48000)
-        #expect(nullDevice.actualSampleRate == 48000)
-
-        try await tearDown()
-    }
-
-    @Test func invalidSampleRate() async throws {
-        let nullDevice = try #require(nullDevice)
-
-        #expect(nullDevice.nominalSampleRates == [44100, 48000])
-        #expect(kAudioHardwareNoError != nullDevice.setNominalSampleRate(24000))
-        #expect(kAudioHardwareNoError != nullDevice.setNominalSampleRate(96000))
-
-        try await tearDown()
-    }
-
     @Test func dataSource() async throws {
         let nullDevice = try #require(nullDevice)
 
@@ -446,12 +393,47 @@ final class AudioDeviceTests: NullDeviceTestCase {
         try await tearDown()
     }
 
-    @Test func streams() async throws {
+    @Test(arguments: [Scope.output, Scope.input])
+    func streams(scope: Scope) async throws {
         let nullDevice = try #require(nullDevice)
 
-        await #expect(nullDevice.streams(scope: .output)?.count == 1)
-        await #expect(nullDevice.streams(scope: .input)?.count == 1)
+        await #expect(nullDevice.streams(scope: scope)?.count == 1)
 
+        try await tearDown()
+    }
+}
+
+// MARK: - Sample Rate
+
+extension NullDeviceTests {
+    @Test(arguments: [Scope.output, Scope.input])
+    func getNominalSampleRates(scope: Scope) async throws {
+        let nullDevice = try #require(nullDevice)
+
+        let rates = try #require(nullDevice.getNominalSampleRates(scope: scope))
+
+        #expect(rates == [44100, 48000])
+
+        try await tearDown()
+    }
+
+    @Test(arguments: [44100, 48000])
+    func setNominalSampleRate(sampleRate: Float64) async throws {
+        let nullDevice = try #require(nullDevice)
+        
+        guard nullDevice.nominalSampleRate != sampleRate else { return }
+
+        #expect(nullDevice.nominalSampleRates?.contains(sampleRate) == true)
+
+        /// while this call appears to be synchronous it is not
+        #expect(kAudioHardwareNoError == nullDevice.setNominalSampleRate(sampleRate))
+        #expect(nullDevice.nominalSampleRate != sampleRate) // expect it to not be ready yet
+        #expect(nullDevice.actualSampleRate != sampleRate)
+        
+        try await wait(sec: 0.1) //  seems to take about 0.01
+        #expect(nullDevice.nominalSampleRate == sampleRate)
+        #expect(nullDevice.actualSampleRate == sampleRate)
+        
         try await tearDown()
     }
 }

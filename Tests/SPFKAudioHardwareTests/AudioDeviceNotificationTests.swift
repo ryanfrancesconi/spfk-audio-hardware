@@ -1,33 +1,50 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
 @testable import SPFKAudioHardware
+import SPFKBase
 import Testing
 
 @Suite(.serialized)
 final class AudioDeviceNotificationTests: NullDeviceTestCase {
-    @Test(arguments: [48000])
-    func sampleRateDidChangeNotification(targetSampleRate: Float64) async throws {
+    @Test(arguments: [44100, 48000])
+    func updateAndWait(sampleRate: Float64) async throws {
         let nullDevice = try #require(nullDevice)
 
-        try await nullDevice.update(sampleRate: targetSampleRate)
+        try await nullDevice.updateAndWait(sampleRate: sampleRate)
 
-        #expect(targetSampleRate == nullDevice.nominalSampleRate)
+        #expect(sampleRate == nullDevice.nominalSampleRate)
+
+        try await tearDown()
+    }
+
+    @Test(arguments: [22050, 96000])
+    func verifyInvalidThrows(sampleRate: Float64) async throws {
+        let nullDevice = try #require(nullDevice)
+
+        do {
+            try await nullDevice.updateAndWait(sampleRate: sampleRate)
+        } catch {
+            Log.debug("✅", error)
+            #expect(error.localizedDescription.contains("doesn't support \(sampleRate)"))
+        }
 
         try await tearDown()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func volumeDidChangeNotification(scopeToTest: Scope) async throws {
+    func volumeDidChangeNotification(scope: Scope) async throws {
         let nullDevice = try #require(nullDevice)
 
         let task = Task<(objectID: AudioObjectID, channel: UInt32, scope: Scope), Error> {
             try await waitForDeviceOption(named: .deviceVolumeDidChange)
         }
 
-        nullDevice.setVirtualMainVolume(1, scope: scopeToTest)
+        #expect(
+            kAudioHardwareNoError == nullDevice.setVirtualMainVolume(1, scope: scope)
+        )
 
         let result = await task.result
 
@@ -35,7 +52,7 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         case let .success((objectID: objectID, channel: channel, scope: scope)):
             #expect(objectID == nullDevice.objectID)
             #expect(channel == 0)
-            #expect(scope == scopeToTest)
+            #expect(scope == scope)
 
         case let .failure(error):
             throw error
@@ -45,14 +62,16 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
     }
 
     @Test(arguments: [Scope.output, Scope.input])
-    func muteDidChangeNotification(scopeToTest: Scope) async throws {
+    func muteDidChangeNotification(scope: Scope) async throws {
         let nullDevice = try #require(nullDevice)
 
         let task = Task<(objectID: AudioObjectID, channel: UInt32, scope: Scope), Error> {
             try await waitForDeviceOption(named: .deviceMuteDidChange)
         }
 
-        nullDevice.setMute(true, channel: 0, scope: scopeToTest)
+        #expect(
+            kAudioHardwareNoError == nullDevice.setMute(true, channel: 0, scope: scope)
+        )
 
         let result = await task.result
 
@@ -60,13 +79,13 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         case let .success((objectID: objectID, channel: channel, scope: scope)):
             #expect(objectID == nullDevice.objectID)
             #expect(channel == 0)
-            #expect(scope == scopeToTest)
+            #expect(scope == scope)
 
         case let .failure(error):
             throw error
         }
 
-        #expect(nullDevice.isMuted(channel: 0, scope: scopeToTest) == true)
+        #expect(nullDevice.isMuted(channel: 0, scope: scope) == true)
 
         try await tearDown()
     }

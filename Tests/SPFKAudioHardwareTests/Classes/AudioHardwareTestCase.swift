@@ -24,7 +24,7 @@ class AudioHardwareTestCase {
     }
 
     deinit {
-        Log.debug("- { SCATestCase }")
+        Log.debug("- { AudioHardwareTestCase }")
     }
 }
 

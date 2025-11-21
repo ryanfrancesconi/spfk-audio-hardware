@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import SPFKBase
@@ -35,7 +35,7 @@ extension AudioHardwareNotification: PropertyAddressNotification {
             self = .defaultSystemOutputDeviceChanged(objectID: objectID)
 
         default:
-            Log.error("AudioHardwareNotification: unhandled mSelector (\(propertyAddress.mSelector.fourCharCodeToString() ?? "nil"))")
+            Log.error("AudioHardwareNotification: unhandled mSelector (\(propertyAddress.mSelector.fourCC))")
             return nil
         }
     }

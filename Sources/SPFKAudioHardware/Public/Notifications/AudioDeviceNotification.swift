@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import Foundation
@@ -126,7 +126,7 @@ extension AudioDeviceNotification: PropertyAddressNotification {
             return nil
 
         default:
-            Log.error("AudioDeviceNotification: unhandled mSelector (\(propertyAddress.mSelector.fourCharCodeToString() ?? "nil"))")
+            Log.error("AudioDeviceNotification: unhandled mSelector (\(propertyAddress.mSelector.fourCC))")
             return nil
         }
     }

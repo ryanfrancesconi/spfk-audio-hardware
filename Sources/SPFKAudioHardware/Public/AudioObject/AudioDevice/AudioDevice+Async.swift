@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -7,9 +7,16 @@ import SPFKBase
 
 extension AudioDevice {
     /// Update the device sample rate and wait for the completion.
-    /// Errors will be thrown if the sample rate isn't available.
+    /// Errors will be thrown if the sample rate requested isn't compatible.
     /// - Parameter sampleRate: Sample rate to set.
-    public func update(sampleRate: Double) async throws {
+    public func updateAndWait(sampleRate: Double) async throws {
+        guard sampleRate != nominalSampleRate else {
+            Log.error("\(nameAndID) is already set to \(sampleRate). Ignoring this call.")
+            return
+        }
+
+        let benchmark = Benchmark(label: "\((#file as NSString).lastPathComponent):\(#function)"); defer { benchmark.stop() }
+
         guard let nominalSampleRates, nominalSampleRates.contains(sampleRate) else {
             throw NSError(description: "\(name) doesn't support \(sampleRate) Hz")
         }
@@ -37,7 +44,7 @@ extension AudioDevice {
         let status = setNominalSampleRate(sampleRate)
 
         guard kAudioHardwareNoError == status else {
-            throw NSError(description: "(kAudioDevicePropertyNominalSampleRate) Action failed to update \(name)'s sample rate to \(sampleRate) with error \(status.fourCharCodeToString()).")
+            throw NSError(description: "(kAudioDevicePropertyNominalSampleRate) Action failed to update \(nameAndID)'s sample rate to \(sampleRate) with error \(status.fourCC).")
         }
 
         let result = await task.result
@@ -45,14 +52,15 @@ extension AudioDevice {
         switch result {
         case let .success(newSampleRate):
             guard let newSampleRate, sampleRate == newSampleRate else {
-                throw NSError(description: "Device wasn't updated. Failed to update \(name)'s sample rate to \(sampleRate).")
+                throw NSError(description: "Failed to update \(nameAndID)'s sample rate to \(sampleRate). Device wasn't updated.")
             }
 
         case let .failure(error):
-            throw NSError(description: error.localizedDescription + " (\(sampleRate) Hz)")
+            throw NSError(description: "\(nameAndID) Failed to update to \(sampleRate) Hz. " + error.localizedDescription)
         }
 
         // OK
+        Log.debug("\(nameAndID) has updated to \(sampleRate) Hz.")
     }
 
     // TODO: more setters

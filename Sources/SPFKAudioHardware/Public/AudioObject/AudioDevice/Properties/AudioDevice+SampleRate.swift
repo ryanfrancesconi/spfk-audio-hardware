@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -73,7 +73,12 @@ public extension AudioDevice {
         return sampleRates.sorted()
     }
 
-    /// Sets the nominal sample rate.
+    /// Sets the nominal sample rate and returns immediately.
+    ///
+    /// While this call appears to be synchronous, it is not.
+    ///
+    /// See: AudioDevice+Async for an async call which waits for the hardware
+    /// to finish setting the rate.
     ///
     /// - Parameter sampleRate: The new nominal sample rate.
     ///

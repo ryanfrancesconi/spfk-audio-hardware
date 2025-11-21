@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
@@ -22,7 +22,7 @@ public final class AudioDevice: AudioPropertyListenerModel, Sendable {
         kAudioEndPointDeviceClassID,
     ]
 
-    nonisolated(unsafe) private var _deviceName: String = ""
+    private nonisolated(unsafe) var _deviceName: String = ""
 
     public static func isSupported(classID: AudioClassID) -> Bool {
         Self.supportedClassIDs.contains(classID)
@@ -37,17 +37,16 @@ public final class AudioDevice: AudioPropertyListenerModel, Sendable {
     /// - Parameter id: An audio device identifier.
     public init(objectID: AudioObjectID) async throws {
         self.objectID = objectID
-        
+
         guard let classID else {
             throw NSError(description: "classID is nil")
         }
 
         guard Self.supportedClassIDs.contains(classID) else {
-            throw NSError(description: "Unknown classID (\(classID.fourCharCodeToString() ?? "\(classID)"))")
+            throw NSError(description: "Unknown classID (\(classID.fourCC))")
         }
-        
-        _deviceName = self.objectName ?? "<Unknown Device Name>"
 
+        _deviceName = self.objectName ?? "<Unknown Device Name>"
     }
 
     // MARK: - AudioObject Overrides
@@ -56,6 +55,8 @@ public final class AudioDevice: AudioPropertyListenerModel, Sendable {
     ///
     /// - Returns: An audio device's name.
     public var name: String { _deviceName }
+
+    public var nameAndID: String { "\(_deviceName) (\(objectID))" }
 }
 
 extension AudioDevice: CustomStringConvertible {

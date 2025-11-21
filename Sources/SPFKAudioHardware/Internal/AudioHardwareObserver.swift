@@ -1,29 +1,25 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
-final class AudioHardwareObserver: NSObject {
+final class AudioHardwareObserver {
+    public static let shared = AudioHardwareObserver()
+    private init() {}
+    let objectID: AudioObjectID = AudioObjectID(kAudioObjectSystemObject)
+
     public var notificationType: any PropertyAddressNotification.Type { AudioHardwareNotification.self }
 
     var eventHandler: ((AudioHardwareNotification) -> Void)?
 
-    let objectID: AudioObjectID = AudioObjectID(kAudioObjectSystemObject)
-
     var listener: AudioObjectPropertyListener?
-
     public var isListening: Bool { listener != nil }
 
     var cache = AudioDeviceCache()
     var updateTask: Task<Void, Error>?
-
-    init(eventHandler: ((AudioHardwareNotification) -> Void)? = nil) {
-        super.init()
-        self.eventHandler = eventHandler
-    }
 
     func start() async throws {
         guard !isListening else {

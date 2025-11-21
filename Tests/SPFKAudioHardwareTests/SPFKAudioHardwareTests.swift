@@ -1,5 +1,5 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 @testable import SPFKAudioHardware
@@ -12,6 +12,29 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
         let allDevices = await hardwareManager.allDevices
 
         Log.debug("Found", allDevices.count, "devices: ", allDevices)
+
+        try await tearDown()
+    }
+
+    @Test(arguments: [Scope.input, Scope.output])
+    func splitDevices(scope: Scope) async throws {
+        let devices = await hardwareManager.splitDevices
+
+        for device in devices {
+            let sampleRates = device.getNominalSampleRates(scope: scope) ?? []
+
+            Log.debug(scope, device.name, "(\(device.objectID(scope: scope)))", sampleRates)
+
+            for sampleRate in sampleRates {
+                do {
+                    try await device.device(scope: scope).updateAndWait(sampleRate: sampleRate)
+                } catch {
+                    Log.error(error)
+                }
+            }
+        }
+
+        try await tearDown()
     }
 
     @Test func multipleInstances() async throws {
@@ -24,6 +47,11 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
         var hm3: AudioHardwareManager? = await AudioHardwareManager()
         Log.debug(hm3, await hm1?.allDevices.count, "devices")
 
+        // just generate some events
+        let device = try await createAggregateDevice()
+
+        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: device.id))
+
         await hm1?.dispose()
         hm1 = nil
 
@@ -32,8 +60,6 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
 
         await hm3?.dispose()
         hm3 = nil
-
-        try await wait(sec: 2)
 
         try await tearDown()
     }
@@ -45,8 +71,8 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
 
         let allDevices = await hardwareManager.allDevices
         let allDeviceIDs = await hardwareManager.allDeviceIDs
-        let allInputDevices = await hardwareManager.allInputDevices
-        let allOutputDevices = await hardwareManager.allOutputDevices
+        let allInputDevices = await hardwareManager.inputDevices
+        let allOutputDevices = await hardwareManager.outputDevices
         let allIODevices = await hardwareManager.allIODevices
         let allNonAggregateDevices = await hardwareManager.allNonAggregateDevices
         let allAggregateDevices = await hardwareManager.allAggregateDevices
@@ -66,11 +92,8 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
         #expect(allNonAggregateDevices.contains(nullDevice))
         #expect(allAggregateDevices.contains(nullDevice) == false)
 
-        if let aggregateDevice {
-            #expect(allAggregateDevices.contains(aggregateDevice))
-
-            #expect(noErr == hardwareManager.removeAggregateDevice(id: aggregateDevice.id))
-        }
+        #expect(allAggregateDevices.contains(aggregateDevice))
+        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: aggregateDevice.id))
 
         try await tearDown()
     }

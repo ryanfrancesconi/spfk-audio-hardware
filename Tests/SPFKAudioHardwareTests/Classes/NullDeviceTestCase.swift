@@ -1,6 +1,7 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
-// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2023. Revision History at https://github.com/rnine/SimplyCoreAudio
+// Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
+import CoreAudio.AudioHardware
 import Foundation
 @testable import SPFKAudioHardware
 import SPFKBase
@@ -36,18 +37,35 @@ class NullDeviceTestCase: AudioHardwareTestCase {
         let nullDevice = try #require(nullDevice)
 
         nullDevice.unsetHogMode()
+        try await nullDevice.updateAndWait(sampleRate: 44100)
 
-        if nullDevice.nominalSampleRate != 44100 {
-            nullDevice.setNominalSampleRate(44100)
-        }
+        #expect(
+            kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: .output)
+        )
 
-        nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: .output)
-        nullDevice.setMute(false, channel: 0, scope: .output)
-        nullDevice.setMute(false, channel: 0, scope: .input)
-        nullDevice.setVolume(0.5, channel: 0, scope: .output)
-        nullDevice.setVolume(0.5, channel: 0, scope: .input)
-        nullDevice.setVirtualMainVolume(0.5, scope: .output)
-        nullDevice.setVirtualMainVolume(0.5, scope: .input)
+        #expect(
+            kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: .output)
+        )
+
+        #expect(
+            kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: .input)
+        )
+
+        #expect(
+            kAudioHardwareNoError == nullDevice.setVolume(0.5, channel: 0, scope: .output)
+        )
+
+        #expect(
+            kAudioHardwareNoError == nullDevice.setVolume(0.5, channel: 0, scope: .input)
+        )
+
+        #expect(
+            kAudioHardwareNoError == nullDevice.setVirtualMainVolume(0.5, scope: .output)
+        )
+
+        #expect(
+            kAudioHardwareNoError == nullDevice.setVirtualMainVolume(0.5, scope: .input)
+        )
     }
 }
 
@@ -55,7 +73,7 @@ extension NullDeviceTestCase {
     static let aggregateDeviceName = "NullDeviceAggregate"
     static let aggregateDeviceUID = "NullDeviceAggregate_UID"
 
-    func createAggregateDevice(in delay: TimeInterval = 0) async throws -> AudioDevice? {
+    func createAggregateDevice(in delay: TimeInterval = 0) async throws -> AudioDevice {
         let nullDevice = try #require(nullDevice)
 
         let allDevices = await hardwareManager.allDevices
@@ -65,7 +83,7 @@ extension NullDeviceTestCase {
         }) {
             Log.error("Device exists attempting to remove it...")
 
-            #expect(noErr == hardwareManager.removeAggregateDevice(id: existing.id))
+            #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: existing.id))
         }
 
         if delay > 0 {
