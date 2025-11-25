@@ -7,7 +7,7 @@ import Foundation
 
 // MARK: - ✪ General Device Information Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// The audio device's identifier (ID).
     ///
     /// - Note: This identifier will change with system restarts.
@@ -16,7 +16,7 @@ public extension AudioDevice {
     /// - SeeAlso: `uid`
     ///
     /// - Returns: An audio device identifier.
-    var id: AudioObjectID { objectID }
+    public var id: AudioObjectID { objectID }
 
     /// The audio device's unique identifier (UID).
     ///
@@ -27,7 +27,7 @@ public extension AudioDevice {
     /// - SeeAlso: `id`
     ///
     /// - Returns: *(optional)* A `String` with the audio device `UID`.
-    var uid: String? {
+    public var uid: String? {
         guard let address = validAddress(selector: kAudioDevicePropertyDeviceUID) else { return nil }
         return getProperty(address: address)
     }
@@ -35,7 +35,7 @@ public extension AudioDevice {
     /// The audio device's model unique identifier.
     ///
     /// - Returns: *(optional)* A `String` with the audio device's model unique identifier.
-    var modelUID: String? {
+    public var modelUID: String? {
         guard let address = validAddress(selector: kAudioDevicePropertyModelUID) else { return nil }
         return getProperty(address: address)
     }
@@ -43,7 +43,7 @@ public extension AudioDevice {
     /// The audio device's manufacturer.
     ///
     /// - Returns: *(optional)* A `String` with the audio device's manufacturer name.
-    var manufacturer: String? {
+    public var manufacturer: String? {
         guard let address = validAddress(selector: kAudioObjectPropertyManufacturer) else { return nil }
         return getProperty(address: address)
     }
@@ -52,7 +52,7 @@ public extension AudioDevice {
     /// By default, the value of this property is the bundle ID for *Audio MIDI Setup*.
     ///
     /// - Returns: *(optional)* A `String` pointing to the bundle identifier
-    var configurationApplication: String? {
+    public var configurationApplication: String? {
         guard let address = validAddress(selector: kAudioDevicePropertyConfigurationApplication) else { return nil }
         return getProperty(address: address)
     }
@@ -63,7 +63,7 @@ public extension AudioDevice {
     /// using `kAudioHardwarePropertyDeviceForUID`.
     ///
     /// - Returns: `true` when device is hidden, `false` otherwise.
-    var isHidden: Bool {
+    public var isHidden: Bool {
         guard let address = validAddress(selector: kAudioDevicePropertyIsHidden) else { return false }
         return getProperty(address: address) ?? false
     }
@@ -71,7 +71,7 @@ public extension AudioDevice {
     /// Whether the device is alive.
     ///
     /// - Returns: `true` when the device is alive, `false` otherwise.
-    var isAlive: Bool {
+    public var isAlive: Bool {
         guard let address = validAddress(selector: kAudioDevicePropertyDeviceIsAlive) else { return false }
         return getProperty(address: address) ?? false
     }
@@ -79,7 +79,7 @@ public extension AudioDevice {
     /// Whether the device is running.
     ///
     /// - Returns: `true` when the device is running, `false` otherwise.
-    var isRunning: Bool {
+    public var isRunning: Bool {
         guard let address = validAddress(selector: kAudioDevicePropertyDeviceIsRunning) else { return false }
         return getProperty(address: address) ?? false
     }
@@ -87,7 +87,7 @@ public extension AudioDevice {
     /// Whether the device is running somewhere.
     ///
     /// - Returns: `true` when the device is running somewhere, `false` otherwise.
-    var isRunningSomewhere: Bool {
+    public var isRunningSomewhere: Bool {
         guard let address = validAddress(selector: kAudioDevicePropertyDeviceIsRunningSomewhere) else { return false }
         return getProperty(address: address) ?? false
     }
@@ -95,7 +95,7 @@ public extension AudioDevice {
     /// A transport type that indicates how the audio device is connected to the CPU.
     ///
     /// - Returns: *(optional)* A `TransportType`.
-    var transportType: TransportType? {
+    public var transportType: TransportType? {
         guard let address = validAddress(selector: kAudioDevicePropertyTransportType) else { return nil }
 
         if let transportType: UInt32 = getProperty(address: address) {
@@ -108,7 +108,7 @@ public extension AudioDevice {
     /// All the audio object identifiers that are owned by this audio device.
     ///
     /// - Returns: *(optional)* An array of `AudioObjectID` values.
-    var ownedObjectIDs: [AudioObjectID]? {
+    public var ownedObjectIDs: [AudioObjectID]? {
         guard let address = validAddress(selector: kAudioObjectPropertyOwnedObjects) else { return nil }
 
         var qualifierData = [kAudioObjectClassID]
@@ -120,7 +120,8 @@ public extension AudioDevice {
             qualifierDataSize: qualifierDataSize,
             qualifierData: &qualifierData,
             value: &ownedObjects,
-            andDefaultValue: AudioObjectID())
+            andDefaultValue: AudioObjectID()
+        )
 
         return noErr == status ? ownedObjects : nil
     }
@@ -128,7 +129,7 @@ public extension AudioDevice {
     /// All the audio object identifiers representing the audio controls of this audio device.
     ///
     /// - Returns: *(optional)* An array of `AudioObjectID` values.
-    var controlList: [AudioObjectID]? {
+    public var controlList: [AudioObjectID]? {
         guard let address = validAddress(selector: kAudioObjectPropertyControlList) else { return nil }
 
         var controlList = [AudioObjectID]()
@@ -140,7 +141,7 @@ public extension AudioDevice {
     /// All the audio devices related to this audio device.
     ///
     /// - Returns: *(optional)* An array of `AudioDevice` objects.
-    var relatedDevices: [AudioDevice]? {
+    public var relatedDevices: [AudioDevice]? {
         get async {
             guard let address = validAddress(selector: kAudioDevicePropertyRelatedDevices) else { return nil }
 

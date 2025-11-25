@@ -6,11 +6,11 @@ import Foundation
 
 // MARK: - 𝍄 Clock Source Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// The current clock source identifier for this audio device.
     ///
     /// - Returns: *(optional)* A `UInt32` containing the clock source identifier.
-    var clockSourceID: UInt32? {
+    public var clockSourceID: UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertyClockSource) else { return nil }
         return getProperty(address: address)
     }
@@ -18,7 +18,7 @@ public extension AudioDevice {
     /// The current clock source name for this audio device.
     ///
     /// - Returns: *(optional)* A `String` containing the clock source name.
-    var clockSourceName: String? {
+    public var clockSourceName: String? {
         guard let clockSourceID else { return nil }
         return clockSourceName(clockSourceID: clockSourceID)
     }
@@ -26,7 +26,7 @@ public extension AudioDevice {
     /// A list of all the clock source identifiers available for this audio device.
     ///
     /// - Returns: *(optional)* A `UInt32` array containing all the clock source identifiers.
-    var clockSourceIDs: [UInt32]? {
+    public var clockSourceIDs: [UInt32]? {
         guard let address = validAddress(selector: kAudioDevicePropertyClockSources) else { return nil }
 
         var clockSourceIDs = [UInt32]()
@@ -39,7 +39,7 @@ public extension AudioDevice {
     /// A list of all the clock source names available for this audio device.
     ///
     /// - Returns: *(optional)* A `String` array containing all the clock source names.
-    var clockSourceNames: [String]? {
+    public var clockSourceNames: [String]? {
         guard let clockSourceIDs else { return nil }
 
         return clockSourceIDs.map {
@@ -54,7 +54,7 @@ public extension AudioDevice {
     /// - Parameter clockSourceID: A clock source ID.
     ///
     /// - Returns: *(optional)* A `String` with the source clock name.
-    func clockSourceName(clockSourceID: UInt32) -> String? {
+    public func clockSourceName(clockSourceID: UInt32) -> String? {
         var name: CFString = "" as CFString
         var clockSourceID = clockSourceID
 
@@ -85,7 +85,7 @@ public extension AudioDevice {
     /// - Parameter clockSourceID: A clock source ID.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setClockSourceID(_ clockSourceID: UInt32) -> OSStatus {
+    @discardableResult public func setClockSourceID(_ clockSourceID: UInt32) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyClockSource) else { return kAudioHardwareBadObjectError }
         return setProperty(address: address, value: clockSourceID)
     }

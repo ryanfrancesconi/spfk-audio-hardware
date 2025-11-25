@@ -7,7 +7,7 @@ import SPFKBase
 
 // MARK: - Latency Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// Convenience function to return the total latency in frames of an AudioDevice
     ///
     /// The latency for a scope is determined by the **sum** of the following properties:
@@ -21,7 +21,7 @@ public extension AudioDevice {
     ///
     /// - Returns: A `UInt32` value with the total frames of latency in the device.
     ///
-    func latency(scope: Scope) async -> UInt32 {
+    public func latency(scope: Scope) async -> UInt32 {
         var sum: UInt32 = 0
 
         if let allStreams = await streams(scope: scope) {
@@ -57,7 +57,7 @@ public extension AudioDevice {
     ///
     /// - Returns: *(optional)* The total summed latency in seconds based on the device's
     /// current sample rate or nil if the sample rate wasn't determined.
-    func presentationLatency(scope: Scope) async -> TimeInterval? {
+    public func presentationLatency(scope: Scope) async -> TimeInterval? {
         guard let sampleRate = actualSampleRate else {
             Log.debug("Unable to get actualSampleRate from device")
             return nil
@@ -68,14 +68,14 @@ public extension AudioDevice {
     }
 }
 
-public extension AudioDevice {
+extension AudioDevice {
     /// The latency in frames for the specified scope.
     /// Corresponds to the CoreAudio `kAudioDevicePropertyLatency` property
     ///
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `UInt32` value with the latency in frames.
-    func deviceLatency(scope: Scope) -> UInt32? {
+    public func deviceLatency(scope: Scope) -> UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertyLatency,
                                          scope: scope.propertyScope) else { return nil }
 
@@ -89,7 +89,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `UInt32` value with the safety offset in frames.
-    func safetyOffset(scope: Scope) -> UInt32? {
+    public func safetyOffset(scope: Scope) -> UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertySafetyOffset,
                                          scope: scope.propertyScope) else { return nil }
 
@@ -103,7 +103,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `UInt32` value that indicates the number of frames in the IO buffers.
-    func bufferFrameSize(scope: Scope) -> UInt32? {
+    public func bufferFrameSize(scope: Scope) -> UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertyBufferFrameSize,
                                          scope: scope.propertyScope) else { return nil }
 
@@ -117,7 +117,7 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult
-    func setBufferFrameSize(_ frameSize: UInt32, scope: Scope) -> OSStatus {
+    public func setBufferFrameSize(_ frameSize: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioDevicePropertyBufferFrameSize,
             scope: scope.propertyScope
@@ -132,7 +132,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: An array of common buffer sizes within the defined range such as 32 ... 1024
-    func bufferFrameSizeRange(scope: Scope) -> [UInt32]? {
+    public func bufferFrameSizeRange(scope _: Scope) -> [UInt32]? {
         guard let address = validAddress(selector: kAudioDevicePropertyBufferFrameSizeRange,
                                          scope: kAudioObjectPropertyScopeWildcard) else { return nil }
 
@@ -164,9 +164,10 @@ public extension AudioDevice {
                 let min = UInt32(range.mMinimum)
                 let max = UInt32(range.mMaximum)
 
-                if size >= min && size <= max &&
-                    possibleBufferSizes.contains(size) &&
-                    !bufferSizes.contains(size) {
+                if size >= min, size <= max,
+                   possibleBufferSizes.contains(size),
+                   !bufferSizes.contains(size)
+                {
                     bufferSizes.append(size)
                 }
             }

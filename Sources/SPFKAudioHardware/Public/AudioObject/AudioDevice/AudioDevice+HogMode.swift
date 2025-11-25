@@ -6,12 +6,12 @@ import Foundation
 
 // MARK: - Hog Mode Functions 'oink'
 
-public extension AudioDevice {
+extension AudioDevice {
     /// Indicates the `pid` that currently owns exclusive access to the audio device or
     /// a value of `-1` indicating that the device is currently available to all processes.
     ///
     /// - Returns: *(optional)* A `pid_t` value.
-    var hogModePID: pid_t? {
+    public var hogModePID: pid_t? {
         guard let address = validAddress(
             selector: kAudioDevicePropertyHogMode,
             scope: kAudioObjectPropertyScopeWildcard
@@ -40,7 +40,7 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult
-    func setHogMode() -> OSStatus {
+    public func setHogMode() -> OSStatus {
         guard hogModePID != pid_t(ProcessInfo.processInfo.processIdentifier) else { return kAudioHardwareBadObjectError }
 
         return toggleHogMode()
@@ -51,7 +51,7 @@ public extension AudioDevice {
     ///
     /// - Returns: `true` on success, `false` otherwise.
     @discardableResult
-    func unsetHogMode() -> OSStatus {
+    public func unsetHogMode() -> OSStatus {
         guard hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier) else { return kAudioHardwareBadObjectError }
 
         return toggleHogMode()

@@ -7,13 +7,13 @@ import Foundation
 
 // MARK: - Virtual Main Output Volume / Balance Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// Whether the main volume can be set for a given scope.
     ///
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` when the volume can be set, `false` otherwise.
-    func canSetVirtualMainVolume(scope: Scope) -> Bool {
+    public func canSetVirtualMainVolume(scope: Scope) -> Bool {
         guard validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
             scope: scope.propertyScope
@@ -27,7 +27,7 @@ public extension AudioDevice {
     /// - Parameter volume: The new volume as a scalar value ranging from 0 to 1.
     /// - Parameter scope: A scope.
     /// - Returns: `true` on success, `false` otherwise.
-    func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> OSStatus {
+    public func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
             scope: scope.propertyScope
@@ -41,7 +41,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `Float32` value with the scalar volume.
-    func virtualMainVolume(scope: Scope) -> Float32? {
+    public func virtualMainVolume(scope: Scope) -> Float32? {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
             scope: scope.propertyScope
@@ -55,7 +55,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `Float32` value with the volume in decibels.
-    func virtualMainVolumeInDecibels(scope: Scope) -> Float32? {
+    public func virtualMainVolumeInDecibels(scope: Scope) -> Float32? {
         var referenceChannel: UInt32
 
         if canSetVolume(channel: kAudioObjectPropertyElementMain, scope: scope) {
@@ -75,7 +75,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` when the balance can be set, `false` otherwise.
-    func canSetVirtualMainBalance(scope: Scope) -> Bool {
+    public func canSetVirtualMainBalance(scope: Scope) -> Bool {
         guard validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
             scope: scope.propertyScope
@@ -92,7 +92,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `Float32` value with the stereo balance.
-    func virtualMainBalance(scope: Scope) -> Float32? {
+    public func virtualMainBalance(scope: Scope) -> Float32? {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
             scope: scope.propertyScope
@@ -110,7 +110,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    func setVirtualMainBalance(_ value: Float32, scope: Scope) -> OSStatus {
+    public func setVirtualMainBalance(_ value: Float32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
             scope: scope.propertyScope

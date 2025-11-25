@@ -6,11 +6,11 @@ import Foundation
 
 // MARK: - LFE (Low Frequency Effects) Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// Whether the audio device should claim ownership of any attached iSub or not.
     ///
     /// - Return: *(optional)* `true` when device should claim ownership, `false` otherwise.
-    var shouldOwniSub: Bool? {
+    public var shouldOwniSub: Bool? {
         get {
             guard let address = validAddress(selector: kAudioDevicePropertyDriverShouldOwniSub) else { return nil }
             return getProperty(address: address)
@@ -26,7 +26,7 @@ public extension AudioDevice {
     /// Whether the audio device's LFE (Low Frequency Effects) output is muted or not.
     ///
     /// - Return: *(optional)* `true` when LFE output is muted, `false` otherwise.
-    var lfeMute: Bool? {
+    public var lfeMute: Bool? {
         get {
             guard let address = validAddress(selector: kAudioDevicePropertySubMute) else { return nil }
             return getProperty(address: address)
@@ -42,7 +42,7 @@ public extension AudioDevice {
     /// The audio device's LFE (Low Frequency Effects) scalar output volume.
     ///
     /// - Return: *(optional)* A `Float32` with the volume.
-    var lfeVolume: Float32? {
+    public var lfeVolume: Float32? {
         get {
             guard let address = validAddress(selector: kAudioDevicePropertySubVolumeScalar) else { return nil }
             return getProperty(address: address)
@@ -58,7 +58,7 @@ public extension AudioDevice {
     /// The audio device's LFE (Low Frequency Effects) output volume in decibels.
     ///
     /// - Return: *(optional)* A `Float32` with the volume.
-    var lfeVolumeDecibels: Float32? {
+    public var lfeVolumeDecibels: Float32? {
         get {
             guard let address = validAddress(selector: kAudioDevicePropertySubVolumeDecibels) else { return nil }
             return getProperty(address: address)

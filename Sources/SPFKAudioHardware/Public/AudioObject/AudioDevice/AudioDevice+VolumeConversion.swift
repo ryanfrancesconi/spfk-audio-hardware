@@ -6,7 +6,7 @@ import Foundation
 
 // MARK: - Volume Conversion Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// Converts a scalar volume to a decibel *(dbFS)* volume for the given channel and scope.
     ///
     /// - Parameter volume: A scalar volume.
@@ -14,7 +14,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `Float32` value with the scalar volume converted in decibels.
-    func scalarToDecibels(volume: Float32, channel: UInt32, scope: Scope) -> Float32? {
+    public func scalarToDecibels(volume _: Float32, channel: UInt32, scope: Scope) -> Float32? {
         guard let address = validAddress(selector: kAudioDevicePropertyVolumeScalarToDecibels,
                                          scope: scope.propertyScope,
                                          element: channel) else { return nil }
@@ -32,7 +32,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `Float32` value with the decibels volume converted to scalar.
-    func decibelsToScalar(volume: Float32, channel: UInt32, scope: Scope) -> Float32? {
+    public func decibelsToScalar(volume _: Float32, channel: UInt32, scope: Scope) -> Float32? {
         guard let address = validAddress(selector: kAudioDevicePropertyVolumeDecibelsToScalar,
                                          scope: scope.propertyScope,
                                          element: channel) else { return nil }

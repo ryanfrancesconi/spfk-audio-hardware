@@ -31,7 +31,7 @@ public final class AudioStream: AudioPropertyListenerModel, Sendable {
 
 // MARK: - Public Functions
 
-public extension AudioStream {
+extension AudioStream {
     /// All the available physical formats for this audio stream matching the current physical format's sample rate.
     ///
     /// - Note: By default, both mixable and non-mixable streams are returned, however,  non-mixable
@@ -42,7 +42,7 @@ public extension AudioStream {
     /// - SeeAlso: `availableVirtualFormatsMatchingCurrentNominalSampleRate(_:)`
     ///
     /// - Returns: *(optional)* An array of `AudioStreamBasicDescription` structs.
-    func availablePhysicalFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
+    public func availablePhysicalFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
         guard let physicalFormats = availablePhysicalFormats, let physicalFormat else { return nil }
 
         var filteredFormats = physicalFormats.filter { format -> Bool in
@@ -67,7 +67,7 @@ public extension AudioStream {
     /// - SeeAlso: `availablePhysicalFormatsMatchingCurrentNominalSampleRate(_:)`
     ///
     /// - Returns: *(optional)* An array of `AudioStreamBasicDescription` structs.
-    func availableVirtualFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
+    public func availableVirtualFormatsMatchingCurrentNominalSampleRate(_ includeNonMixable: Bool = true) -> [AudioStreamBasicDescription]? {
         guard let virtualFormats = availableVirtualFormats, let virtualFormat else { return nil }
 
         var filteredFormats = virtualFormats.filter { format -> Bool in

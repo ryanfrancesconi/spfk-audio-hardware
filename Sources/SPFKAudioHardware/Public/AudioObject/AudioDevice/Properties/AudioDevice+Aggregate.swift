@@ -6,12 +6,12 @@ import Foundation
 
 // MARK: - Aggregate Device Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// - Returns: `true` if this device is an aggregate one, `false` otherwise.
-    var isAggregateDevice: Bool {
+    public var isAggregateDevice: Bool {
         get async {
             guard classID == kAudioAggregateDeviceClassID else { return false }
-            
+
             guard let ownedAggregateDevices = await ownedAggregateDevices else { return false }
             return !ownedAggregateDevices.isEmpty
         }
@@ -20,16 +20,16 @@ public extension AudioDevice {
     /// All the subdevices of this aggregate device
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    var ownedAggregateDevices: [AudioDevice]? {
+    public var ownedAggregateDevices: [AudioDevice]? {
         get async {
             guard classID == kAudioAggregateDeviceClassID else { return nil }
 
             guard let ownedObjectIDs, ownedObjectIDs.isNotEmpty else { return nil }
-            
+
             let devices: [AudioDevice] = await ownedObjectIDs.async.compactMap {
                 await AudioObjectPool.shared.lookup(id: $0)
             }.toArray()
-            
+
             return devices
         }
     }
@@ -37,7 +37,7 @@ public extension AudioDevice {
     /// All the subdevices of this aggregate device that support input
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    var ownedAggregateInputDevices: [AudioDevice]? {
+    public var ownedAggregateInputDevices: [AudioDevice]? {
         get async {
             await ownedAggregateDevices?.filter {
                 guard let channels = $0.layoutChannels(scope: .input) else { return false }
@@ -49,7 +49,7 @@ public extension AudioDevice {
     /// All the subdevices of this aggregate device that support output
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    var ownedAggregateOutputDevices: [AudioDevice]? {
+    public var ownedAggregateOutputDevices: [AudioDevice]? {
         get async {
             await ownedAggregateDevices?.filter {
                 guard let channels = $0.layoutChannels(scope: .output) else { return false }

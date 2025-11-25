@@ -6,11 +6,11 @@ import Foundation
 
 // MARK: - Data Source Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// A list of item IDs for the currently selected data sources.
     ///
     /// - Returns: *(optional)* A `UInt32` array containing all the item IDs.
-    func dataSource(scope: Scope) -> [UInt32]? {
+    public func dataSource(scope: Scope) -> [UInt32]? {
         guard let address = validAddress(
             selector: kAudioDevicePropertyDataSource,
             scope: scope.propertyScope
@@ -27,7 +27,7 @@ public extension AudioDevice {
     /// A list of all the IDs of all the data sources currently available.
     ///
     /// - Returns: *(optional)* A `UInt32` array containing all the item IDs.
-    func dataSources(scope: Scope) -> [UInt32]? {
+    public func dataSources(scope: Scope) -> [UInt32]? {
         guard let address = validAddress(
             selector: kAudioDevicePropertyDataSources,
             scope: scope.propertyScope
@@ -46,7 +46,7 @@ public extension AudioDevice {
     /// - Parameter dataSourceID: A data source ID.
     ///
     /// - Returns: *(optional)* A `String` with the data source name.
-    func dataSourceName(dataSourceID: UInt32, scope: Scope) -> String? {
+    public func dataSourceName(dataSourceID: UInt32, scope: Scope) -> String? {
         var name: CFString = "" as CFString
         var dataSourceID = dataSourceID
 

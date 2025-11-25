@@ -7,13 +7,13 @@ import Foundation
 
 // MARK: - Stream Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// Returns a list of streams for a given scope.
     ///
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* An array of `AudioStream` objects.
-    func streams(scope: Scope) async -> [AudioStream]? {
+    public func streams(scope: Scope) async -> [AudioStream]? {
         guard let address = validAddress(selector: kAudioDevicePropertyStreams,
                                          scope: scope.propertyScope) else { return nil }
 

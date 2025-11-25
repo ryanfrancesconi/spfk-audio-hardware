@@ -7,11 +7,11 @@ import SPFKBase
 
 // MARK: - 〰 Sample Rate Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// The audio device's actual sample rate.
     ///
     /// - Returns: *(optional)* A `Float64` value with the actual sample rate.
-    var actualSampleRate: Float64? {
+    public var actualSampleRate: Float64? {
         guard let address = validAddress(selector: kAudioDevicePropertyActualSampleRate) else { return nil }
         return getProperty(address: address)
     }
@@ -19,7 +19,7 @@ public extension AudioDevice {
     /// The audio device's nominal sample rate.
     ///
     /// - Returns: *(optional)* A `Float64` value with the nominal sample rate.
-    var nominalSampleRate: Float64? {
+    public var nominalSampleRate: Float64? {
         guard let address = validAddress(selector: kAudioDevicePropertyNominalSampleRate) else { return nil }
         return getProperty(address: address)
     }
@@ -27,11 +27,11 @@ public extension AudioDevice {
     /// A list of all the nominal sample rates supported by this audio device.
     ///
     /// - Returns: *(optional)* A `Float64` array containing the nominal sample rates.
-    var nominalSampleRates: [Float64]? {
+    public var nominalSampleRates: [Float64]? {
         getNominalSampleRates(scope: .wildcard)
     }
 
-    func getNominalSampleRates(scope: Scope) -> [Float64]? {
+    public func getNominalSampleRates(scope: Scope) -> [Float64]? {
         guard let address = validAddress(
             selector: kAudioDevicePropertyAvailableNominalSampleRates,
             scope: scope.propertyScope
@@ -49,7 +49,7 @@ public extension AudioDevice {
             6400, 8000, 11025, 12000,
             16000, 22050, 24000, 32000,
             44100, 48000, 64000, 88200,
-            96000, 128000, 176400, 192000,
+            96000, 128_000, 176_400, 192_000,
         ]
 
         for valueRange in valueRanges {
@@ -59,7 +59,8 @@ public extension AudioDevice {
                 // This could be a headset audio device (i.e., CS50/CS60-USB Headset)
                 // or a virtual audio driver (i.e., "System Audio Recorder" by WonderShare AllMyMusic)
                 if let startIndex = possibleRates.firstIndex(of: valueRange.mMinimum),
-                   let endIndex = possibleRates.firstIndex(of: valueRange.mMaximum) {
+                   let endIndex = possibleRates.firstIndex(of: valueRange.mMaximum)
+                {
                     sampleRates += possibleRates[startIndex ..< endIndex + 1]
                 } else {
                     Log.debug("Failed to obtain list of supported sample rates ranging from \(valueRange.mMinimum) to \(valueRange.mMaximum). This is an error and should be reported to the project maintainers.")
@@ -83,7 +84,7 @@ public extension AudioDevice {
     /// - Parameter sampleRate: The new nominal sample rate.
     ///
     /// - Returns: `true` on success, `false` otherwise.
-    @discardableResult func setNominalSampleRate(_ sampleRate: Float64) -> OSStatus {
+    @discardableResult public func setNominalSampleRate(_ sampleRate: Float64) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyNominalSampleRate) else {
             return kAudioHardwareBadObjectError
         }

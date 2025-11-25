@@ -6,11 +6,11 @@ import Foundation
 
 // MARK: - Input/Output Layout Functions
 
-public extension AudioDevice {
+extension AudioDevice {
     /// Whether the device has only inputs but no outputs.
     ///
     /// - Returns: `true` when the device is input only, `false` otherwise.
-    var isInputOnlyDevice: Bool {
+    public var isInputOnlyDevice: Bool {
         get async {
             let output = await channels(scope: .output) > 0
             let input = await channels(scope: .input) > 0
@@ -22,7 +22,7 @@ public extension AudioDevice {
     /// Whether the device has only outputs but no inputs.
     ///
     /// - Returns: `true` when the device is output only, `false` otherwise.
-    var isOutputOnlyDevice: Bool {
+    public var isOutputOnlyDevice: Bool {
         get async {
             let output = await channels(scope: .output) > 0
             let input = await channels(scope: .input) > 0
@@ -31,10 +31,11 @@ public extension AudioDevice {
         }
     }
 
-    func isOnly(scope: Scope) async -> Bool {
+    public func isOnly(scope: Scope) async -> Bool {
         switch scope {
         case .input:
             await isInputOnlyDevice
+
         case .output:
             await isOutputOnlyDevice
 
@@ -47,7 +48,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `UInt32` with the number of layout channels.
-    func layoutChannels(scope: Scope) -> UInt32? {
+    public func layoutChannels(scope: Scope) -> UInt32? {
         guard let address = validAddress(selector: kAudioDevicePropertyPreferredChannelLayout,
                                          scope: scope.propertyScope) else { return nil }
 
@@ -62,7 +63,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: A `UInt32` with the number of channels.
-    func channels(scope: Scope) async -> UInt32 {
+    public func channels(scope: Scope) async -> UInt32 {
         guard let streams = await streams(scope: scope) else { return 0 }
 
         return streams.map { $0.physicalFormat?.mChannelsPerFrame ?? 0 }.reduce(0, +)
@@ -74,7 +75,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: *(optional)* A `String` with the name of the channel.
-    func name(channel: UInt32, scope: Scope) -> String? {
+    public func name(channel: UInt32, scope: Scope) -> String? {
         guard let address = validAddress(selector: kAudioObjectPropertyElementName,
                                          scope: scope.propertyScope,
                                          element: channel) else { return nil }
@@ -89,7 +90,7 @@ public extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: `true` when jack is connected, `false` otherwise.
-    func isJackConnected(scope: Scope) -> Bool? {
+    public func isJackConnected(scope: Scope) -> Bool? {
         guard let address = validAddress(selector: kAudioDevicePropertyJackIsConnected,
                                          scope: scope.propertyScope) else { return nil }
 
@@ -97,7 +98,7 @@ public extension AudioDevice {
     }
 
     /// - Returns: A collection of named channels
-    func namedChannels(scope: Scope) async -> [AudioDeviceNamedChannel] {
+    public func namedChannels(scope: Scope) async -> [AudioDeviceNamedChannel] {
         var out = [AudioDeviceNamedChannel]()
 
         let channelCount = await channels(scope: scope)
@@ -122,6 +123,6 @@ public extension AudioDevice {
 
 extension Array where Element == AudioDevice {
     public func isOnly(scope: Scope) async -> [AudioDevice] {
-        return await self.async.filter { await $0.isOnly(scope: scope) }.toArray()
+        return await async.filter { await $0.isOnly(scope: scope) }.toArray()
     }
 }
