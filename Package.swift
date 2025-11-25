@@ -8,7 +8,7 @@ private let name: String = "SPFKAudioHardware" // Swift target
 private let dependencyNames: [String] = ["SPFKBase"]
 private let dependencyNamesC: [String] = []
 private let dependencyBranch = "main"
-private let useLocalDependencies: Bool = true
+private let useLocalDependencies: Bool = false
 private let platforms: [PackageDescription.SupportedPlatform]? = [
     .macOS(.v12)
 ]
@@ -28,7 +28,6 @@ private var packageDependencies: [PackageDescription.Package.Dependency] {
         dependencyNames.map {
             .package(name: "\($0)", path: "../\($0)") // assumes the package garden is in one folder
         }
-
         
      let remote: [PackageDescription.Package.Dependency] =
         dependencyNames.map {

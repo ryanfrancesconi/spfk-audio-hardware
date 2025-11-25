@@ -16,6 +16,7 @@ final class AudioHardwareObserver {
     var eventHandler: ((AudioHardwareNotification) -> Void)?
 
     var listener: AudioObjectPropertyListener?
+    
     public var isListening: Bool { listener != nil }
 
     var cache = AudioDeviceCache()
