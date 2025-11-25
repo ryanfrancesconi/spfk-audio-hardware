@@ -2,63 +2,113 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+import Foundation
 
-// This package is C / Objective-C interoperability
-
-// Swift target
-private let name: String = "SPFKAudioHardware"
-
-// C/C++ target
-private let nameC: String = "\(name)C"
-
+private let name: String = "SPFKAudioHardware" // Swift target
+private let dependencyNames: [String] = ["SPFKBase"]
+private let dependencyNamesC: [String] = []
+private let dependencyBranch = "main"
+private let useLocalDependencies: Bool = false
 private let platforms: [PackageDescription.SupportedPlatform]? = [
     .macOS(.v12)
 ]
 
+// MARK: - Reusable Code for a Swift + C package
+
+private let nameC: String = "\(name)C" // C/C++ target
+private let nameTests: String = "\(name)Tests" // Test target
+private let githubBase = "https://github.com/ryanfrancesconi"
+
 private let products: [PackageDescription.Product] = [
-    .library(
-        name: name,
-        targets: [name, nameC]
-    )
+    .library(name: name, targets: [name, nameC])
 ]
 
-private let dependencies: [PackageDescription.Package.Dependency] = [
-    .package(path: "../SPFKBase"),
+private var packageDependencies: [PackageDescription.Package.Dependency] {
+     let local: [PackageDescription.Package.Dependency] =
+        dependencyNames.map {
+            .package(name: "\($0)", path: "../\($0)") // assumes the package garden is in one folder
+        }
 
-]
+        
+     let remote: [PackageDescription.Package.Dependency] =
+        dependencyNames.map {
+            .package(url: "\(githubBase)/\($0)", branch: dependencyBranch)
+        }
+    
+    return useLocalDependencies ? local : remote
+}
+
+// is there a Sources/[NAME]/Resources folder?
+private var swiftTargetResources: [PackageDescription.Resource]? {
+    // package folder
+    let root = URL(fileURLWithPath: #file).deletingLastPathComponent()
+    
+    let dir = root.appending(component: "Sources")
+        .appending(component: name)
+        .appending(component: "Resources")
+    
+    let exists = FileManager.default.fileExists(atPath: dir.path)
+    
+    return exists ? [.process("Resources")] : nil
+}
+
+private var swiftTargetDependencies: [PackageDescription.Target.Dependency] {
+    let names = dependencyNames.filter { $0 != "SPFKTesting" }
+    
+    var value: [PackageDescription.Target.Dependency] = names.map {
+        .byNameItem(name: "\($0)", condition: nil)
+    }
+    
+    value.append(.target(name: nameC))
+    
+    return value
+}
+
+private let swiftTarget: PackageDescription.Target = .target(
+    name: name,
+    dependencies: swiftTargetDependencies,
+    resources: swiftTargetResources
+)
+
+private var testTargetDependencies: [PackageDescription.Target.Dependency] {
+    var array: [PackageDescription.Target.Dependency] = [
+        .byNameItem(name: name, condition: nil),
+        .byNameItem(name: nameC, condition: nil),
+    ]
+
+    if dependencyNames.contains("SPFKTesting") {
+        array.append(.byNameItem(name: "SPFKTesting", condition: nil))
+    }
+    
+    return array
+}
+
+private let testTarget: PackageDescription.Target = .testTarget(
+    name: nameTests,
+    dependencies: testTargetDependencies
+)
+
+private var cTargetDependencies: [PackageDescription.Target.Dependency] {
+    dependencyNamesC.map {
+        .byNameItem(name: "\($0)", condition: nil)
+    }
+}
+
+private let cTarget: PackageDescription.Target = .target(
+    name: nameC,
+    dependencies: cTargetDependencies,
+    publicHeadersPath: "include",
+    cSettings: [
+        .headerSearchPath("include_private")
+    ],
+    cxxSettings: [
+        .headerSearchPath("include_private")
+    ]
+)
+
 
 private let targets: [PackageDescription.Target] = [
-    // Swift
-    .target(
-        name: name,
-        dependencies: [
-            .target(name: nameC),
-            .byNameItem(name: "SPFKBase", condition: nil),
-
-        ]
-    ),
-    
-    // C
-    .target(
-        name: nameC,
-        dependencies: [
-        ],
-        publicHeadersPath: "include",
-        cSettings: [
-            .headerSearchPath("include_private")
-        ],
-        cxxSettings: [
-            .headerSearchPath("include_private")
-        ]
-    ),
-    
-    .testTarget(
-        name: "\(name)Tests",
-        dependencies: [
-            .byNameItem(name: name, condition: nil),
-            .byNameItem(name: nameC, condition: nil),
-        ]
-    )
+    swiftTarget, cTarget, testTarget
 ]
 
 let package = Package(
@@ -66,8 +116,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: platforms,
     products: products,
-    dependencies: dependencies,
+    dependencies: packageDependencies,
     targets: targets,
     cxxLanguageStandard: .cxx20
 )
-
