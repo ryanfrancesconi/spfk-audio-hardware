@@ -16,7 +16,7 @@ class NullDeviceTestCase: AudioHardwareTestCase {
 
     var nullDevice: AudioDevice?
 
-    override public init() async throws {
+    override init() async throws {
         try await super.init()
         nullDevice = await AudioDevice.lookup(uid: nullDevice_uid)
         try await resetNullDeviceState()
@@ -83,19 +83,23 @@ extension NullDeviceTestCase {
         }) {
             Log.error("Device exists attempting to remove it...")
 
-            #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: existing.id))
+            let status = await hardwareManager.removeAggregateDevice(id: existing.id)
+
+            #expect(kAudioHardwareNoError == status)
         }
 
         if delay > 0 {
             try await Task.sleep(seconds: delay)
         }
 
-        return try await hardwareManager.createAggregateDevice(
+        let device = try await hardwareManager.createAggregateDevice(
             mainDevice: nullDevice,
             secondDevice: nil,
             named: Self.aggregateDeviceName,
             uid: Self.aggregateDeviceUID
         )
+
+        return device
     }
 
     func promoteAndWaitForEvent(device: AudioDevice, to selectorType: DefaultSelectorType) async throws {
@@ -108,7 +112,6 @@ extension NullDeviceTestCase {
         }
 
         let success = try await withThrowingTaskGroup(of: Bool.self, returning: Bool.self) { taskGroup in
-
             // wait task
             taskGroup.addTask {
                 print("waiting for", notificationName)

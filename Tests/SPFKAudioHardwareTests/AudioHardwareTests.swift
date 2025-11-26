@@ -18,24 +18,31 @@ final class AudioHardwareTests: NullDeviceTestCase {
         #expect(isAggregateDevice)
         await #expect(device.ownedAggregateDevices?.count == 1)
 
-        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: device.id))
+        let status = await hardwareManager.removeAggregateDevice(id: device.id)
+        
+        #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
     }
 
     @Test func deviceListChanged() async throws {
-        let task = Task<Bool, Error> {
+        // Copy only static constants locally to avoid capturing self in the Task closure.
+        let expectedUID = Self.aggregateDeviceUID
+        let expectedName = Self.aggregateDeviceName
+
+        let task = Task<Bool, Error>(priority: nil) { @Sendable () -> Bool in
             let notification = try await NotificationCenter.wait(for: .deviceListChanged)
 
-            guard let hardwareNotification = notification.object as? AudioHardwareNotification else { return false }
+            guard let anyObject = notification.object else { return false }
+            guard let hardwareNotification = anyObject as? AudioHardwareNotification else { return false }
 
-            guard case let .deviceListChanged(objectID: _, event: event) = hardwareNotification else {
+            switch hardwareNotification {
+            case let .deviceListChanged(objectID: _, event: event):
+                guard let firstAddedDevice = event.addedDevices.first else { return false }
+                return firstAddedDevice.uid == expectedUID && firstAddedDevice.name == expectedName
+            default:
                 return false
             }
-
-            let firstAddedDevice = try #require(event.addedDevices.first)
-            let passed = firstAddedDevice.uid == Self.aggregateDeviceUID && firstAddedDevice.name == Self.aggregateDeviceName
-            return passed
         }
 
         let device = try await createAggregateDevice(in: 1)
@@ -43,7 +50,9 @@ final class AudioHardwareTests: NullDeviceTestCase {
         #expect(try await task.value)
         task.cancel()
 
-        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: device.id))
+        let status = await hardwareManager.removeAggregateDevice(id: device.id)
+
+        #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
     }
@@ -51,13 +60,15 @@ final class AudioHardwareTests: NullDeviceTestCase {
     @Test(arguments: DefaultSelectorType.allCases)
     func defaultIODeviceChanged(selectorType: DefaultSelectorType) async throws {
         // this is the event that will trigger
-        let aggregateDevice = try await createAggregateDevice(in: 0)
+        let device = try await createAggregateDevice(in: 0)
 
-        try await promoteAndWaitForEvent(device: aggregateDevice, to: selectorType)
+        try await promoteAndWaitForEvent(device: device, to: selectorType)
 
-        await #expect(AudioDevice.defaultDevice(of: selectorType) == aggregateDevice)
+        await #expect(AudioDevice.defaultDevice(of: selectorType) == device)
 
-        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: aggregateDevice.id))
+        let status = await hardwareManager.removeAggregateDevice(id: device.id)
+
+        #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
     }

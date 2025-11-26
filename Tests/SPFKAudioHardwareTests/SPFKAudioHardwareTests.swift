@@ -37,33 +37,6 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
         try await tearDown()
     }
 
-    @Test func multipleInstances() async throws {
-        var hm1: AudioHardwareManager? = await AudioHardwareManager()
-        Log.debug(hm1, await hm1?.allDevices.count, "devices")
-
-        var hm2: AudioHardwareManager? = await AudioHardwareManager()
-        Log.debug(hm2, await hm1?.allDevices.count, "devices")
-
-        var hm3: AudioHardwareManager? = await AudioHardwareManager()
-        Log.debug(hm3, await hm1?.allDevices.count, "devices")
-
-        // just generate some events
-        let device = try await createAggregateDevice()
-
-        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: device.id))
-
-        await hm1?.dispose()
-        hm1 = nil
-
-        await hm2?.dispose()
-        hm2 = nil
-
-        await hm3?.dispose()
-        hm3 = nil
-
-        try await tearDown()
-    }
-
     @Test func deviceEnumeration() async throws {
         let nullDevice = try #require(nullDevice)
 
@@ -93,7 +66,9 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
         #expect(allAggregateDevices.contains(nullDevice) == false)
 
         #expect(allAggregateDevices.contains(aggregateDevice))
-        #expect(kAudioHardwareNoError == hardwareManager.removeAggregateDevice(id: aggregateDevice.id))
+
+        let status = await hardwareManager.removeAggregateDevice(id: aggregateDevice.id)
+        #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
     }

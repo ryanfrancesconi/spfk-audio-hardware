@@ -4,7 +4,7 @@
 import CoreAudio.AudioHardware
 import Foundation
 
-public enum DefaultSelectorType: Hashable, Codable, CaseIterable {
+public enum DefaultSelectorType: Hashable, Codable, CaseIterable, Sendable {
     /// The the default system input AudioDevice
     case defaultInput
 

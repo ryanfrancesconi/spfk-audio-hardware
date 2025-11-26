@@ -68,3 +68,23 @@ extension AudioHardwareManager {
         AudioHardwareDestroyAggregateDevice(deviceID)
     }
 }
+
+extension AudioHardwareManager {
+    public func setSystemInputMute(_ shouldMute: Bool) -> OSStatus {
+        let address = AudioObjectPropertyAddress(
+            selector: kAudioHardwarePropertyProcessInputMute,
+            scope: kAudioObjectPropertyScopeInput,
+            element: kAudioObjectPropertyElementMain
+        )
+
+        var isMuted: UInt32 = shouldMute ? 1 : 0
+
+        let status = AudioDevice.setPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            address: address,
+            andValue: &isMuted
+        )
+
+        return status
+    }
+}

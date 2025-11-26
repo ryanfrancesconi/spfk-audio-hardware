@@ -38,8 +38,8 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
     func volumeDidChangeNotification(scope: Scope) async throws {
         let nullDevice = try #require(nullDevice)
 
-        let task = Task<(objectID: AudioObjectID, channel: UInt32, scope: Scope), Error> {
-            try await waitForDeviceOption(named: .deviceVolumeDidChange)
+        let task = Task<(objectID: AudioObjectID, channel: UInt32, scope: Scope), Error> { @Sendable in
+            try await Self.waitForDeviceOption(named: .deviceVolumeDidChange)
         }
 
         #expect(
@@ -65,8 +65,8 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
     func muteDidChangeNotification(scope: Scope) async throws {
         let nullDevice = try #require(nullDevice)
 
-        let task = Task<(objectID: AudioObjectID, channel: UInt32, scope: Scope), Error> {
-            try await waitForDeviceOption(named: .deviceMuteDidChange)
+        let task = Task<(objectID: AudioObjectID, channel: UInt32, scope: Scope), Error> { @Sendable in
+            try await Self.waitForDeviceOption(named: .deviceMuteDidChange)
         }
 
         #expect(
@@ -102,7 +102,7 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
 }
 
 extension AudioDeviceNotificationTests {
-    func waitForDeviceOption(named notificationName: Notification.Name) async throws -> (objectID: AudioObjectID, channel: UInt32, scope: Scope) {
+    static func waitForDeviceOption(named notificationName: Notification.Name) async throws -> (objectID: AudioObjectID, channel: UInt32, scope: Scope) {
         let notification: Notification = try await NotificationCenter.wait(for: notificationName, timeout: 3)
 
         guard let deviceNotification = notification.object as? AudioDeviceNotification else {

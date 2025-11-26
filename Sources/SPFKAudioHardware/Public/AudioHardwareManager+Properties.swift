@@ -4,6 +4,7 @@
 import CoreAudio.AudioHardware
 import Foundation
 
+@MainActor
 extension AudioHardwareManager {
     // MARK: - Device Enumeration
 
@@ -13,7 +14,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioObjectID` values.
     public var allDeviceIDs: [AudioObjectID] {
-        get async { await observer.cache.allDeviceIDs }
+        get async { await cache.allDeviceIDs }
     }
 
     /// All the audio devices currently available.
@@ -22,7 +23,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allDevices: [AudioDevice] {
-        get async { await observer.cache.allDevices }
+        get async { await cache.allDevices }
     }
 
     /// All the devices that have at least one input.
@@ -31,7 +32,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var inputDevices: [AudioDevice] {
-        get async { await observer.cache.inputDevices }
+        get async { await cache.inputDevices }
     }
 
     /// All the devices that have at least one output.
@@ -40,7 +41,7 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var outputDevices: [AudioDevice] {
-        get async { await observer.cache.outputDevices }
+        get async { await cache.outputDevices }
     }
 
     /// All the devices that support input and output.
@@ -49,35 +50,36 @@ extension AudioHardwareManager {
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allIODevices: [AudioDevice] {
-        get async { await observer.cache.allIODevices }
+        get async { await cache.allIODevices }
     }
 
     /// All the devices that are real devices — not aggregate ones.
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allNonAggregateDevices: [AudioDevice] {
-        get async { await observer.cache.allNonAggregateDevices }
+        get async { await cache.allNonAggregateDevices }
     }
 
     /// All the devices that are aggregate devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var allAggregateDevices: [AudioDevice] {
-        get async { await observer.cache.allAggregateDevices }
+        get async { await cache.allAggregateDevices }
     }
 
     /// All the devices that are bluetooth devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public var bluetoothDevices: [AudioDevice] {
-        get async { await observer.cache.bluetoothDevices }
+        get async { await cache.bluetoothDevices }
     }
 
     public var splitDevices: [SplitAudioDevice] {
-        get async { await observer.cache.splitDevices }
+        get async { await cache.splitDevices }
     }
 }
 
+@MainActor
 extension AudioHardwareManager {
     // MARK: - Default Devices
 
@@ -85,40 +87,20 @@ extension AudioHardwareManager {
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
     public var defaultInputDevice: AudioDevice? {
-        get async { await observer.cache.defaultInputDevice }
+        get async { await cache.defaultInputDevice }
     }
 
     /// The default output device.
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
     public var defaultOutputDevice: AudioDevice? {
-        get async { await observer.cache.defaultOutputDevice }
+        get async { await cache.defaultOutputDevice }
     }
 
     /// The default system output device.
     ///
     /// - Returns: *(optional)* An `AudioDevice`.
     public var defaultSystemOutputDevice: AudioDevice? {
-        get async { await observer.cache.defaultSystemOutputDevice }
-    }
-}
-
-extension AudioHardwareManager {
-    public static func setSystemInputMute(_ shouldMute: Bool) -> OSStatus {
-        let address = AudioObjectPropertyAddress(
-            selector: kAudioHardwarePropertyProcessInputMute,
-            scope: kAudioObjectPropertyScopeInput,
-            element: kAudioObjectPropertyElementMain
-        )
-
-        var isMuted: UInt32 = shouldMute ? 1 : 0
-
-        let status = AudioDevice.setPropertyData(
-            AudioObjectID(kAudioObjectSystemObject),
-            address: address,
-            andValue: &isMuted
-        )
-
-        return status
+        get async { await cache.defaultSystemOutputDevice }
     }
 }

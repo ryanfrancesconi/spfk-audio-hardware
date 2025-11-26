@@ -7,20 +7,20 @@ import SPFKBase
 import Testing
 
 class AudioHardwareTestCase {
-    var hardwareManager: AudioHardwareManager
+    let hardwareManager: AudioHardwareManager = .shared
 
     private var defaultInputDevice: AudioDevice?
     private var defaultOutputDevice: AudioDevice?
     private var defaultSystemOutputDevice: AudioDevice?
 
-    public init() async throws {
-        hardwareManager = await AudioHardwareManager()
+    init() async throws {
+        try await hardwareManager.start()
         await saveDefaultDevices()
     }
 
-    public func tearDown() async throws {
+    func tearDown() async throws {
         try restoreDefaultDevices()
-        await hardwareManager.dispose()
+        try await hardwareManager.dispose()
     }
 
     deinit {
@@ -30,14 +30,14 @@ class AudioHardwareTestCase {
 
 // MARK: - Private Functions
 
-private extension AudioHardwareTestCase {
-    func saveDefaultDevices() async {
+extension AudioHardwareTestCase {
+    fileprivate func saveDefaultDevices() async {
         defaultInputDevice = await hardwareManager.defaultInputDevice
         defaultOutputDevice = await hardwareManager.defaultOutputDevice
         defaultSystemOutputDevice = await hardwareManager.defaultSystemOutputDevice
     }
 
-    func restoreDefaultDevices() throws {
+    fileprivate func restoreDefaultDevices() throws {
         try defaultInputDevice?.promote(to: .defaultInput)
         try defaultOutputDevice?.promote(to: .defaultOutput)
         try defaultSystemOutputDevice?.promote(to: .alertOutput)
@@ -45,7 +45,7 @@ private extension AudioHardwareTestCase {
 }
 
 extension AudioHardwareTestCase {
-    public func wait(sec seconds: TimeInterval) async throws {
+    func wait(sec seconds: TimeInterval) async throws {
         try await Task.sleep(seconds: seconds)
     }
 }

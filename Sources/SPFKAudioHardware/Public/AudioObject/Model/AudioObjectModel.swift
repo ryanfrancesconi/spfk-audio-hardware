@@ -11,7 +11,7 @@ import SPFKBase
 ///
 /// For more information, please refer to [Core Audio](https://developer.apple.com/documentation/coreaudio)'s
 /// documentation or source code.
-public protocol AudioObjectModel: Hashable {
+public protocol AudioObjectModel: Hashable, Sendable {
     var objectID: AudioObjectID { get }
     init(objectID: AudioObjectID) async throws
 }

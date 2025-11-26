@@ -3,7 +3,7 @@ import Foundation
 
 /// Input and output devices that have matching `modelUID` values such
 /// as for bluetooth headphones that have an integrated mic.
-public struct SplitAudioDevice {
+public struct SplitAudioDevice: Sendable {
     public let input: AudioDevice
     public let output: AudioDevice
     public let name: String

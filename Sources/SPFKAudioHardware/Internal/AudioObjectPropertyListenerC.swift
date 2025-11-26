@@ -8,7 +8,7 @@ import SPFKBase
 
 // MARK: this is just here for comparison testing with objc - will probably delete
 
-final class AudioObjectPropertyListenerC: NSObject {
+final class AudioObjectPropertyListenerC: NSObject, @unchecked Sendable {
     let objectID: AudioObjectID
 
     var eventHandler: ((any PropertyAddressNotification) -> Void)?
@@ -70,8 +70,10 @@ extension AudioObjectPropertyListenerC {
     }
 
     private func send(notification: any PropertyAddressNotification) {
+        guard let eventHandler = self.eventHandler else { return }
+        
         Task { @MainActor in
-            eventHandler?(notification)
+            eventHandler(notification)
         }
     }
 }

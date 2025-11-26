@@ -11,12 +11,10 @@ final class AudioObjectPropertyListener {
     var eventHandler: ((any PropertyAddressNotification) -> Void)?
 
     private func send(notification: any PropertyAddressNotification) {
-        guard let eventHandler else { return }
-        
-        Task { @MainActor in eventHandler(notification) }
+        eventHandler?(notification)
     }
 
-    public private(set) var isListening: Bool = false
+    private(set) var isListening: Bool = false
 
     var notificationType: any PropertyAddressNotification.Type
 
@@ -90,10 +88,10 @@ extension AudioObjectPropertyListener {
 
 /// @convention(c)
 private func _propertyListenerProc(
-    objectID: UInt32,
-    numInAddresses: UInt32,
+    objectID _: UInt32,
+    numInAddresses _: UInt32,
     inAddresses: UnsafePointer<AudioObjectPropertyAddress>,
-    clientData: Optional<UnsafeMutableRawPointer>
+    clientData: UnsafeMutableRawPointer?
 ) -> OSStatus {
     // passing self is required to call back to class
     guard let clientData else { return kAudioHardwareBadObjectError }

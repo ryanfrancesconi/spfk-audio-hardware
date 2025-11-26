@@ -1,86 +1,99 @@
 // Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/SPFKAudioHardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
-import Atomics
-import CoreAudio
+import CoreAudio.AudioHardware
 import Foundation
+import SPFKAudioHardwareC
 import SPFKBase
 
-/// This class provides convenient audio hardware-related functions (e.g. obtaining all devices managed by
-/// [Core Audio](https://developer.apple.com/documentation/coreaudio)) and allows audio hardware-related notifications
-/// to work. Additionally, you may create and remove aggregate devices using this class.
-///
-/// - Important: If you are interested in receiving hardware-related notifications, remember to keep a strong reference
-/// to an object of this class.
-public final class AudioHardwareManager {
-    public var eventHandler: ((AudioHardwareNotification) -> Void)?
-    public var postNotifications: Bool = true
+public actor AudioHardwareManager {
+    public static let shared = AudioHardwareManager()
+    private init() {}
 
-    var observer: AudioHardwareObserver { AudioHardwareObserver.shared }
+    let objectID: AudioObjectID = .init(kAudioObjectSystemObject)
 
-    // MARK: - Lifecycle
+    var notificationType: any PropertyAddressNotification.Type { AudioHardwareNotification.self }
+    var isListening: Bool { listener != nil }
 
-    private static let instances = ManagedAtomic<Int>(0)
-    private var instanceId: Int
+    var cache = AudioDeviceCache()
+    var listener: AudioObjectPropertyListener?
+    var updateTask: Task<Void, Error>?
+}
 
-    public init() async {
-        instanceId = Self.instances.load(ordering: .acquiring)
+// MARK: - Lifecycle
 
-        if instanceId == 0 {
-            observer.eventHandler = { [weak self] notification in
+extension AudioHardwareManager {
+    /// Start must be called to begin listening for hardware events
+    public func start() async throws {
+        guard !isListening else {
+            Log.error("Error: already started")
+            return
+        }
+
+        Log.debug("Starting listening...")
+
+        listener = AudioObjectPropertyListener(
+            notificationType: notificationType,
+            objectID: objectID,
+            eventHandler: { [weak self] notification in
                 guard let self else { return }
-                send(notification: notification)
+                Task { await self.callback(with: notification) }
             }
+        )
 
-            do {
-                try await observer.start()
-            } catch {
-                Log.error(error)
-            }
-
-            Log.debug("🏁 (shared) + { \(self) }")
-        }
-
-        Self.instances.wrappingIncrement(ordering: .acquiring)
-
-        Log.debug("+ { \(self) }")
+        try listener?.start()
+        try await cache.start()
     }
 
-    public func dispose() async {
-        Self.instances.wrappingDecrement(ordering: .acquiring)
+    public func stop() async throws {
+        guard isListening else {
+            Log.error("Error: not started")
+            return
+        }
 
-        if Self.instances.load(ordering: .acquiring) == 0 {
-            do {
-                observer.eventHandler = nil
-                try await observer.stop()
-                try await observer.cache.unregister()
-            } catch {
-                Log.error(error)
+        Log.debug("Stopping listening...")
+
+        try await cache.stop()
+
+        try listener?.stop()
+        listener?.eventHandler = nil
+        listener = nil
+    }
+
+    public func dispose() async throws {
+        try await stop()
+        try await cache.unregister()
+        Log.debug("⛔️ (shared) - { \(self) }")
+    }
+}
+
+// MARK: - Event Handler
+
+extension AudioHardwareManager {
+    func callback(with notification: any PropertyAddressNotification) async {
+        guard let hardwareNotification = notification as? AudioHardwareNotification else {
+            return
+        }
+
+        switch hardwareNotification {
+        case .deviceListChanged:
+            updateTask?.cancel()
+            updateTask = Task<Void, Error> {
+                // fill in added and removed devices from the cache
+                let event = try await cache.update()
+                let notification: AudioHardwareNotification = .deviceListChanged(objectID: objectID, event: event)
+                Self.post(notification: notification)
             }
-
-            Log.debug("⛔️ (shared) - { \(self) }")
+        default:
+            Self.post(notification: hardwareNotification)
         }
     }
 
-    private func send(notification: AudioHardwareNotification) {
-        eventHandler?(notification)
-
-        guard postNotifications else { return }
-
+    private static func post(notification: AudioHardwareNotification) {
         NotificationCenter.default.post(
             name: notification.name,
             object: notification,
             userInfo: nil
         )
-    }
-
-    deinit {
-        Log.debug("- { \(self) }")
-    }
-}
-
-extension AudioHardwareManager: CustomStringConvertible {
-    public var description: String {
-        "AudioHardwareManager instanceId: \(instanceId)"
     }
 }
