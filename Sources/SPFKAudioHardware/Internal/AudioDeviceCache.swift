@@ -4,8 +4,8 @@
 import AsyncAlgorithms
 import CoreAudio
 import Foundation
-import SwiftExtensions
 import SPFKBase
+import SwiftExtensions
 
 actor AudioDeviceCache {
     var cachedDevices = [AudioDevice]()
@@ -14,7 +14,7 @@ actor AudioDeviceCache {
         let address = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDevices,
             mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: kAudioObjectPropertyElementMain
+            mElement: kAudioObjectPropertyElementMain,
         )
 
         let systemObjectID = AudioObjectID(kAudioObjectSystemObject)
@@ -24,7 +24,7 @@ actor AudioDeviceCache {
             systemObjectID,
             address: address,
             value: &allIDs,
-            andDefaultValue: 0
+            andDefaultValue: 0,
         )
 
         return noErr == status ? allIDs : []
@@ -46,13 +46,13 @@ actor AudioDeviceCache {
 extension AudioDeviceCache {
     func start() async throws {
         try await updateKnownDevices(
-            DeviceStatusEvent(addedDevices: allDevices)
+            DeviceStatusEvent(addedDevices: allDevices),
         )
     }
 
     func stop() async throws {
         try await updateKnownDevices(
-            DeviceStatusEvent(removedDevices: cachedDevices)
+            DeviceStatusEvent(removedDevices: cachedDevices),
         )
     }
 
@@ -78,7 +78,7 @@ extension AudioDeviceCache {
 
         let status = DeviceStatusEvent(
             addedDevices: addedDevices,
-            removedDevices: removedDevices
+            removedDevices: removedDevices,
         )
 
         try Task.checkCancellation()
@@ -110,7 +110,7 @@ extension AudioDeviceCache {
     var inputDevices: [AudioDevice] {
         get async {
             await allDevices.async.filter {
-                await $0.channels(scope: .input) > 0
+                await $0.physicalChannels(scope: .input) > 0
             }.toArray()
         }
     }
@@ -118,7 +118,7 @@ extension AudioDeviceCache {
     var outputDevices: [AudioDevice] {
         get async {
             await allDevices.async.filter {
-                await $0.channels(scope: .output) > 0
+                await $0.physicalChannels(scope: .output) > 0
             }.toArray()
         }
     }
@@ -126,8 +126,8 @@ extension AudioDeviceCache {
     var allIODevices: [AudioDevice] {
         get async {
             await allDevices.async.filter {
-                let hasInput = await $0.channels(scope: .input) > 0
-                let hasOutput = await $0.channels(scope: .output) > 0
+                let hasInput = await $0.physicalChannels(scope: .input) > 0
+                let hasOutput = await $0.physicalChannels(scope: .output) > 0
 
                 return hasInput && hasOutput
             }.toArray()
@@ -169,7 +169,7 @@ extension AudioDeviceCache {
 
             let allDevices = await allDevices
 
-            let modelUIDs = allDevices.compactMap { $0.modelUID }
+            let modelUIDs = allDevices.compactMap(\.modelUID)
                 .removingDuplicates()
 
             for modelUIDs in modelUIDs {
@@ -183,10 +183,10 @@ extension AudioDeviceCache {
                 }
 
                 if let input, let output,
-                   let device = try? SplitAudioDevice(
-                       input: input,
-                       output: output
-                   )
+                    let device = try? SplitAudioDevice(
+                        input: input,
+                        output: output,
+                    )
                 {
                     out.append(device)
                 }

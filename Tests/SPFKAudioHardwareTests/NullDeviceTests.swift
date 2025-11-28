@@ -4,9 +4,10 @@
 import CoreAudio
 import Foundation
 import Numerics
-@testable import SPFKAudioHardware
 import SPFKBase
 import Testing
+
+@testable import SPFKAudioHardware
 
 @Suite(.serialized)
 final class NullDeviceTests: NullDeviceTestCase {
@@ -60,8 +61,8 @@ final class NullDeviceTests: NullDeviceTestCase {
         #expect(!nullDevice.isRunning)
         #expect(!nullDevice.isRunningSomewhere)
 
-        await #expect(nullDevice.channels(scope: .output) == 2)
-        await #expect(nullDevice.channels(scope: .input) == 2)
+        await #expect(nullDevice.physicalChannels(scope: .output) == 2)
+        await #expect(nullDevice.physicalChannels(scope: .input) == 2)
 
         #expect(nullDevice.ownedObjectIDs != nil)
         #expect(nullDevice.controlList != nil)
@@ -98,8 +99,8 @@ final class NullDeviceTests: NullDeviceTestCase {
         #expect(nullDevice.layoutChannels(scope: .output) == 2)
         #expect(nullDevice.layoutChannels(scope: .input) == 2)
 
-        await #expect(nullDevice.channels(scope: .output) == 2)
-        await #expect(nullDevice.channels(scope: .input) == 2)
+        await #expect(nullDevice.physicalChannels(scope: .output) == 2)
+        await #expect(nullDevice.physicalChannels(scope: .input) == 2)
 
         let isInputOnlyDevice = await nullDevice.isInputOnlyDevice
         let isOutputOnlyDevice = await nullDevice.isOutputOnlyDevice
@@ -234,19 +235,25 @@ final class NullDeviceTests: NullDeviceTestCase {
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 2)
 
-        #expect(kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
+        #expect(
+            kAudioHardwareNoError
+                == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 1), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
 
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 1)
 
-        #expect(kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
+        #expect(
+            kAudioHardwareNoError
+                == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 2, right: 2), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
 
         #expect(preferredChannels.left == 2)
         #expect(preferredChannels.right == 2)
 
-        #expect(kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: scope))
+        #expect(
+            kAudioHardwareNoError
+                == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: scope))
         preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
         #expect(preferredChannels.left == 1)
         #expect(preferredChannels.right == 2)
@@ -278,7 +285,7 @@ final class NullDeviceTests: NullDeviceTestCase {
 
             #expect(
                 virtualMainVolume.isApproximatelyEqual(to: 0.5, relativeTolerance: 0.001) == true,
-                "virtualMainVolume is \(virtualMainVolume) for \(device.name) \(scope)"
+                "virtualMainVolume is \(virtualMainVolume) for \(device.name) \(scope)",
             )
 
             let dB2 = try #require(device.virtualMainVolumeInDecibels(scope: scope))

@@ -6,9 +6,11 @@ import Foundation
 /// Provides a single object that contains a channel name with its index and scope
 public struct AudioDeviceNamedChannel: CustomStringConvertible, Equatable, Sendable {
     public var description: String {
-        let name = name ?? "Input"
+        var name: String? = name
+        if name == "" { name = nil }
+        let localName = name ?? "Input"
 
-        return "\(channel + 1) - " + name
+        return "\(channel + 1) - " + localName
     }
 
     public let channel: UInt32
@@ -17,7 +19,7 @@ public struct AudioDeviceNamedChannel: CustomStringConvertible, Equatable, Senda
 
     public init(channel: UInt32, name: String? = nil, scope: Scope) {
         self.channel = channel
-        self.name = name
+        self.name = name?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.scope = scope
     }
 }
