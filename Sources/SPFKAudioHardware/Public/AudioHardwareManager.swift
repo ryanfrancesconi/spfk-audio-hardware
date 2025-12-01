@@ -99,10 +99,12 @@ extension AudioHardwareManager {
     }
 
     private static func post(notification: AudioHardwareNotification) {
-        NotificationCenter.default.post(
-            name: notification.name,
-            object: notification,
-            userInfo: nil
-        )
+        Task { @MainActor in
+            NotificationCenter.default.post(
+                name: notification.name,
+                object: notification,
+                userInfo: nil
+            )
+        }
     }
 }

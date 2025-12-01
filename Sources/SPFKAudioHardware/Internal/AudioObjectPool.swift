@@ -22,7 +22,7 @@ public actor AudioObjectPool: Sendable {
         pool[id] as? O
     }
 
-    func insert<O: AudioPropertyListenerModel>(_ audioObject: O, for id: AudioObjectID) throws {
+    func insert(_ audioObject: some AudioPropertyListenerModel, for id: AudioObjectID) throws {
         pool[id] = audioObject
     }
 
@@ -108,12 +108,12 @@ extension AudioObjectPool {
     private func received(id: AudioObjectID, notification: any PropertyAddressNotification) {
         // Log.debug("🔊 \(id)", notification)
 
-        // guard Self.postNotifications else { return }
-
-        NotificationCenter.default.post(
-            name: notification.name,
-            object: notification
-        )
+        Task { @MainActor in
+            NotificationCenter.default.post(
+                name: notification.name,
+                object: notification
+            )
+        }
     }
 }
 
