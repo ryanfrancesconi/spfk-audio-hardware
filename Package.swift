@@ -6,7 +6,7 @@ import PackageDescription
 let name: String = "SPFKAudioHardware" // Swift target
 var localDependencies: [RemoteDependency] { [
     .init(package: .package(url: "\(githubBase)/SPFKBase", from: "0.0.1"),
-          product: .product(name: "SPFKBase", package: "SPFKBase")),
+          product: .product(name: "SPFKBase", package: "spfk-base")),
 ] }
 let remoteDependencies: [RemoteDependency] = []
 let resources: [PackageDescription.Resource]? = nil
