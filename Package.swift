@@ -3,149 +3,52 @@
 
 import PackageDescription
 
-let name: String = "SPFKAudioHardware" // Swift target
-var localDependencies: [RemoteDependency] { [
-    .init(package: .package(url: "\(githubBase)/spfk-base", from: "0.0.1"),
-          product: .product(name: "SPFKBase", package: "spfk-base")),
-] }
-let remoteDependencies: [RemoteDependency] = []
-let resources: [PackageDescription.Resource]? = nil
-
-let nameC: String? = "\(name)C" // C/C++ target
-let dependencyNamesC: [String] = []
-let remoteDependenciesC: [RemoteDependency] = [] // 3rd party
-var cSettings: [PackageDescription.CSetting]? { [
-    .headerSearchPath("include_private")
-] }
-var cxxSettings: [PackageDescription.CXXSetting]? { [
-    .headerSearchPath("include_private")
-] }
-let platforms: [PackageDescription.SupportedPlatform]? = [
-    .macOS(.v12),
-]
-
-// MARK: - Reusable Code for a dual Swift + C package --------------------------------------------------
-
-let githubBase = "https://github.com/ryanfrancesconi"
-
-struct RemoteDependency {
-    let package: PackageDescription.Package.Dependency
-    let product: PackageDescription.Target.Dependency
-}
-
-var localDependencyNames: [String] {
-    localDependencies.compactMap {
-        switch $0.product {
-        case let .productItem(name: productName, package: _, moduleAliases: _, condition: _):
-            productName
-        default:
-            nil
-        }
-    }
-}
-
-var swiftTarget: PackageDescription.Target {
-    var targetDependencies: [PackageDescription.Target.Dependency] {
-        let names = localDependencyNames.filter { $0 != "SPFKTesting" }
-
-        var value: [PackageDescription.Target.Dependency] = names.map {
-            .byNameItem(name: "\($0)", condition: nil)
-        }
-
-        if let nameC {
-            value.append(.target(name: nameC))
-        }
-
-        value.append(contentsOf: remoteDependencies.map(\.product))
-
-        return value
-    }
-
-    return .target(
-        name: name,
-        dependencies: targetDependencies,
-        resources: resources
-    )
-}
-
-var testTarget: PackageDescription.Target {
-    var targetDependencies: [PackageDescription.Target.Dependency] {
-        var array: [PackageDescription.Target.Dependency] = [
-            .byNameItem(name: name, condition: nil)
-        ]
-
-        if let nameC {
-            array.append(.byNameItem(name: nameC, condition: nil))
-        }
-
-        if localDependencyNames.contains("SPFKTesting") {
-            array.append(.byNameItem(name: "SPFKTesting", condition: nil))
-        }
-
-        return array
-    }
-
-    let nameTests: String = "\(name)Tests" // Test target
-
-    return .testTarget(
-        name: nameTests,
-        dependencies: targetDependencies,
-        resources: nil,
-        swiftSettings: [
-            .swiftLanguageMode(.v5),
-            .unsafeFlags(["-strict-concurrency=complete"]),
-        ],
-    )
-}
-
-var cTarget: PackageDescription.Target? {
-    guard let nameC else { return nil }
-
-    var targetDependencies: [PackageDescription.Target.Dependency] {
-        var value: [PackageDescription.Target.Dependency] = dependencyNamesC.map {
-            .byNameItem(name: "\($0)", condition: nil)
-        }
-
-        value.append(contentsOf: remoteDependenciesC.map(\.product))
-
-        return value
-    }
-
-    return .target(
-        name: nameC,
-        dependencies: targetDependencies,
-        publicHeadersPath: "include",
-        cSettings: cSettings,
-        cxxSettings: cxxSettings
-    )
-}
-
-var targets: [PackageDescription.Target] {
-    [swiftTarget, cTarget, testTarget].compactMap(\.self)
-}
-
-var packageDependencies: [PackageDescription.Package.Dependency] {
-    localDependencies.map(\.package) +
-        remoteDependencies.map(\.package) +
-        remoteDependenciesC.map(\.package)
-}
-
-var products: [PackageDescription.Product] {
-    let targets: [String] = [name, nameC].compactMap(\.self)
-
-    return [
-        .library(name: name, targets: targets)
-    ]
-}
-
-// This is required to be at the bottom
-
 let package = Package(
-    name: name,
-    defaultLocalization: "en",
-    platforms: platforms,
-    products: products,
-    dependencies: packageDependencies,
-    targets: targets,
+    name: "spfk-audio-hardware",
+    platforms: [
+        .macOS(.v12),
+    ],
+    products: [
+        .library(
+            name: "SPFKAudioHardware",
+            targets: [
+                "SPFKAudioHardware",
+                "SPFKAudioHardwareC",
+            ]
+        ),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/ryanfrancesconi/spfk-base", branch: "development"),
+    ],
+    targets: [
+        .target(
+            name: "SPFKAudioHardware",
+            dependencies: [
+                "SPFKAudioHardwareC",
+                .product(name: "SPFKBase", package: "spfk-base"),
+            ]
+        ),
+
+        .target(
+            name: "SPFKAudioHardwareC",
+            dependencies: [
+            ],
+            publicHeadersPath: "include",
+            cSettings: [
+                .headerSearchPath("include_private")
+            ],
+            cxxSettings: [
+                .headerSearchPath("include_private")
+            ]
+        ),
+
+        .testTarget(
+            name: "SPFKAudioHardwareTests",
+            dependencies: [
+                "SPFKAudioHardware",
+                "SPFKAudioHardwareC"
+            ]
+        ),
+    ],
     cxxLanguageStandard: .cxx20
 )
