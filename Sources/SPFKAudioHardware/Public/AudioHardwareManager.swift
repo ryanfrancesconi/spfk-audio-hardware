@@ -92,19 +92,35 @@ extension AudioHardwareManager {
             case .deviceListChanged:
                 // fill in added and removed devices from the cache
                 let event = try await cache.update()
+                try Task.checkCancellation()
+
+                guard event.removedDevices.isNotEmpty || event.addedDevices.isNotEmpty else {
+                    Log.error("No changes detected")
+                    return
+                }
+
                 let notification: AudioHardwareNotification =
                     .deviceListChanged(objectID: objectID, event: event)
 
                 await Self.post(notification: notification)
 
             default:
+                try Task.checkCancellation()
+
                 await Self.post(notification: hardwareNotification)
             }
         }
 
         updateTask = task
 
-        try await task.value
+        let result = await task.result
+
+        switch result {
+        case .success:
+            break
+        case let .failure(error):
+            Log.error(error)
+        }
     }
 
     @MainActor private static func post(notification: AudioHardwareNotification) {

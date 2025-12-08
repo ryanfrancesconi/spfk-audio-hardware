@@ -76,12 +76,14 @@ extension AudioDeviceCache {
         addedDevices = latestDeviceList.filter { !cachedDevices.contains($0) }
         removedDevices = cachedDevices.filter { !latestDeviceList.contains($0) }
 
+        guard removedDevices.isNotEmpty || addedDevices.isNotEmpty else {
+            throw NSError(description: "No changes detected")
+        }
+
         let status = DeviceStatusEvent(
             addedDevices: addedDevices,
             removedDevices: removedDevices,
         )
-
-        try Task.checkCancellation()
 
         // Add new devices & remove old ones.
         try await updateKnownDevices(status)
