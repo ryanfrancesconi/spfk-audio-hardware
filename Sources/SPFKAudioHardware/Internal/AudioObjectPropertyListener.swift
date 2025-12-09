@@ -18,8 +18,8 @@ final class AudioObjectPropertyListener {
 
     var notificationType: any PropertyAddressNotification.Type
 
-    init<T: PropertyAddressNotification>(
-        notificationType: T.Type,
+    init(
+        notificationType: (some PropertyAddressNotification).Type,
         objectID: AudioObjectID,
         eventHandler: ((any PropertyAddressNotification) -> Void)?
     ) {
@@ -63,6 +63,8 @@ extension AudioObjectPropertyListener {
     private var selfPtr: UnsafeMutableRawPointer { Unmanaged.passUnretained(self).toOpaque() }
 
     private func addListener() -> OSStatus {
+        Log.debug(selfPtr)
+        
         var address: AudioObjectPropertyAddress = .wildcard
         return AudioObjectAddPropertyListener(objectID, &address, _propertyListenerProc, selfPtr)
     }
