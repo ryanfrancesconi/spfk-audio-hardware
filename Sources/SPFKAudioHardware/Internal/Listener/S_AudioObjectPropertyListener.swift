@@ -37,7 +37,6 @@ final class S_AudioObjectPropertyListener {
 
     func start() throws {
         guard !isListening else {
-            Log.error("Error: already listening")
             return
         }
 
@@ -52,7 +51,6 @@ final class S_AudioObjectPropertyListener {
 
     func stop() throws {
         guard isListening else {
-            Log.error("Error: wasn't listening")
             return
         }
 

@@ -1,0 +1,2 @@
+
+typealias AudioObjectPropertyListener = S_AudioObjectPropertyListener

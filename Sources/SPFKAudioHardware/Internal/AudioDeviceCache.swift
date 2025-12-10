@@ -51,7 +51,7 @@ extension AudioDeviceCache {
     }
 
     func unregister() async throws {
-        // Log.debug("unregister", cachedDevices.count, "devices")
+        Log.debug("unregister", cachedDevices.count, "devices")
 
         try await stop()
 

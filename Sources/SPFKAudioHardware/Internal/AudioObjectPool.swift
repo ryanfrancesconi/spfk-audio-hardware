@@ -6,7 +6,7 @@ import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
-typealias AudioObjectPropertyListener = S_AudioObjectPropertyListener
+
 
 /// Singleton AudioObjectPool which stores devices and streams. Everything is internal except
 /// for the lookup()
@@ -99,7 +99,9 @@ extension AudioObjectPool {
     }
 
     func stopListening() {
-        Log.debug("removing listeners for", pool.count, "devices")
+        guard listeners.isNotEmpty else { return }
+
+        Log.debug("removing \(listeners.count) listeners for", pool.count, "devices")
 
         for listener in listeners {
             do {
