@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) AudioObjectID inObjectID;
 @property (nonatomic, readonly) BOOL isListening;
-@property (nonatomic, weak) id<PropertyListenerDelegate> delegate;
+@property (nonatomic, nullable, weak) id<PropertyListenerDelegate> delegate;
 
 typedef NS_ENUM(int, PropertyListenerErrorCode) {
     AlreadyListening = 0,

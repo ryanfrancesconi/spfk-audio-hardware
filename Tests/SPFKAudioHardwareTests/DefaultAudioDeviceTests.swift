@@ -11,7 +11,7 @@ import Testing
 final class DefaultAudioDeviceTests: AudioHardwareTestCase {
     @Test(arguments: [Scope.output, Scope.input])
     func preferredChannelsForStereoAllDevices(scope: Scope) async throws {
-        let devices = await hardwareManager.allDevices
+        let devices = try await hardwareManager.allDevices()
 
         for device in devices {
             let preferredChannels = device.preferredChannelsForStereo(scope: scope)

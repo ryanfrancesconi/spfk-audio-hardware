@@ -25,12 +25,12 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         let result = await task.result
 
         switch result {
-        case .success((objectID: let objectID, channel: let channel, scope: let scope)):
+        case let .success((objectID: objectID, channel: channel, scope: scope)):
             #expect(objectID == nullDevice.objectID)
             #expect(channel == 0)
             #expect(scope == scope)
 
-        case .failure(let error):
+        case let .failure(error):
             throw error
         }
 
@@ -52,12 +52,12 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         let result = await task.result
 
         switch result {
-        case .success((objectID: let objectID, channel: let channel, scope: let scope)):
+        case let .success((objectID: objectID, channel: channel, scope: scope)):
             #expect(objectID == nullDevice.objectID)
             #expect(channel == 0)
             #expect(scope == scope)
 
-        case .failure(let error):
+        case let .failure(error):
             throw error
         }
 
@@ -75,6 +75,19 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
 
         try await tearDown()
     }
+
+    @Test func audioDeviceCacheUpdate() async throws {
+        for _ in 0 ..< 2 {
+            let device = try await createAggregateDevice(in: 1)
+
+            try await wait(sec: 3)
+
+            let status = await hardwareManager.removeAggregateDevice(id: device.id)
+            #expect(kAudioHardwareNoError == status)
+
+            try await wait(sec: 3)
+        }
+    }
 }
 
 extension AudioDeviceNotificationTests {
@@ -88,10 +101,10 @@ extension AudioDeviceNotificationTests {
         }
 
         switch deviceNotification {
-        case .deviceVolumeDidChange(objectID: let objectID, channel: let channel, scope: let scope):
+        case let .deviceVolumeDidChange(objectID: objectID, channel: channel, scope: scope):
             return (objectID: objectID, channel: channel, scope: scope)
 
-        case .deviceMuteDidChange(objectID: let objectID, channel: let channel, scope: let scope):
+        case let .deviceMuteDidChange(objectID: objectID, channel: channel, scope: scope):
             return (objectID: objectID, channel: channel, scope: scope)
 
         default:

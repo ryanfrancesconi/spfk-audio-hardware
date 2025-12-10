@@ -208,6 +208,6 @@ extension AudioDeviceNotification {
             id = objectID
         }
 
-        return await AudioObjectPool.shared.lookup(id: id)
+        return try? await AudioObjectPool.shared.lookup(id: id)
     }
 }

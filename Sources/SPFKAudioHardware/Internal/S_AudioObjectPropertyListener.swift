@@ -5,7 +5,9 @@ import CoreAudio
 import Foundation
 import SPFKBase
 
-final class AudioObjectPropertyListener {
+// MARK: swift version of listening - potentially unstable?
+
+final class S_AudioObjectPropertyListener {
     let objectID: AudioObjectID
 
     var eventHandler: ((any PropertyAddressNotification) -> Void)?
@@ -59,12 +61,10 @@ final class AudioObjectPropertyListener {
     }
 }
 
-extension AudioObjectPropertyListener {
+extension S_AudioObjectPropertyListener {
     private var selfPtr: UnsafeMutableRawPointer { Unmanaged.passUnretained(self).toOpaque() }
 
     private func addListener() -> OSStatus {
-        Log.debug(selfPtr)
-        
         var address: AudioObjectPropertyAddress = .wildcard
         return AudioObjectAddPropertyListener(objectID, &address, _propertyListenerProc, selfPtr)
     }
@@ -98,7 +98,7 @@ private func _propertyListenerProc(
     // passing self is required to call back to class
     guard let clientData else { return kAudioHardwareBadObjectError }
 
-    let _self = Unmanaged<AudioObjectPropertyListener>.fromOpaque(clientData).takeUnretainedValue()
+    let _self = Unmanaged<S_AudioObjectPropertyListener>.fromOpaque(clientData).takeUnretainedValue()
     let address: AudioObjectPropertyAddress = inAddresses.pointee
     _self.callback(with: address)
 

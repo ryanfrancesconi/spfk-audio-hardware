@@ -6,15 +6,15 @@ import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
-// MARK: this is just here for comparison testing with objc - will probably delete
+// MARK: listening via objc class
 
-final class AudioObjectPropertyListenerC: NSObject, @unchecked Sendable {
+final class C_AudioObjectPropertyListener: NSObject, @unchecked Sendable {
     let objectID: AudioObjectID
 
     var eventHandler: ((any PropertyAddressNotification) -> Void)?
     var notificationType: any PropertyAddressNotification.Type
 
-    public var isListening: Bool { cListener.isListening }
+    var isListening: Bool { cListener.isListening }
 
     private lazy var cListener: PropertyListener = {
         var cListener: PropertyListener = .init(objectId: objectID)
@@ -22,8 +22,8 @@ final class AudioObjectPropertyListenerC: NSObject, @unchecked Sendable {
         return cListener
     }()
 
-    init<T: PropertyAddressNotification>(
-        notificationType: T.Type,
+    init(
+        notificationType: (some PropertyAddressNotification).Type,
         objectID: AudioObjectID,
         eventHandler: ((any PropertyAddressNotification) -> Void)?
     ) {
@@ -32,11 +32,16 @@ final class AudioObjectPropertyListenerC: NSObject, @unchecked Sendable {
         self.eventHandler = eventHandler
     }
 
+    deinit {
+        cListener.delegate = nil
+        Log.debug("- { \(self) (\(objectID)) }")
+    }
+
     func start() throws {
         let status = cListener.start()
 
         guard kAudioHardwareNoError == status else {
-            throw NSError(description: "failed to start listening for (\(notificationType)) with error (\(status.fourCC))")
+            throw NSError(description: "failed to start listening to \(objectID) for (\(notificationType)) with error (\(status.fourCC))")
         }
     }
 
@@ -44,18 +49,20 @@ final class AudioObjectPropertyListenerC: NSObject, @unchecked Sendable {
         let status = cListener.stop()
 
         guard kAudioHardwareNoError == status else {
-            throw NSError(description: "failed to stop listening for (\(notificationType)) with error (\(status.fourCC))")
+            let msg = "failed to stop listening to \(objectID) for (\(notificationType)) with error (\(status.fourCC))"
+
+            throw NSError(description: msg)
         }
     }
 }
 
-extension AudioObjectPropertyListenerC: SPFKAudioHardwareC.PropertyListenerDelegate {
+extension C_AudioObjectPropertyListener: SPFKAudioHardwareC.PropertyListenerDelegate {
     func propertyListener(_ propertyListener: PropertyListener, eventReceived propertyAddress: AudioObjectPropertyAddress) {
         callback(with: propertyAddress)
     }
 }
 
-extension AudioObjectPropertyListenerC {
+extension C_AudioObjectPropertyListener {
     // callback from the proc
     func callback(with propertyAddress: AudioObjectPropertyAddress) {
         guard let notification = notificationType.init(
@@ -70,8 +77,8 @@ extension AudioObjectPropertyListenerC {
     }
 
     private func send(notification: any PropertyAddressNotification) {
-        guard let eventHandler = self.eventHandler else { return }
-        
+        guard let eventHandler else { return }
+
         Task { @MainActor in
             eventHandler(notification)
         }

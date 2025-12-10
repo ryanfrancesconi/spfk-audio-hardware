@@ -49,7 +49,7 @@ OSStatus devicePropertyChangedListener(
         (__bridge void *_Nullable)(self)
         );
 
-    // printf("start, %i, status %i\n", _inObjectID, status);
+    //printf("start, %i, status %i\n", _inObjectID, status);
 
     _isListening = true;
 
@@ -75,7 +75,7 @@ OSStatus devicePropertyChangedListener(
         (__bridge void *_Nullable)(self)
         );
 
-    // printf("stop, %i, status %i\n", _inObjectID, status);
+    //printf("stop, %i, status %i\n", _inObjectID, status);
 
     _isListening = false;
 
@@ -88,6 +88,7 @@ OSStatus devicePropertyChangedListener(
 
 - (void)dealloc {
     printf("dealloc PropertyListener\n");
+    [self stop];
 }
 
 @end

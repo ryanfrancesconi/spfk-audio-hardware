@@ -83,8 +83,6 @@ extension AudioHardwareManager {
             return
         }
 
-        Log.debug(hardwareNotification)
-
         updateTask?.cancel()
 
         let task = Task<Void, Error> {
@@ -118,6 +116,7 @@ extension AudioHardwareManager {
         switch result {
         case .success:
             break
+            
         case let .failure(error):
             Log.error(error)
         }

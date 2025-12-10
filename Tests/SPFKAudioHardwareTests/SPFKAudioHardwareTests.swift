@@ -10,7 +10,7 @@ import Testing
 @Suite(.serialized)
 class AudioHardwareManagerTests: NullDeviceTestCase {
     @Test func allDevices() async throws {
-        let allDevices = await hardwareManager.allDevices
+        let allDevices = try await hardwareManager.allDevices()
 
         Log.debug("Found", allDevices.count, "devices: ", allDevices)
 
@@ -19,7 +19,7 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
 
     @Test(arguments: [Scope.input, Scope.output])
     func splitDevices(scope: Scope) async throws {
-        let devices = await hardwareManager.splitDevices
+        let devices = try await hardwareManager.splitDevices()
 
         for device in devices {
             let sampleRates = device.getNominalSampleRates(scope: scope) ?? []
@@ -43,13 +43,13 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
 
         let aggregateDevice = try await createAggregateDevice(in: 0.3)
 
-        let allDevices = await hardwareManager.allDevices
-        let allDeviceIDs = await hardwareManager.allDeviceIDs
-        let allInputDevices = await hardwareManager.inputDevices
-        let allOutputDevices = await hardwareManager.outputDevices
-        let allIODevices = await hardwareManager.allIODevices
-        let allNonAggregateDevices = await hardwareManager.nonAggregateDevices
-        let allAggregateDevices = await hardwareManager.aggregateDevices
+        let allDevices = try await hardwareManager.allDevices()
+        let allDeviceIDs = try await hardwareManager.allDeviceIDs()
+        let allInputDevices = try await hardwareManager.inputDevices()
+        let allOutputDevices = try await hardwareManager.outputDevices()
+        let allIODevices = try await hardwareManager.allIODevices()
+        let allNonAggregateDevices = try await hardwareManager.nonAggregateDevices()
+        let allAggregateDevices = try await hardwareManager.aggregateDevices()
 
         Log.debug("allDevices", allDevices)
         Log.debug("allInputDevices", allInputDevices)

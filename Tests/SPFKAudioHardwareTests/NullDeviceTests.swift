@@ -15,8 +15,11 @@ final class NullDeviceTests: NullDeviceTestCase {
         let nullDevice = try #require(nullDevice)
         let deviceUID = try #require(nullDevice.uid)
 
-        await #expect(AudioObjectPool.shared.lookup(id: nullDevice.id) == nullDevice)
-        await #expect(AudioDevice.lookup(uid: deviceUID) == nullDevice)
+        let lookupDevice: AudioDevice = try await AudioObjectPool.shared.lookup(id: nullDevice.id)
+
+        #expect(lookupDevice == nullDevice)
+
+        try await #expect(AudioDevice.lookup(uid: deviceUID) == nullDevice)
         try await tearDown()
     }
 
@@ -263,7 +266,9 @@ final class NullDeviceTests: NullDeviceTestCase {
 
     @Test(arguments: [Scope.output, Scope.input])
     func virtualMainVolumeOutput(scope: Scope) async throws {
-        let devices = await hardwareManager.allDevices.filter {
+        var devices = try await hardwareManager.allDevices()
+
+        devices = devices.filter {
             $0.canSetVirtualMainVolume(scope: scope)
         }
 

@@ -47,11 +47,7 @@ extension AudioHardwareManager {
             throw NSError(description: "Failed creating aggregate device with error: (\(status.fourCC))")
         }
 
-        guard let newDevice = await AudioDevice.lookup(id: deviceID) else {
-            throw NSError(description: "Failed creating aggregate device")
-        }
-
-        return newDevice
+        return try await AudioDevice.lookup(id: deviceID)
     }
 
     /// Destroy the given audio aggregate device.

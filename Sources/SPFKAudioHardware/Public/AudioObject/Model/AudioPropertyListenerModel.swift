@@ -14,8 +14,8 @@ extension AudioPropertyListenerModel {
     ///
     /// - Parameter id: An audio device identifier.
     /// - Note: If identifier is not valid, `nil` will be returned.
-    public static func lookup(id: AudioObjectID) async -> Self? {
+    public static func lookup(id: AudioObjectID) async throws -> Self {
         // the Self return informs the type
-        await AudioObjectPool.shared.lookup(id: id)
+        try await AudioObjectPool.shared.lookup(id: id)
     }
 }

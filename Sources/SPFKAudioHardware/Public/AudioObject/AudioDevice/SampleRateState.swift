@@ -20,9 +20,11 @@ public actor SampleRateState {
     public func updateAndWait(sampleRate requestedRate: Double) async throws {
         updateTask?.cancel()
 
-        guard let objectID, let device = await AudioDevice.lookup(id: objectID) else {
+        guard let objectID else {
             throw NSError(description: "device hasn't been set")
         }
+
+        let device = try await AudioDevice.lookup(id: objectID)
 
         guard let nominalSampleRate = device.nominalSampleRate else {
             throw NSError(description: "nominalSampleRate is nil")
@@ -56,9 +58,7 @@ public actor SampleRateState {
                 return nil
             }
 
-            guard let device: AudioDevice = await AudioObjectPool.shared.lookup(id: objectID) else {
-                return nil
-            }
+            let device: AudioDevice = try await AudioObjectPool.shared.lookup(id: objectID)
 
             return device.nominalSampleRate
         }

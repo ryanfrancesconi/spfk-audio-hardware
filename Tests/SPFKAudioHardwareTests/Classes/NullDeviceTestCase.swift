@@ -18,7 +18,7 @@ class NullDeviceTestCase: AudioHardwareTestCase {
 
     override init() async throws {
         try await super.init()
-        nullDevice = await AudioDevice.lookup(uid: nullDevice_uid)
+        nullDevice = try await AudioDevice.lookup(uid: nullDevice_uid)
         try await resetNullDeviceState()
     }
 
@@ -76,7 +76,7 @@ extension NullDeviceTestCase {
     func createAggregateDevice(in delay: TimeInterval = 0) async throws -> AudioDevice {
         let nullDevice = try #require(nullDevice)
 
-        let allDevices = await hardwareManager.allDevices
+        let allDevices = try await hardwareManager.allDevices()
 
         if let existing = allDevices.first(where: {
             $0.uid == Self.aggregateDeviceUID

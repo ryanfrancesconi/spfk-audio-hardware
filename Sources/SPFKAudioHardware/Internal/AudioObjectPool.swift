@@ -6,6 +6,8 @@ import Foundation
 import SPFKAudioHardwareC
 import SPFKBase
 
+typealias AudioObjectPropertyListener = C_AudioObjectPropertyListener
+
 /// Singleton AudioObjectPool which stores devices and streams. Everything is internal except
 /// for the lookup()
 public actor AudioObjectPool: Sendable {
@@ -14,27 +16,37 @@ public actor AudioObjectPool: Sendable {
     private var pool = [AudioObjectID: any AudioPropertyListenerModel]()
     private var listeners = [AudioObjectID: AudioObjectPropertyListener]()
 
-    // public static var postNotifications: Bool = true
-
     private init() {}
 
     func get<O: AudioPropertyListenerModel>(_ id: AudioObjectID) -> O? {
         pool[id] as? O
     }
 
-    func insert(_ audioObject: some AudioPropertyListenerModel, for id: AudioObjectID) throws {
+    func insert(_ audioObject: some AudioPropertyListenerModel, for id: AudioObjectID) {
+        guard pool[id]?.objectID != audioObject.objectID else {
+            return // already in the pool
+        }
+
         pool[id] = audioObject
+
+        Log.debug("✅ \(audioObject)")
     }
 
-    func remove(_ id: AudioObjectID) throws {
-        pool.removeValue(forKey: id)
+    func remove(_ id: AudioObjectID) {
+        do {
+            try listeners[id]?.stop()
+        } catch {
+            Log.error(error)
+        }
 
-        try listeners[id]?.stop()
+        let removedListener = listeners.removeValue(forKey: id)
+        let removedPoolItem = pool.removeValue(forKey: id)
 
-        listeners.removeValue(forKey: id)
+        Log.debug("⛔️ listener objectID", removedListener?.objectID, "pool item", removedPoolItem)
+        Log.debug("ℹ updated \(pool.count) pool, \(listeners.count) listeners")
     }
 
-    func removeAll() throws {
+    func removeAll() {
         stopListening()
 
         guard pool.isNotEmpty else {
@@ -47,55 +59,56 @@ public actor AudioObjectPool: Sendable {
 }
 
 extension AudioObjectPool {
-    func startListening() async {
+    func startListening() {
         guard pool.isNotEmpty else {
             Log.error("No objects in pool")
             return
         }
 
-        // Log.debug("adding listeners for", pool.count, "devices")
-
         for item in pool {
-            let id = item.key
+            startListening(to: item.value)
+        }
+    }
 
-            guard listeners[id] == nil else {
-                // Log.error("Already have listener for", id)
-                continue
+    func startListening(to audioObject: any AudioPropertyListenerModel) {
+        let id = audioObject.objectID
+
+        guard listeners[id] == nil else {
+            // Log.error("Already have listener for", id)
+            return
+        }
+
+        let listener = AudioObjectPropertyListener(
+            notificationType: audioObject.notificationType,
+            objectID: id,
+            eventHandler: { [weak self] notification in
+                guard let self else { return }
+
+                Task { await received(id: id, notification: notification) }
             }
+        )
 
-            let audioObject = item.value
+        do {
+            try listener.start()
+            listeners[id] = listener
+            Log.debug("Added listener for \(audioObject)")
 
-            let listener = AudioObjectPropertyListener(
-                notificationType: audioObject.notificationType,
-                objectID: id,
-                eventHandler: { [weak self] notification in
-                    guard let self else { return }
-
-                    Task { await received(id: id, notification: notification) }
-                }
-            )
-
-            do {
-                try listener.start()
-                listeners[id] = listener
-
-            } catch let error as NSError {
-                Log.error(error)
-            }
+        } catch let error as NSError {
+            Log.error("Error adding listener for \(audioObject)", error)
         }
     }
 
     func stopListening() {
-        // Log.debug("removing listeners for", pool.count, "devices")
+        Log.debug("removing listeners for", pool.count, "devices")
 
         for listener in listeners {
             do {
                 try listener.value.stop()
-                listener.value.eventHandler = nil
-
             } catch let error as NSError {
                 Log.error(error)
             }
+
+            listener.value.eventHandler = nil
         }
 
         listeners.removeAll()
@@ -118,20 +131,14 @@ extension AudioObjectPool {
     ///
     /// - Parameter id: An audio device identifier.
     /// - Note: If identifier is not valid, `nil` will be returned.
-    public func lookup<O: AudioPropertyListenerModel>(id: AudioObjectID) async -> O? {
+    public func lookup<O: AudioPropertyListenerModel>(id: AudioObjectID) async throws -> O {
         if let device: O = get(id) {
             return device
         }
 
-        do {
-            let device = try await O(objectID: id)
-            try insert(device, for: id)
-            return device
+        let device = try await O(objectID: id)
+        insert(device, for: id)
 
-        } catch {
-            Log.error(error)
-        }
-
-        return nil
+        return device
     }
 }

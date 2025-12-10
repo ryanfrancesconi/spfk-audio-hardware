@@ -7,6 +7,11 @@ import Foundation
 // MARK: - Aggregate Device Functions
 
 extension AudioDevice {
+    func isCADefaultDeviceAggregate() async -> Bool {
+        await isAggregateDevice &&
+            name.hasPrefix("CADefaultDeviceAggregate")
+    }
+
     /// - Returns: `true` if this device is an aggregate one, `false` otherwise.
     public var isAggregateDevice: Bool {
         get async {
@@ -27,7 +32,7 @@ extension AudioDevice {
             guard let ownedObjectIDs, ownedObjectIDs.isNotEmpty else { return nil }
 
             let devices: [AudioDevice] = await ownedObjectIDs.async.compactMap {
-                await AudioObjectPool.shared.lookup(id: $0)
+                try? await AudioObjectPool.shared.lookup(id: $0)
             }.toArray()
 
             return devices

@@ -14,7 +14,7 @@ extension AudioDevice {
                                                  address: address,
                                                  andValue: &deviceID)
 
-        return await noErr == status ? AudioObjectPool.shared.lookup(id: deviceID) : nil
+        return await noErr == status ? try? AudioObjectPool.shared.lookup(id: deviceID) : nil
     }
 
     /// Returns an `AudioDevice` by providing a valid audio device unique identifier.
@@ -22,7 +22,7 @@ extension AudioDevice {
     /// - Parameter uid: An audio device unique identifier.
     ///
     /// - Note: If unique identifier is not valid, `nil` will be returned.
-    public static func lookup(uid: String) async -> AudioDevice? {
+    public static func lookup(uid: String) async throws -> AudioDevice? {
         let address = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDeviceForUID,
             mScope: kAudioObjectPropertyScopeGlobal,
@@ -49,10 +49,14 @@ extension AudioDevice {
             }
         }
 
-        if noErr != status || deviceID == kAudioObjectUnknown {
-            return nil
+        guard noErr == status else {
+            throw NSError(description: "lookup failed with error (\(status.fourCC))")
         }
 
-        return await AudioObjectPool.shared.lookup(id: deviceID)
+        guard deviceID != kAudioObjectUnknown else {
+            throw NSError(description: "lookup failed to find deviceID. kAudioObjectUnknown (\(kAudioObjectUnknown.fourCC))")
+        }
+
+        return try await AudioObjectPool.shared.lookup(id: deviceID)
     }
 }

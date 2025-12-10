@@ -77,7 +77,7 @@ extension AudioObjectModel {
                 return nil
             }
 
-            return await AudioObjectPool.shared.lookup(id: object.objectID)
+            return try? await AudioObjectPool.shared.lookup(id: object.objectID)
         }
     }
 

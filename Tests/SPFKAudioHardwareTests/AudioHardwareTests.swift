@@ -12,7 +12,7 @@ import Testing
 @Suite(.serialized)
 final class AudioHardwareTests: NullDeviceTestCase {
     @Test func createAndDestroyAggregateDevice() async throws {
-        let device = try await createAggregateDevice(in: 5)
+        let device = try await createAggregateDevice(in: 1)
 
         let isAggregateDevice = await device.isAggregateDevice
 
@@ -20,7 +20,6 @@ final class AudioHardwareTests: NullDeviceTestCase {
         await #expect(device.ownedAggregateDevices?.count == 1)
 
         let status = await hardwareManager.removeAggregateDevice(id: device.id)
-
         #expect(kAudioHardwareNoError == status)
 
         try await tearDown()

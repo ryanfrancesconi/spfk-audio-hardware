@@ -36,12 +36,12 @@ final class SampleRateStateTests: NullDeviceTestCase {
     }
 
     @Test func mutableState() async throws {
-        guard
-            let device = await hardwareManager.outputDevices.filter({
-                guard let rates = $0.nominalSampleRates else { return false }
-                return rates.count > 3
-            }).first
-        else { return }
+        let outputDevices = try await hardwareManager.outputDevices()
+
+        guard let device = outputDevices.filter({
+            guard let rates = $0.nominalSampleRates else { return false }
+            return rates.count > 3
+        }).first else { return }
 
         let currentSampleRate = try #require(device.nominalSampleRate)
         let testRates = try #require(device.nominalSampleRates).filter { $0 != currentSampleRate }

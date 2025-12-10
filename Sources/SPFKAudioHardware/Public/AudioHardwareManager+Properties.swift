@@ -13,8 +13,8 @@ extension AudioHardwareManager {
     /// - Note: This list may also include *Aggregate* and *Multi-Output* devices.
     ///
     /// - Returns: An array of `AudioObjectID` values.
-    public var allDeviceIDs: [AudioObjectID] {
-        get async { await cache.allDeviceIDs }
+    func allDeviceIDs() async throws -> [AudioObjectID] {
+        try await cache.allDeviceIDs()
     }
 
     /// All the audio devices currently available.
@@ -22,8 +22,8 @@ extension AudioHardwareManager {
     /// - Note: This list may also include *Aggregate* and *Multi-Output* devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var allDevices: [AudioDevice] {
-        get async { await cache.allDevices }
+    public func allDevices() async throws -> [AudioDevice] {
+        try await cache.allDevices()
     }
 
     /// All the devices that have at least one input.
@@ -31,8 +31,8 @@ extension AudioHardwareManager {
     /// - Note: This list may also include *Aggregate* devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var inputDevices: [AudioDevice] {
-        get async { await cache.inputDevices }
+    public func inputDevices() async throws -> [AudioDevice] {
+        try await cache.inputDevices()
     }
 
     /// All the devices that have at least one output.
@@ -40,8 +40,8 @@ extension AudioHardwareManager {
     /// - Note: The list may also include *Aggregate* and *Multi-Output* devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var outputDevices: [AudioDevice] {
-        get async { await cache.outputDevices }
+    public func outputDevices() async throws -> [AudioDevice] {
+        try await cache.outputDevices()
     }
 
     /// All the devices that support input and output.
@@ -49,33 +49,33 @@ extension AudioHardwareManager {
     /// - Note: The list may also include *Aggregate* and *Multi-Output* devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var allIODevices: [AudioDevice] {
-        get async { await cache.allIODevices }
+    func allIODevices() async throws -> [AudioDevice] {
+        try await cache.allIODevices()
     }
 
     /// All the devices that are real devices — not aggregate ones.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var nonAggregateDevices: [AudioDevice] {
-        get async { await cache.nonAggregateDevices }
+    public func nonAggregateDevices() async throws -> [AudioDevice] {
+        try await cache.nonAggregateDevices()
     }
 
     /// All the devices that are aggregate devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var aggregateDevices: [AudioDevice] {
-        get async { await cache.aggregateDevices }
+    public func aggregateDevices() async throws -> [AudioDevice] {
+        try await cache.aggregateDevices()
     }
 
     /// All the devices that are bluetooth devices.
     ///
     /// - Returns: An array of `AudioDevice` objects.
-    public var bluetoothDevices: [AudioDevice] {
-        get async { await cache.bluetoothDevices }
+    public func bluetoothDevices() async throws -> [AudioDevice] {
+        try await cache.bluetoothDevices()
     }
 
-    public var splitDevices: [SplitAudioDevice] {
-        get async { await cache.splitDevices }
+    public func splitDevices() async throws -> [SplitAudioDevice] {
+        try await cache.splitDevices()
     }
 }
 
