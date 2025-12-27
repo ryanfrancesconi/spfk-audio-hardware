@@ -11,7 +11,7 @@ import SPFKBase
 final class C_AudioObjectPropertyListener: NSObject, @unchecked Sendable {
     let objectID: AudioObjectID
 
-    var eventHandler: ((any PropertyAddressNotification) -> Void)?
+    var eventHandler: PropertyAddressNotificationEventHandler?
     var notificationType: any PropertyAddressNotification.Type
 
     var isListening: Bool { cListener.isListening }
@@ -25,7 +25,7 @@ final class C_AudioObjectPropertyListener: NSObject, @unchecked Sendable {
     init(
         notificationType: (some PropertyAddressNotification).Type,
         objectID: AudioObjectID,
-        eventHandler: ((any PropertyAddressNotification) -> Void)?
+        eventHandler: PropertyAddressNotificationEventHandler?
     ) {
         self.notificationType = notificationType
         self.objectID = objectID

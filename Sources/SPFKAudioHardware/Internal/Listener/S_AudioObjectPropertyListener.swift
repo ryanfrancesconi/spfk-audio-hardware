@@ -10,7 +10,7 @@ import SPFKBase
 final class S_AudioObjectPropertyListener {
     let objectID: AudioObjectID
 
-    var eventHandler: ((any PropertyAddressNotification) -> Void)?
+    var eventHandler: PropertyAddressNotificationEventHandler?
 
     private func send(notification: any PropertyAddressNotification) {
         eventHandler?(notification)
@@ -23,13 +23,13 @@ final class S_AudioObjectPropertyListener {
     init(
         notificationType: (some PropertyAddressNotification).Type,
         objectID: AudioObjectID,
-        eventHandler: ((any PropertyAddressNotification) -> Void)?
+        eventHandler: PropertyAddressNotificationEventHandler?
     ) {
         self.notificationType = notificationType
         self.objectID = objectID
         self.eventHandler = eventHandler
     }
-    
+
     deinit {
         try? stop()
         // Log.debug("- { \(self) (\(objectID)) }")
