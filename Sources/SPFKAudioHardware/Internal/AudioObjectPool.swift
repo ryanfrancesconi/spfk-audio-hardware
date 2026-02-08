@@ -8,7 +8,7 @@ import SPFKBase
 
 /// Singleton AudioObjectPool which stores devices and streams. Everything is internal except
 /// for the lookup()
-public actor AudioObjectPool: Sendable {
+public actor AudioObjectPool {
     public static let shared = AudioObjectPool()
 
     private var pool = [AudioObjectID: any AudioPropertyListenerModel]()
