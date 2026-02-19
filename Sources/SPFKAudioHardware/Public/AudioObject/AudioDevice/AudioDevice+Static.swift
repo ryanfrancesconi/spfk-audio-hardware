@@ -54,7 +54,7 @@ extension AudioDevice {
         }
 
         guard deviceID != kAudioObjectUnknown else {
-            throw NSError(description: "lookup failed to find deviceID. kAudioObjectUnknown (\(kAudioObjectUnknown.fourCC))")
+            throw NSError(description: "lookup failed to find deviceID \(uid). kAudioObjectUnknown (\(kAudioObjectUnknown.fourCC))")
         }
 
         return try await AudioObjectPool.shared.lookup(id: deviceID)
