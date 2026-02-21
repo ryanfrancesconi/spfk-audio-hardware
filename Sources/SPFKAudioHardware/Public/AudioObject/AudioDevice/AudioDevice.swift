@@ -66,6 +66,6 @@ public final class AudioDevice: AudioPropertyListenerModel, Sendable {
 extension AudioDevice: CustomStringConvertible {
     /// Returns a `String` representation of self.
     public var description: String {
-        "\(name) (\(id))"
+        "\(name) (\(id)) (\(uid ?? "uid is nil"))"
     }
 }
