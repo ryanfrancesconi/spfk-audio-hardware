@@ -8,12 +8,15 @@
 `SPFKAudioHardware` is an abstraction on top of the Hardware Abstraction Layer of Core Audio - HAL.
 
 It is intended to be used in a concurrency based Swift macOS application.
-In progress...
 
 ---
 
-### History
+## History
 
 [SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) is a Swift framework that aims to make [Core Audio](https://developer.apple.com/documentation/coreaudio) use less tedious in macOS.
 
 `SimplyCoreAudio` was written by Ruben Nine ([@rnine](https://github.com/rnine)) in 2013-2014 (open-sourced in March 2014 and archived in March 2025) and is licensed under the [MIT](https://opensource.org/licenses/MIT) license. See [LICENSE.md](LICENSE.md).
+
+## About
+
+Spongefork (SPFK) is the personal software projects of [Ryan Francesconi](https://github.com/ryanfrancesconi). Dedicated to creative sound manipulation, his first application, Spongefork, was released in 1999 for macOS 8. From 2016 to 2025 he was the lead macOS developer at [Audio Design Desk](https://add.app).

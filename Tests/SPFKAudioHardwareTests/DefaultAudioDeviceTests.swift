@@ -13,8 +13,15 @@ final class DefaultAudioDeviceTests: AudioHardwareTestCase {
     func preferredChannelsForStereoAllDevices(scope: Scope) async throws {
         let devices = try await hardwareManager.allDevices()
 
+        #expect(devices.isNotEmpty, "Should have at least one audio device")
+
         for device in devices {
             let preferredChannels = device.preferredChannelsForStereo(scope: scope)
+
+            if preferredChannels != nil {
+                #expect(preferredChannels!.left > 0, "\(device.name) left channel should be > 0")
+                #expect(preferredChannels!.right > 0, "\(device.name) right channel should be > 0")
+            }
 
             Log.debug(device.name, preferredChannels)
         }

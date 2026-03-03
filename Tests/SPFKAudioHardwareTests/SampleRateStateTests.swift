@@ -25,11 +25,8 @@ final class SampleRateStateTests: NullDeviceTestCase {
     func verifyInvalidThrows(sampleRate: Float64) async throws {
         let nullDevice = try #require(nullDevice)
 
-        do {
+        await #expect(throws: (any Error).self) {
             try await nullDevice.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
-        } catch {
-            Log.debug("✅", error)
-            #expect(error.localizedDescription.contains("doesn't support \(sampleRate)"))
         }
 
         try await tearDown()

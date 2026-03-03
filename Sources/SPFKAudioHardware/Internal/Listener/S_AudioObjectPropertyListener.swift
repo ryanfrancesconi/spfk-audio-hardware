@@ -94,7 +94,7 @@ extension S_AudioObjectPropertyListener {
 /// @convention(c)
 private func _propertyListenerProc(
     objectID _: UInt32,
-    numInAddresses _: UInt32,
+    numInAddresses: UInt32,
     inAddresses: UnsafePointer<AudioObjectPropertyAddress>,
     clientData: UnsafeMutableRawPointer?
 ) -> OSStatus {
@@ -102,8 +102,11 @@ private func _propertyListenerProc(
     guard let clientData else { return kAudioHardwareBadObjectError }
 
     let _self = Unmanaged<S_AudioObjectPropertyListener>.fromOpaque(clientData).takeUnretainedValue()
-    let address: AudioObjectPropertyAddress = inAddresses.pointee
-    _self.callback(with: address)
+
+    for i in 0 ..< Int(numInAddresses) {
+        let address = inAddresses[i]
+        _self.callback(with: address)
+    }
 
     return kAudioHardwareNoError
 }

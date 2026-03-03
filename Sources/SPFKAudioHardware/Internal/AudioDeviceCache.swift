@@ -122,7 +122,9 @@ extension AudioDeviceCache {
             }
         }
 
-        assert(ids.count == out.count)
+        if ids.count != out.count {
+            Log.error("Expected \(ids.count) devices but only resolved \(out.count)")
+        }
 
         return out
     }

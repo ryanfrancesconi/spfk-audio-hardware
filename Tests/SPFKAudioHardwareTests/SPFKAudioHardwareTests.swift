@@ -12,6 +12,12 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
     @Test func allDevices() async throws {
         let allDevices = try await hardwareManager.allDevices()
 
+        #expect(allDevices.isNotEmpty, "Should have at least one audio device")
+
+        for device in allDevices {
+            #expect(!device.name.isEmpty, "Device should have a name")
+        }
+
         Log.debug("Found", allDevices.count, "devices: ", allDevices)
 
         try await tearDown()
