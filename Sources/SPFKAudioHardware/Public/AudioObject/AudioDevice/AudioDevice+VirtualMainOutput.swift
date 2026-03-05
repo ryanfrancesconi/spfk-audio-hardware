@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import AudioToolbox
@@ -14,19 +14,17 @@ extension AudioDevice {
     ///
     /// - Returns: `true` when the volume can be set, `false` otherwise.
     public func canSetVirtualMainVolume(scope: Scope) -> Bool {
-        guard validAddress(
+        validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
             scope: scope.propertyScope
-        ) != nil else { return false }
-
-        return true
+        ) != nil
     }
 
     /// Sets the virtual main volume for a given scope.
     ///
     /// - Parameter volume: The new volume as a scalar value ranging from 0 to 1.
     /// - Parameter scope: A scope.
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     public func setVirtualMainVolume(_ volume: Float32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
@@ -76,12 +74,10 @@ extension AudioDevice {
     ///
     /// - Returns: `true` when the balance can be set, `false` otherwise.
     public func canSetVirtualMainBalance(scope: Scope) -> Bool {
-        guard validAddress(
+        validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,
             scope: scope.propertyScope
-        ) != nil else { return false }
-
-        return true
+        ) != nil
     }
 
     /// The virtual main balance for a given scope.
@@ -109,7 +105,7 @@ extension AudioDevice {
     /// - Parameter value: The new balance.
     /// - Parameter scope: A scope.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     public func setVirtualMainBalance(_ value: Float32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioHardwareServiceDeviceProperty_VirtualMainBalance,

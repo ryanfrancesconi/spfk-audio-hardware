@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
@@ -66,6 +66,13 @@ extension AudioHardwareManager {
 }
 
 extension AudioHardwareManager {
+    /// Mutes or unmutes the system-wide audio input.
+    ///
+    /// This sets the `kAudioHardwarePropertyProcessInputMute` property on the system audio object,
+    /// which controls whether the process's audio input is muted.
+    ///
+    /// - Parameter shouldMute: `true` to mute input, `false` to unmute.
+    /// - Returns: An `OSStatus` indicating success or failure.
     public func setSystemInputMute(_ shouldMute: Bool) -> OSStatus {
         let address = AudioObjectPropertyAddress(
             selector: kAudioHardwarePropertyProcessInputMute,

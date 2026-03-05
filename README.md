@@ -1,15 +1,36 @@
 ## SPFKAudioHardware
 
-[![Platform](https://img.shields.io/badge/Platforms-macOS%2012+-brightgreen.svg?style=flat)](https://github.com/ryanfrancesconi/SPFKAudioHardware)
-[![Swift 6.2.1](https://img.shields.io/badge/Swift-6.2.1-orange.svg?style=flat)](https://developer.apple.com/swift)
-[![Swift Package Manager compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg?style=flat&colorA=28a745&&colorB=4E4E4E)](https://github.com/apple/swift-package-manager)
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/ryanfrancesconi/SPFKAudioHardware/LICENSE.md)
-
 A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction Layer (HAL) for macOS. Provides a type-safe, `Sendable` interface to audio device management built on actors and `async`/`await`.
+
+- **Swift 6.2** / **macOS 12+**
+- Full `Sendable` and actor isolation throughout
+- MIT License
+
+### Quick Start
+
+```swift
+import SPFKAudioHardware
+
+// Start the hardware manager (required before any device access)
+let manager = AudioHardwareManager.shared
+try await manager.start()
+
+// Enumerate devices
+let allDevices = try await manager.allDevices()
+let outputs = try await manager.outputDevices()
+
+// Access default devices
+if let defaultOutput = await manager.defaultOutputDevice {
+    print(defaultOutput.name)
+}
+
+// Clean up
+try await manager.unregister()
+```
 
 ### Features
 
-- **Device enumeration** — query all devices, or filter by input, output, aggregate, Bluetooth, and more
+- **Device enumeration** — query all devices, or filter by input, output, aggregate, Bluetooth, split, and more
 - **Default device management** — get and promote default input, output, and system output devices
 - **Volume and mute control** — per-channel scalar/dB volume, virtual main volume, balance, and mute state
 - **Sample rate management** — coordinated async sample rate transitions via the `SampleRateState` actor
@@ -18,6 +39,27 @@ A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction L
 - **Channel layout** — physical/virtual channel counts, named channels, layout descriptions, and LFE support
 - **Property notifications** — typed `AudioDeviceNotification`, `AudioStreamNotification`, and `AudioHardwareNotification` enums dispatched through `NotificationCenter`
 - **Latency and safety offsets** — device, stream, and presentation latency; buffer frame size management
+
+### Architecture
+
+`AudioHardwareManager` is a singleton actor that owns the device lifecycle. It must be started before use and manages an internal `AudioDeviceCache` and `AudioObjectPool` for efficient device tracking and listener management.
+
+**Key types:**
+
+| Type | Role |
+|------|------|
+| `AudioHardwareManager` | Singleton actor — device enumeration, aggregate device creation, hardware event dispatch |
+| `AudioDevice` | Represents a single audio device with properties for volume, sample rate, channels, streams, latency, and more |
+| `SplitAudioDevice` | Matched input/output device pair (e.g. Bluetooth headphones with integrated mic) |
+| `SampleRateState` | Actor coordinating async sample rate changes with hardware confirmation |
+| `AudioObjectPool` | Internal singleton caching devices and streams, managing property listeners |
+| `Scope` | Enum (`.input`, `.output`, `.global`, etc.) used throughout for directional property access |
+
+**Notifications** are delivered as typed enums through `NotificationCenter`:
+
+- `AudioHardwareNotification` — device list changes, default device changes
+- `AudioDeviceNotification` — volume, mute, sample rate, name, and other per-device property changes
+- `AudioStreamNotification` — stream format changes
 
 ### Dependencies
 
@@ -29,9 +71,7 @@ A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction L
 
 ## History
 
-[SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) is a Swift framework that aims to make [Core Audio](https://developer.apple.com/documentation/coreaudio) use less tedious in macOS.
-
-`SimplyCoreAudio` was written by Ruben Nine ([@rnine](https://github.com/rnine)) in 2013-2014 (open-sourced in March 2014 and archived in March 2025) and is licensed under the [MIT](https://opensource.org/licenses/MIT) license. See [LICENSE.md](LICENSE.md).
+SPFKAudioHardware is derived from [SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) by Ruben Nine ([@rnine](https://github.com/rnine)). Open-sourced in March 2014 and archived in March 2025. Ryan Francesconi was a contributor and continued its development (as this package) after it was archived.
 
 ## About
 

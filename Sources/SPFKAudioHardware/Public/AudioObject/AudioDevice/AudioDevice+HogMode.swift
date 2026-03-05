@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -25,7 +25,7 @@ extension AudioDevice {
 
     /// Toggles hog mode on/off
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     private func toggleHogMode() -> OSStatus {
         guard let address = validAddress(
             selector: kAudioDevicePropertyHogMode,
@@ -38,7 +38,7 @@ extension AudioDevice {
     /// Attempts to set the `pid` that currently owns exclusive access to the
     /// audio device.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     @discardableResult
     public func setHogMode() -> OSStatus {
         guard hogModePID != pid_t(ProcessInfo.processInfo.processIdentifier) else { return kAudioHardwareBadObjectError }
@@ -49,7 +49,7 @@ extension AudioDevice {
     /// Attempts to make the audio device available to all processes by setting
     /// the hog mode to `-1`.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     @discardableResult
     public func unsetHogMode() -> OSStatus {
         guard hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier) else { return kAudioHardwareBadObjectError }

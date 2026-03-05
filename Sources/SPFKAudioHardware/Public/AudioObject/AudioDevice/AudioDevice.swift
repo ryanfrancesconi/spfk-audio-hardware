@@ -1,9 +1,8 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
-import SPFKAudioHardwareC
 import SPFKBase
 
 /// This class represents an audio device managed by [Core Audio](https://developer.apple.com/documentation/coreaudio).
@@ -14,6 +13,9 @@ public final class AudioDevice: AudioPropertyListenerModel, Sendable {
 
     // MARK: - Static Private Properties
 
+    /// The set of Core Audio class IDs recognized as audio devices.
+    ///
+    /// Includes standard devices, sub-devices, aggregate devices, endpoints, and endpoint devices.
     public static let supportedClassIDs: Set<AudioClassID> = [
         kAudioDeviceClassID,
         kAudioSubDeviceClassID,
@@ -24,12 +26,15 @@ public final class AudioDevice: AudioPropertyListenerModel, Sendable {
 
     private nonisolated(unsafe) var _deviceName: String = ""
 
+    /// Whether the given `AudioClassID` is a recognized audio device class.
     public static func isSupported(classID: AudioClassID) -> Bool {
         supportedClassIDs.contains(classID)
     }
 
     // MARK: - Requirements
 
+    /// Manages asynchronous sample rate changes for this device, including waiting for
+    /// hardware confirmation via `NotificationCenter`.
     public let sampleRateUpdater = SampleRateState()
 
     public let objectID: AudioObjectID
@@ -60,6 +65,7 @@ public final class AudioDevice: AudioPropertyListenerModel, Sendable {
     /// - Returns: An audio device's name.
     public var name: String { _deviceName }
 
+    /// The device name followed by its object ID in parentheses, e.g. `"Built-in Output (42)"`.
     public var nameAndID: String { "\(_deviceName) (\(objectID))" }
 }
 

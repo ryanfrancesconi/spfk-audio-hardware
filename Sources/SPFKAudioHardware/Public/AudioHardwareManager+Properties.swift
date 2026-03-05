@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
@@ -73,6 +73,9 @@ extension AudioHardwareManager {
         try await cache.bluetoothDevices()
     }
 
+    /// All the split audio devices, pairing input-only and output-only devices that share a `modelUID`.
+    ///
+    /// - Returns: An array of `SplitAudioDevice` objects.
     public func splitDevices() async throws -> [SplitAudioDevice] {
         try await cache.splitDevices()
     }

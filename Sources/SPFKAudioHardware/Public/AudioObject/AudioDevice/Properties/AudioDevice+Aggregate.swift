@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -7,6 +7,11 @@ import Foundation
 // MARK: - Aggregate Device Functions
 
 extension AudioDevice {
+    /// Whether this device is Core Audio's internal default aggregate device.
+    ///
+    /// Core Audio creates hidden aggregate devices with names prefixed
+    /// `"CADefaultDeviceAggregate"` for internal routing. These are typically
+    /// not useful to present to users.
     public func isCADefaultDeviceAggregate() async -> Bool {
         await isAggregateDevice &&
             name.hasPrefix("CADefaultDeviceAggregate")
