@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "spfk-audio-hardware",
-    platforms: [.macOS(.v12),],
+    platforms: [.macOS(.v13),],
     products: [
         .library(
             name: "SPFKAudioHardware",
