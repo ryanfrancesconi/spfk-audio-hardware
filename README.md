@@ -1,5 +1,8 @@
 ## SPFKAudioHardware
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fryanfrancesconi%2Fspfk-audio-hardware%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ryanfrancesconi/spfk-audio-hardware)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fryanfrancesconi%2Fspfk-audio-hardware%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/ryanfrancesconi/spfk-audio-hardware)
+
 A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction Layer (HAL) for macOS. Provides a type-safe, `Sendable` interface to audio device management built on actors and `async`/`await`.
 
 - **Swift 6.2** / **macOS 12+**
