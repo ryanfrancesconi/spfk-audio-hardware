@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -115,7 +115,7 @@ extension AudioDevice {
     /// - Parameter frameSize: A valid buffer size.
     /// - Parameter scope: A scope.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     @discardableResult
     public func setBufferFrameSize(_ frameSize: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(
@@ -132,9 +132,9 @@ extension AudioDevice {
     /// - Parameter scope: A scope.
     ///
     /// - Returns: An array of common buffer sizes within the defined range such as 32 ... 1024
-    public func bufferFrameSizeRange(scope _: Scope) -> [UInt32]? {
+    public func bufferFrameSizeRange(scope: Scope) -> [UInt32]? {
         guard let address = validAddress(selector: kAudioDevicePropertyBufferFrameSizeRange,
-                                         scope: kAudioObjectPropertyScopeWildcard) else { return nil }
+                                         scope: scope.propertyScope) else { return nil }
 
         var bufferSizes = [UInt32]()
         var ranges = [AudioValueRange]()

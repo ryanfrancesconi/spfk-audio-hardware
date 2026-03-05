@@ -9,6 +9,13 @@ public struct SplitAudioDevice: Sendable {
     public let name: String
     public let modelUID: String
 
+    /// Creates a split device from a paired input and output device.
+    ///
+    /// - Parameters:
+    ///   - input: The input-only audio device.
+    ///   - output: The output-only audio device.
+    /// - Throws: If the devices have different `modelUID` values, if `modelUID` is `nil`,
+    ///   or if both devices have the same `uid` (i.e., they are the same device).
     public init(input: AudioDevice, output: AudioDevice) throws {
         guard let modelUID = output.modelUID else {
             throw NSError(description: "the modelUID can't be nil")
@@ -29,14 +36,19 @@ public struct SplitAudioDevice: Sendable {
         self.modelUID = modelUID
     }
 
+    /// Whether this split device contains the given audio device as its input or output.
     public func contains(device: AudioDevice) -> Bool {
         input == device || output == device
     }
 
+    /// Whether this split device contains a device matching the given unique identifier.
     public func contains(uid: String) -> Bool {
         input.uid == uid || output.uid == uid
     }
 
+    /// Returns the input or output device for the given scope.
+    ///
+    /// For scopes other than `.input` or `.output`, returns the output device.
     public func device(scope: Scope) -> AudioDevice {
         switch scope {
         case .input: input
@@ -46,15 +58,20 @@ public struct SplitAudioDevice: Sendable {
         }
     }
 
-    public func objectID(scope: Scope) -> AudioObjectID {
+    /// Returns the `AudioObjectID` for the input or output side.
+    ///
+    /// - Returns: `nil` for scopes other than `.input` or `.output`.
+    public func objectID(scope: Scope) -> AudioObjectID? {
         switch scope {
         case .input: input.objectID
         case .output: output.objectID
-        default:
-            AudioObjectID(kAudioHardwareBadObjectError)
+        default: nil
         }
     }
 
+    /// The nominal sample rates supported by the input or output device.
+    ///
+    /// - Returns: `nil` for scopes other than `.input` or `.output`.
     public func getNominalSampleRates(scope: Scope) -> [Float64]? {
         switch scope {
         case .input: input.getNominalSampleRates(scope: .input)

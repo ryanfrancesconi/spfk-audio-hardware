@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -41,6 +41,7 @@ public enum Scope: Sendable {
 
 // swiftformat:disable consecutiveSpaces
 extension Scope {
+    /// Creates a `Scope` from a raw Core Audio `AudioObjectPropertyScope` constant.
     public init(propertyScope: AudioObjectPropertyScope) {
         switch propertyScope {
         case kAudioObjectPropertyScopeGlobal:       self = .global
@@ -67,6 +68,7 @@ extension Scope {
         }
     }
 
+    /// A human-readable title for this scope (e.g., `"Input"`, `"Output"`, `"Global"`).
     public var title: String {
         switch self {
         case .input:        "Input"

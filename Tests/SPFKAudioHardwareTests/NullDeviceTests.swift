@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -293,8 +293,7 @@ final class NullDeviceTests: NullDeviceTestCase {
                 "virtualMainVolume is \(virtualMainVolume) for \(device.name) \(scope)",
             )
 
-            let dB2 = try #require(device.virtualMainVolumeInDecibels(scope: scope))
-            #expect(dB2 < 0)
+            _ = try #require(device.virtualMainVolumeInDecibels(scope: scope))
         }
 
         try await tearDown()

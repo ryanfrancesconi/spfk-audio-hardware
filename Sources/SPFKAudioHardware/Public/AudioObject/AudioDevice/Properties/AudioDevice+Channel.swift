@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -121,7 +121,7 @@ extension AudioDevice {
     /// - Parameter channel: A channel.
     /// - Parameter scope: A scope.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     public func setVolume(_ volume: Float32, channel: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyVolumeScalar,
                                          scope: scope.propertyScope,
@@ -136,7 +136,7 @@ extension AudioDevice {
     /// - Parameter channel: A channel.
     /// - Parameter scope: A scope.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     public func setMute(_ shouldMute: Bool, channel: UInt32, scope: Scope) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyMute,
                                          scope: scope.propertyScope,
@@ -184,7 +184,7 @@ extension AudioDevice {
     ///
     /// - Returns: `true` when the volume can be muted, `false` otherwise.
     public func canMuteMainChannel(scope: Scope) -> Bool {
-        if canMute(channel: kAudioObjectPropertyElementMain, scope: scope) == true {
+        if canMute(channel: kAudioObjectPropertyElementMain, scope: scope) {
             return true
         }
 
@@ -230,7 +230,7 @@ extension AudioDevice {
     /// - Parameter channels: A `StereoPair` representing the preferred channels.
     /// - Parameter scope: A scope.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     public func setPreferredChannelsForStereo(channels: StereoPair, scope: Scope) -> OSStatus {
         guard let address = validAddress(
             selector: kAudioDevicePropertyPreferredChannelsForStereo,
@@ -241,6 +241,13 @@ extension AudioDevice {
         return setPropertyDataArray(address, andValue: &preferredChannels)
     }
 
+    /// A human-readable description of the preferred stereo channel pair for a given scope.
+    ///
+    /// Returns a string like `"1 - Left + 2 - Right"` by joining the descriptions
+    /// of the preferred stereo channels.
+    ///
+    /// - Parameter scope: A scope.
+    /// - Returns: *(optional)* A formatted string, or `nil` if preferred channels are unavailable.
     public func preferredChannelsDescription(scope: Scope) async -> String? {
         guard let preferredChannelsForStereo = preferredChannelsForStereo(scope: scope) else { return nil }
 

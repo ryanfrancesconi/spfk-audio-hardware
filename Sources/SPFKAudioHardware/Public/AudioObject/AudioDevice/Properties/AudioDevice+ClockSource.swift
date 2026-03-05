@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -45,7 +45,7 @@ extension AudioDevice {
         return clockSourceIDs.map {
             // We expect clockSourceNameForClockSourceID to never fail in this case,
             // but in the unlikely case it does, we provide a default value.
-            clockSourceName(clockSourceID: $0) ?? "Clock source \(String(describing: clockSourceID))"
+            clockSourceName(clockSourceID: $0) ?? "Clock source \($0)"
         }
     }
 
@@ -84,7 +84,7 @@ extension AudioDevice {
     ///
     /// - Parameter clockSourceID: A clock source ID.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     @discardableResult public func setClockSourceID(_ clockSourceID: UInt32) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyClockSource) else { return kAudioHardwareBadObjectError }
         return setProperty(address: address, value: clockSourceID)

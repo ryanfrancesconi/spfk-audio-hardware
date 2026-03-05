@@ -1,9 +1,8 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
-import SPFKAudioHardwareC
 import SPFKBase
 
 /// Singleton AudioObjectPool which stores devices and streams. Everything is internal except
@@ -37,13 +36,8 @@ public actor AudioObjectPool {
             Log.error(error)
         }
 
-        let removedListener = listeners.removeValue(forKey: id)
-        let removedPoolItem = pool.removeValue(forKey: id)
-
-        _ = removedListener; _ = removedPoolItem
-
-//        Log.debug("⛔️ listener objectID", removedListener?.objectID, "pool item", removedPoolItem)
-//        Log.debug("ℹ updated \(pool.count) pool, \(listeners.count) listeners")
+        listeners.removeValue(forKey: id)
+        pool.removeValue(forKey: id)
     }
 
     func removeAll() {

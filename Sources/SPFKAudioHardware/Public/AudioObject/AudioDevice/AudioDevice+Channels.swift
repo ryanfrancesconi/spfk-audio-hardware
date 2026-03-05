@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -47,6 +47,9 @@ extension AudioDevice {
         }
     }
 
+    /// Whether this device exclusively supports the given scope (input-only or output-only).
+    ///
+    /// - Parameter scope: `.input` or `.output`. Returns `false` for other scopes.
     public func isOnly(scope: Scope) async -> Bool {
         switch scope {
         case .input:
@@ -78,6 +81,11 @@ extension AudioDevice {
         return noErr == status ? result.mNumberChannelDescriptions : nil
     }
 
+    /// The preferred channel layout descriptions for a given scope.
+    ///
+    /// - Parameter scope: A scope.
+    ///
+    /// - Returns: *(optional)* An array of `AudioChannelDescription` structs.
     public func layoutChannelDescriptions(scope: Scope) -> [AudioChannelDescription]? {
         guard
             let address = validAddress(
@@ -170,6 +178,7 @@ extension AudioDevice {
 }
 
 extension [AudioDevice] {
+    /// Filters the array to devices that exclusively support the given scope.
     public func isOnly(scope: Scope) async -> [AudioDevice] {
         await async.filter { await $0.isOnly(scope: scope) }.toArray()
     }

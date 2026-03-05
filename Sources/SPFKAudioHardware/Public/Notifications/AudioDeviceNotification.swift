@@ -1,10 +1,15 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import Foundation
 import SPFKBase
 
+/// Typed notifications for property changes on an `AudioDevice`.
+///
+/// Each case maps to a specific Core Audio property selector and carries the
+/// `AudioObjectID` of the device that changed. Observe these via `NotificationCenter`
+/// using the corresponding `Notification.Name`.
 public enum AudioDeviceNotification: Hashable, Sendable {
     /// Called whenever the audio device's sample rate changes.
     case deviceNominalSampleRateDidChange(objectID: AudioObjectID)
@@ -66,6 +71,9 @@ public enum AudioDeviceNotification: Hashable, Sendable {
 }
 
 extension AudioDeviceNotification: PropertyAddressNotification {
+    /// Maps a raw `AudioObjectPropertyAddress` to a typed `AudioDeviceNotification` case.
+    ///
+    /// Returns `nil` for unrecognized property selectors.
     public init?(objectID: AudioObjectID, propertyAddress: AudioObjectPropertyAddress) {
         switch propertyAddress.mSelector {
         case kAudioDevicePropertyNominalSampleRate:
@@ -135,6 +143,7 @@ extension AudioDeviceNotification: PropertyAddressNotification {
 // MARK: For NotificationCenter events
 
 extension AudioDeviceNotification {
+    /// The `Notification.Name` for posting this notification via `NotificationCenter`.
     public var name: Notification.Name {
         switch self {
         case .deviceNominalSampleRateDidChange:
@@ -172,6 +181,9 @@ extension AudioDeviceNotification {
 }
 
 extension AudioDeviceNotification {
+    /// Resolves the `AudioDevice` associated with this notification from the `AudioObjectPool`.
+    ///
+    /// - Returns: The `AudioDevice`, or `nil` if the device is no longer in the pool.
     public func getAudioDevice() async -> AudioDevice? {
         let id: AudioObjectID = switch self {
         case let .deviceNominalSampleRateDidChange(objectID: objectID):

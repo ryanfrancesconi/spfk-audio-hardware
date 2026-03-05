@@ -1,15 +1,26 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
 import Foundation
 import SPFKBase
 
+/// Manages asynchronous sample rate changes for an `AudioDevice`.
+///
+/// When a sample rate change is requested via `updateAndWait(sampleRate:)`, this actor
+/// sets the nominal sample rate on the device and then waits for Core Audio to confirm
+/// the change via a `deviceNominalSampleRateDidChange` notification before returning.
 public actor SampleRateState {
     var updateTask: Task<Float64?, Error>?
 
+    /// The `AudioObjectID` of the device this state is associated with.
     public var objectID: AudioObjectID?
 
+    /// Associates this state with a specific audio device.
+    ///
+    /// Called during `AudioDevice` initialization to bind the state to its device.
+    ///
+    /// - Parameter objectID: The device's `AudioObjectID`.
     public func update(objectID: AudioObjectID) {
         self.objectID = objectID
     }

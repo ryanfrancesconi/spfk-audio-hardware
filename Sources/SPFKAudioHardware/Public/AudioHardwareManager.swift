@@ -1,9 +1,8 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
 import Foundation
-import SPFKAudioHardwareC
 import SPFKBase
 
 public actor AudioHardwareManager {
@@ -19,8 +18,6 @@ public actor AudioHardwareManager {
     var cache = AudioDeviceCache()
 
     var listener: AudioObjectPropertyListener?
-
-    var updateTask: Task<Void, Error>?
 }
 
 // MARK: - Lifecycle
@@ -53,6 +50,10 @@ extension AudioHardwareManager {
         try await cache.start()
     }
 
+    /// Stops listening for hardware property changes and clears the device cache listeners.
+    ///
+    /// After calling this, no further hardware notifications will be received until `start()` is called again.
+    /// The cached device data remains available but will not be updated.
     public func stop() async throws {
         guard isListening else {
             Log.error("Error: not started")
@@ -68,6 +69,11 @@ extension AudioHardwareManager {
         listener = nil
     }
 
+    /// Stops listening and fully tears down the device cache, removing all pooled objects.
+    ///
+    /// Unlike `stop()`, this also unregisters all cached devices and streams from the
+    /// `AudioObjectPool`. Call this during application shutdown or when the audio system
+    /// is no longer needed.
     public func unregister() async throws {
         try await stop()
         try await cache.unregister()

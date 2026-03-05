@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -30,7 +30,7 @@ class AudioHardwareManagerTests: NullDeviceTestCase {
         for device in devices {
             let sampleRates = device.getNominalSampleRates(scope: scope) ?? []
 
-            Log.debug(scope, device.name, "(\(device.objectID(scope: scope)))", sampleRates)
+            Log.debug(scope, device.name, "(\(device.objectID(scope: scope) ?? 0))", sampleRates)
 
             for sampleRate in sampleRates {
                 do {

@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
@@ -15,6 +15,7 @@ public enum DefaultSelectorType: Hashable, Codable, CaseIterable, Sendable {
     /// from the alert sound to digital call progress.
     case alertOutput
 
+    /// The Core Audio property selector constant for this default device type.
     public var propertySelector: AudioObjectPropertySelector {
         switch self {
         case .defaultInput:
@@ -28,6 +29,7 @@ public enum DefaultSelectorType: Hashable, Codable, CaseIterable, Sendable {
         }
     }
 
+    /// The `Notification.Name` posted when the system default for this device type changes.
     public var notificationName: Notification.Name {
         switch self {
         case .defaultInput:

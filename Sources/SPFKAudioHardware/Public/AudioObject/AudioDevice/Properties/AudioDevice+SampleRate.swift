@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -31,6 +31,13 @@ extension AudioDevice {
         getNominalSampleRates(scope: .wildcard)
     }
 
+    /// A list of all the nominal sample rates supported by this audio device for a given scope.
+    ///
+    /// Unlike `nominalSampleRates`, this allows querying rates for a specific scope
+    /// (e.g., `.input` or `.output`) rather than using the wildcard scope.
+    ///
+    /// - Parameter scope: The scope to query sample rates for.
+    /// - Returns: *(optional)* A sorted `Float64` array of supported nominal sample rates.
     public func getNominalSampleRates(scope: Scope) -> [Float64]? {
         guard let address = validAddress(
             selector: kAudioDevicePropertyAvailableNominalSampleRates,
@@ -83,7 +90,7 @@ extension AudioDevice {
     ///
     /// - Parameter sampleRate: The new nominal sample rate.
     ///
-    /// - Returns: `true` on success, `false` otherwise.
+    /// - Returns: An `OSStatus` indicating success or failure.
     @discardableResult public func setNominalSampleRate(_ sampleRate: Float64) -> OSStatus {
         guard let address = validAddress(selector: kAudioDevicePropertyNominalSampleRate) else {
             return kAudioHardwareBadObjectError

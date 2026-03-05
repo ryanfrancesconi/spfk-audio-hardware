@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio.AudioHardware
@@ -6,6 +6,10 @@ import Foundation
 import SPFKBase
 
 extension AudioDevice {
+    /// Returns the system default audio device for the given selector type.
+    ///
+    /// - Parameter deviceType: The default device selector (input, output, or alert output).
+    /// - Returns: The default `AudioDevice`, or `nil` if none is available.
     public static func defaultDevice(of deviceType: DefaultSelectorType) async -> AudioDevice? {
         let address = AudioObjectPropertyAddress(selector: deviceType.propertySelector)
         var deviceID = AudioDeviceID()

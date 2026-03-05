@@ -1,4 +1,4 @@
-// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audioHardware
+// Copyright Ryan Francesconi. All Rights Reserved. Revision History at https://github.com/ryanfrancesconi/spfk-audio-hardware
 // Based on SimplyCoreAudio by Ruben Nine (c) 2014-2024. Revision History at https://github.com/rnine/SimplyCoreAudio
 
 import CoreAudio
@@ -12,7 +12,13 @@ import SPFKBase
 /// For more information, please refer to [Core Audio](https://developer.apple.com/documentation/coreaudio)'s
 /// documentation or source code.
 public protocol AudioObjectModel: Hashable, Sendable {
+    /// The unique identifier for this audio object within Core Audio's object graph.
     var objectID: AudioObjectID { get }
+
+    /// Creates an instance from the given Core Audio object identifier.
+    ///
+    /// - Parameter objectID: The `AudioObjectID` referencing an existing audio object.
+    /// - Throws: If the object identifier is invalid or the object cannot be resolved.
     init(objectID: AudioObjectID) async throws
 }
 
@@ -28,10 +34,12 @@ extension AudioObjectModel {
 }
 
 extension AudioObjectModel {
+    /// Whether this audio object is an `AudioDevice` (class ID is `kAudioDeviceClassID`).
     public var isAudioDevice: Bool {
         classID == kAudioDeviceClassID
     }
 
+    /// Whether this audio object is an `AudioStream` (class ID is `kAudioStreamClassID`).
     public var isAudioStream: Bool {
         classID == kAudioStreamClassID
     }
