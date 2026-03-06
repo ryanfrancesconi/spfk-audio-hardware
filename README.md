@@ -5,9 +5,13 @@
 
 A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction Layer (HAL) for macOS. Provides a type-safe, `Sendable` interface to audio device management built on actors and `async`/`await`.
 
-- **Swift 6.2** / **macOS 12+**
 - Full `Sendable` and actor isolation throughout
 - MIT License
+
+## Requirements
+
+- **Platforms:** macOS 13+
+- **Swift:** 6.2+
 
 ### Quick Start
 
