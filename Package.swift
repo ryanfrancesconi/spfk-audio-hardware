@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "spfk-audio-hardware",
-    platforms: [.macOS(.v12),],
+    platforms: [.macOS(.v13),],
     products: [
         .library(
             name: "SPFKAudioHardware",
@@ -14,7 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ryanfrancesconi/spfk-base", from: "0.0.3"),
-        .package(url: "https://github.com/ryanfrancesconi/spfk-testing", from: "0.0.1"),
+        .package(url: "https://github.com/ryanfrancesconi/spfk-testing", from: "0.0.5"),
     ],
     targets: [
         .target(
