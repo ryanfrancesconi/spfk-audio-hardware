@@ -9,7 +9,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized)
+@Suite(.serialized, .tags(.hardware))
 final class NullDeviceTests: NullDeviceTestCase {
     @Test func deviceLookUp() async throws {
         let nullDevice = try #require(nullDevice)

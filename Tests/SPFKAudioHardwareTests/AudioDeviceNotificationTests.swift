@@ -8,7 +8,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized)
+@Suite(.serialized, .tags(.hardware, .notification))
 final class AudioDeviceNotificationTests: NullDeviceTestCase {
     @Test(arguments: [Scope.output, Scope.input])
     func volumeDidChangeNotification(scope: Scope) async throws {

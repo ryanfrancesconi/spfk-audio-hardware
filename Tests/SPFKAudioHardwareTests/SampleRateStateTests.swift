@@ -8,7 +8,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized)
+@Suite(.serialized, .tags(.hardware))
 final class SampleRateStateTests: NullDeviceTestCase {
     @Test(arguments: [44100, 48000])
     func updateAndWait(sampleRate: Float64) async throws {

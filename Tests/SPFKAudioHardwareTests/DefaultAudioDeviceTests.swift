@@ -7,7 +7,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized)
+@Suite(.serialized, .tags(.hardware))
 final class DefaultAudioDeviceTests: AudioHardwareTestCase {
     @Test(arguments: [Scope.output, Scope.input])
     func preferredChannelsForStereoAllDevices(scope: Scope) async throws {

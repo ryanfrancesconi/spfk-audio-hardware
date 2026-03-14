@@ -7,8 +7,8 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized)
-class AudioHardwareManagerTests: NullDeviceTestCase {
+@Suite(.serialized, .tags(.hardware))
+final class AudioHardwareManagerTests: NullDeviceTestCase {
     @Test func allDevices() async throws {
         let allDevices = try await hardwareManager.allDevices()
 

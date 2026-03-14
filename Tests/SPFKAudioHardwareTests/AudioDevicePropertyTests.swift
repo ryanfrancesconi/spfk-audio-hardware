@@ -9,7 +9,7 @@ import Testing
 
 /// Additional property tests for AudioDevice covering volume conversion,
 /// latency calculations, channels, and stream formats.
-@Suite(.serialized)
+@Suite(.serialized, .tags(.hardware))
 final class AudioDevicePropertyTests: NullDeviceTestCase {
     // MARK: - Volume Conversion
 

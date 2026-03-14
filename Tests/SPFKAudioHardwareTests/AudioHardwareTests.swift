@@ -9,7 +9,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized)
+@Suite(.serialized, .tags(.hardware, .notification))
 final class AudioHardwareTests: NullDeviceTestCase {
     @Test func createAndDestroyAggregateDevice() async throws {
         let device = try await createAggregateDevice(in: 1)
