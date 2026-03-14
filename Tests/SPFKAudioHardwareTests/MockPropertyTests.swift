@@ -9,7 +9,7 @@ import Testing
 ///
 /// These verify the validAddress → getProperty → type conversion → return chain
 /// using `MockAudioBackend` instead of real CoreAudio hardware.
-@Suite(.serialized)
+@Suite(.serialized, .tags(.unit))
 final class MockPropertyTests {
     deinit {
         AudioBackendAccessor._resetBackend()

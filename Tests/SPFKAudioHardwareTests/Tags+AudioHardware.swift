@@ -3,6 +3,9 @@
 import Testing
 
 extension Tag {
+    /// Pure logic and mock-based tests that run without audio hardware.
+    @Tag static var unit: Self
+
     /// Tests that require the NullAudioDevice driver or real audio hardware.
     @Tag static var hardware: Self
 

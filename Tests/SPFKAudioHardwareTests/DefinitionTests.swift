@@ -8,7 +8,7 @@ import Testing
 
 // MARK: - TransportType Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct TransportTypeTests {
     @Test func rawValues() {
         #expect(TransportType.unknown.rawValue == "Unknown")
@@ -98,7 +98,7 @@ struct TransportTypeTests {
 
 // MARK: - TerminalType Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct TerminalTypeTests {
     @Test func rawValues() {
         #expect(TerminalType.unknown.rawValue == "Unknown")
@@ -181,7 +181,7 @@ struct TerminalTypeTests {
 
 // MARK: - Scope Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct ScopeTests {
     @Test func propertyScopeRoundTrip() {
         let cases: [(Scope, AudioObjectPropertyScope)] = [
@@ -216,7 +216,7 @@ struct ScopeTests {
 
 // MARK: - DefaultSelectorType Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct DefaultSelectorTypeTests {
     @Test func allCasesCount() {
         #expect(DefaultSelectorType.allCases.count == 3)
@@ -250,7 +250,7 @@ struct DefaultSelectorTypeTests {
 
 // MARK: - VolumeInfo Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct VolumeInfoTests {
     @Test func defaultValues() {
         let info = VolumeInfo()
@@ -287,7 +287,7 @@ struct VolumeInfoTests {
 
 // MARK: - DeviceStatusEvent Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct DeviceStatusEventTests {
     @Test func defaultInit() {
         let event = DeviceStatusEvent()
@@ -307,7 +307,7 @@ struct DeviceStatusEventTests {
 
 // MARK: - AudioDeviceNamedChannel Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct AudioDeviceNamedChannelTests {
     @Test func descriptionWithName() {
         let channel = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
@@ -355,7 +355,7 @@ struct AudioDeviceNamedChannelTests {
 
 // MARK: - Notification Name Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct NotificationNameTests {
     @Test func hardwareNotificationNames() {
         #expect(Notification.Name.defaultInputDeviceChanged.rawValue == "SPFKAudioHardware.defaultInputDeviceChanged")
@@ -414,7 +414,7 @@ struct NotificationNameTests {
 
 // MARK: - AudioHardwareNotification Parsing Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct AudioHardwareNotificationParsingTests {
     @Test func parseDefaultInputDevice() {
         let address = AudioObjectPropertyAddress(
@@ -487,7 +487,7 @@ struct AudioHardwareNotificationParsingTests {
 
 // MARK: - AudioDeviceNotification Parsing Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct AudioDeviceNotificationParsingTests {
     @Test func parseNominalSampleRate() {
         let address = AudioObjectPropertyAddress(
@@ -714,7 +714,7 @@ struct AudioDeviceNotificationParsingTests {
 
 // MARK: - AudioStreamNotification Parsing Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct AudioStreamNotificationParsingTests {
     @Test func parseStreamIsActive() {
         let address = AudioObjectPropertyAddress(
@@ -757,7 +757,7 @@ struct AudioStreamNotificationParsingTests {
 
 // MARK: - Hashable / Equatable Tests
 
-@Suite
+@Suite(.tags(.unit))
 struct NotificationHashableTests {
     @Test func audioHardwareNotificationEquality() {
         let a = AudioHardwareNotification.defaultInputDeviceChanged(objectID: 42)
