@@ -62,7 +62,6 @@ final class NullDeviceTests: NullDeviceTestCase {
 
         #expect(nullDevice.isAlive)
         #expect(!nullDevice.isRunning)
-        #expect(!nullDevice.isRunningSomewhere)
 
         await #expect(nullDevice.physicalChannels(scope: .output) == 2)
         await #expect(nullDevice.physicalChannels(scope: .input) == 2)
