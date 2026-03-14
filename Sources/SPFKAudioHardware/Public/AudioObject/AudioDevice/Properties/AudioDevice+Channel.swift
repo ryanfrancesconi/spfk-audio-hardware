@@ -260,9 +260,7 @@ extension AudioDevice {
             lhs.channel < rhs.channel
         })
 
-        let stringValues = namedChannels.map {
-            $0.description
-        }
+        let stringValues = namedChannels.map(\.description)
 
         return stringValues.joined(separator: " + ")
     }

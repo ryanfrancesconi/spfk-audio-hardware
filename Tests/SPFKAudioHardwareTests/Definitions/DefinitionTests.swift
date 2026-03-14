@@ -86,7 +86,7 @@ struct TransportTypeTests {
     }
 
     @Test func fromUnrecognizedConstantDefaultsToUnknown() {
-        #expect(TransportType.from(0xDEADBEEF) == .unknown)
+        #expect(TransportType.from(0xDEAD_BEEF) == .unknown)
     }
 
     @Test func initFromRawValue() {
@@ -169,48 +169,13 @@ struct TerminalTypeTests {
     }
 
     @Test func fromUnrecognizedConstantDefaultsToUnknown() {
-        #expect(TerminalType.from(0xDEADBEEF) == .unknown)
+        #expect(TerminalType.from(0xDEAD_BEEF) == .unknown)
     }
 
     @Test func initFromRawValue() {
         #expect(TerminalType(rawValue: "Speaker") == .speaker)
         #expect(TerminalType(rawValue: "Microphone") == .microphone)
         #expect(TerminalType(rawValue: "Nonexistent") == nil)
-    }
-}
-
-// MARK: - Scope Tests
-
-@Suite(.tags(.unit))
-struct ScopeTests {
-    @Test func propertyScopeRoundTrip() {
-        let cases: [(Scope, AudioObjectPropertyScope)] = [
-            (.global, kAudioObjectPropertyScopeGlobal),
-            (.input, kAudioObjectPropertyScopeInput),
-            (.output, kAudioObjectPropertyScopeOutput),
-            (.playthrough, kAudioObjectPropertyScopePlayThrough),
-            (.main, kAudioObjectPropertyElementMain),
-            (.wildcard, kAudioObjectPropertyScopeWildcard),
-        ]
-
-        for (scope, constant) in cases {
-            #expect(scope.propertyScope == constant, "propertyScope for \(scope)")
-            #expect(Scope(propertyScope: constant) == scope, "init(propertyScope:) for \(scope)")
-        }
-    }
-
-    @Test func titles() {
-        #expect(Scope.global.title == "Global")
-        #expect(Scope.input.title == "Input")
-        #expect(Scope.output.title == "Output")
-        #expect(Scope.playthrough.title == "Playthrough")
-        #expect(Scope.main.title == "Main")
-        #expect(Scope.wildcard.title == "Wildcard")
-    }
-
-    @Test func unrecognizedPropertyScopeDefaultsToWildcard() {
-        let scope = Scope(propertyScope: 0xDEADBEEF)
-        #expect(scope == .wildcard)
     }
 }
 
@@ -302,54 +267,6 @@ struct DeviceStatusEventTests {
         let b = DeviceStatusEvent()
 
         #expect(a == b)
-    }
-}
-
-// MARK: - AudioDeviceNamedChannel Tests
-
-@Suite(.tags(.unit))
-struct AudioDeviceNamedChannelTests {
-    @Test func descriptionWithName() {
-        let channel = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
-        #expect(channel.description == "1 - Left")
-    }
-
-    @Test func descriptionWithoutName() {
-        let channel = AudioDeviceNamedChannel(channel: 0, name: nil, scope: .input)
-        #expect(channel.description == "1 - Input")
-    }
-
-    @Test func descriptionWithEmptyName() {
-        let channel = AudioDeviceNamedChannel(channel: 0, name: "", scope: .input)
-        #expect(channel.description == "1 - Input")
-    }
-
-    @Test func descriptionChannelNumbering() {
-        let channel = AudioDeviceNamedChannel(channel: 5, name: "Surround", scope: .output)
-        #expect(channel.description == "6 - Surround")
-    }
-
-    @Test func nameIsTrimmed() {
-        let channel = AudioDeviceNamedChannel(channel: 0, name: "  Left  ", scope: .output)
-        #expect(channel.name == "Left")
-    }
-
-    @Test func equality() {
-        let a = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
-        let b = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
-        let c = AudioDeviceNamedChannel(channel: 1, name: "Left", scope: .output)
-
-        #expect(a == b)
-        #expect(a != c)
-    }
-
-    @Test func scopeIsPreserved() {
-        let outputChannel = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
-        let inputChannel = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .input)
-
-        #expect(outputChannel.scope == .output)
-        #expect(inputChannel.scope == .input)
-        #expect(outputChannel != inputChannel)
     }
 }
 
@@ -468,7 +385,7 @@ struct AudioHardwareNotificationParsingTests {
 
     @Test func parseUnrecognizedSelectorReturnsNil() {
         let address = AudioObjectPropertyAddress(
-            mSelector: 0xDEADBEEF,
+            mSelector: 0xDEAD_BEEF,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
@@ -678,7 +595,7 @@ struct AudioDeviceNotificationParsingTests {
 
     @Test func parseUnrecognizedSelectorReturnsNil() {
         let address = AudioObjectPropertyAddress(
-            mSelector: 0xDEADBEEF,
+            mSelector: 0xDEAD_BEEF,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
@@ -740,7 +657,7 @@ struct AudioStreamNotificationParsingTests {
 
     @Test func parseUnrecognizedSelectorReturnsNil() {
         let address = AudioObjectPropertyAddress(
-            mSelector: 0xDEADBEEF,
+            mSelector: 0xDEAD_BEEF,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )

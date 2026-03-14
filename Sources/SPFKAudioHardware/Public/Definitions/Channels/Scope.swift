@@ -50,14 +50,13 @@ extension Scope {
         case kAudioObjectPropertyScopePlayThrough:  self = .playthrough
         case kAudioObjectPropertyElementMain:       self = .main
         case kAudioObjectPropertyScopeWildcard:     self = .wildcard
-
         default:
             // Note, the default is only here to satisfy the switch to be exhaustive
             self = .wildcard
         }
     }
 
-    var propertyScope: AudioObjectPropertyScope {
+    public var propertyScope: AudioObjectPropertyScope {
         switch self {
         case .global:       kAudioObjectPropertyScopeGlobal
         case .input:        kAudioObjectPropertyScopeInput
