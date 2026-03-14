@@ -17,11 +17,13 @@ extension AudioObjectModel {
         var qualifierData = qualifierData
         let qualifierDataSize = qualifierDataSize ?? UInt32(0)
 
-        let status: OSStatus = AudioObjectGetPropertyDataSize(objectID,
-                                                              &address,
-                                                              qualifierDataSize,
-                                                              &qualifierData,
-                                                              &size)
+        let status: OSStatus = qualifierData.withUnsafeMutableBufferPointer { bufferPtr in
+            AudioBackendAccessor.backend.getPropertyDataSize(objectID,
+                                                             address: &address,
+                                                             qualifierDataSize: qualifierDataSize,
+                                                             qualifierData: bufferPtr.baseAddress,
+                                                             dataSize: &size)
+        }
 
         return status
     }
@@ -35,11 +37,11 @@ extension AudioObjectModel {
         var qualifierData = qualifierData
 
         let status: OSStatus = withUnsafeMutablePointer(to: &qualifierData) { qualifierDataPtr in
-            AudioObjectGetPropertyDataSize(objectID,
-                                           &address,
-                                           qualifierDataSize ?? UInt32(0),
-                                           qualifierDataPtr,
-                                           &size)
+            AudioBackendAccessor.backend.getPropertyDataSize(objectID,
+                                                             address: &address,
+                                                             qualifierDataSize: qualifierDataSize ?? UInt32(0),
+                                                             qualifierData: qualifierDataPtr,
+                                                             dataSize: &size)
         }
 
         return status
@@ -71,31 +73,31 @@ extension AudioObjectModel {
             return getStringPropertyData(objectID, address: address, andValue: &value)
 
         } else if var typedValue = value as? UInt32 {
-            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
             return verify(status: status, typedValue: typedValue)
 
         } else if var typedValue = value as? Int32 {
-            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
             return verify(status: status, typedValue: typedValue)
 
         } else if var typedValue = value as? Float32 {
-            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
             return verify(status: status, typedValue: typedValue)
 
         } else if var typedValue = value as? Float64 {
-            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
             return verify(status: status, typedValue: typedValue)
 
         } else if var typedValue = value as? AudioValueTranslation {
-            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
             return verify(status: status, typedValue: typedValue)
 
         } else if var typedValue = value as? AudioStreamBasicDescription {
-            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
             return verify(status: status, typedValue: typedValue)
 
         } else if var typedValue = value as? AudioChannelLayout {
-            let status = AudioObjectGetPropertyData(objectID, &address, inQualifierDataSize, nil, &size, &typedValue)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
             return verify(status: status, typedValue: typedValue)
 
         } else {
@@ -115,7 +117,7 @@ extension AudioObjectModel {
         var cfString = string as CFString
 
         let returnValue = withUnsafeMutablePointer(to: &cfString) { cfStringPTR in
-            let status = AudioObjectGetPropertyData(objectID, &address, UInt32(0), nil, &size, cfStringPTR)
+            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: &size, data: cfStringPTR)
             guard status == kAudioHardwareNoError else { return status }
 
             guard let erasedValue = cfStringPTR.pointee as? T else { return kAudioHardwareBadObjectError }
@@ -154,7 +156,7 @@ extension AudioObjectModel {
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
             guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
-            return AudioObjectGetPropertyData(objectID, &address, qualifierDataSize, &qualifierData, &size, baseAddress)
+            return AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: qualifierDataSize, qualifierData: &qualifierData, dataSize: &size, data: baseAddress)
         }
 
         return status
@@ -186,7 +188,7 @@ extension AudioObjectModel {
         var value = value
 
         let status: OSStatus = withUnsafeMutablePointer(to: &value) { valuePtr in
-            AudioObjectSetPropertyData(objectID, &address, UInt32(0), nil, size, valuePtr)
+            AudioBackendAccessor.backend.setPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: size, data: valuePtr)
         }
 
         return status
@@ -200,7 +202,7 @@ extension AudioObjectModel {
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
             guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
-            return AudioObjectSetPropertyData(objectID, &address, UInt32(0), nil, size, baseAddress)
+            return AudioBackendAccessor.backend.setPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: size, data: baseAddress)
         }
 
         return status

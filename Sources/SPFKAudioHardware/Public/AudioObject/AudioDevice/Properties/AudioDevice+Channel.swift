@@ -26,9 +26,9 @@ extension AudioDevice {
 
         var volumeInfo = VolumeInfo()
 
-        if AudioObjectHasProperty(id, &address) {
+        if AudioBackendAccessor.backend.hasProperty(id, address: &address) {
             var canSetVolumeBoolean = DarwinBoolean(false)
-            var status = AudioObjectIsPropertySettable(id, &address, &canSetVolumeBoolean)
+            var status = AudioBackendAccessor.backend.isPropertySettable(id, address: &address, isSettable: &canSetVolumeBoolean)
 
             if noErr == status {
                 volumeInfo.canSetVolume = canSetVolumeBoolean.boolValue
@@ -47,9 +47,9 @@ extension AudioDevice {
         // Obtain mute info
         address.mSelector = kAudioDevicePropertyMute
 
-        if AudioObjectHasProperty(id, &address) {
+        if AudioBackendAccessor.backend.hasProperty(id, address: &address) {
             var canMuteBoolean = DarwinBoolean(false)
-            var status = AudioObjectIsPropertySettable(id, &address, &canMuteBoolean)
+            var status = AudioBackendAccessor.backend.isPropertySettable(id, address: &address, isSettable: &canMuteBoolean)
 
             if noErr == status {
                 volumeInfo.canMute = canMuteBoolean.boolValue
@@ -67,9 +67,9 @@ extension AudioDevice {
         // Obtain play thru info
         address.mSelector = kAudioDevicePropertyPlayThru
 
-        if AudioObjectHasProperty(id, &address) {
+        if AudioBackendAccessor.backend.hasProperty(id, address: &address) {
             var canPlayThruBoolean = DarwinBoolean(false)
-            var status = AudioObjectIsPropertySettable(id, &address, &canPlayThruBoolean)
+            var status = AudioBackendAccessor.backend.isPropertySettable(id, address: &address, isSettable: &canPlayThruBoolean)
 
             if noErr == status {
                 volumeInfo.canPlayThru = canPlayThruBoolean.boolValue
