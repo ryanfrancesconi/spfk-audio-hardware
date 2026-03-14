@@ -25,10 +25,10 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         let result = await task.result
 
         switch result {
-        case let .success((objectID: objectID, channel: channel, scope: scope)):
+        case let .success((objectID: objectID, channel: channel, scope: resultScope)):
             #expect(objectID == nullDevice.objectID)
             #expect(channel == 0)
-            #expect(scope == scope)
+            #expect(resultScope == scope)
 
         case let .failure(error):
             throw error
@@ -52,10 +52,10 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         let result = await task.result
 
         switch result {
-        case let .success((objectID: objectID, channel: channel, scope: scope)):
+        case let .success((objectID: objectID, channel: channel, scope: resultScope)):
             #expect(objectID == nullDevice.objectID)
             #expect(channel == 0)
-            #expect(scope == scope)
+            #expect(resultScope == scope)
 
         case let .failure(error):
             throw error

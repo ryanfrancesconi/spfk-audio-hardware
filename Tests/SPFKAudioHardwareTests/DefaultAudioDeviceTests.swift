@@ -18,9 +18,9 @@ final class DefaultAudioDeviceTests: AudioHardwareTestCase {
         for device in devices {
             let preferredChannels = device.preferredChannelsForStereo(scope: scope)
 
-            if preferredChannels != nil {
-                #expect(preferredChannels!.left > 0, "\(device.name) left channel should be > 0")
-                #expect(preferredChannels!.right > 0, "\(device.name) right channel should be > 0")
+            if let preferredChannels {
+                #expect(preferredChannels.left > 0, "\(device.name) left channel should be > 0")
+                #expect(preferredChannels.right > 0, "\(device.name) right channel should be > 0")
             }
 
             Log.debug(device.name, preferredChannels)

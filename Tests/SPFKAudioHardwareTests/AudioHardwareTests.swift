@@ -3,7 +3,7 @@
 
 import CoreAudio
 import Foundation
-import Numerics
+
 import SPFKBase
 import Testing
 
@@ -23,8 +23,6 @@ final class AudioHardwareTests: NullDeviceTestCase {
         #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
-        
-        try await wait(sec: 10)
     }
 
     @Test func deviceListChanged() async throws {
