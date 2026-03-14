@@ -12,7 +12,7 @@ import Testing
 @Suite(.serialized, .tags(.unit))
 final class MockPropertyTests {
     deinit {
-        AudioBackendAccessor._resetBackend()
+        AudioBackend._reset()
     }
 
     // MARK: - General Information Properties
@@ -342,7 +342,7 @@ final class MockPropertyTests {
         mock.registerString(objectID: 42,
                             selector: kAudioObjectPropertyName,
                             value: "Bad Device")
-        AudioBackendAccessor._setBackendForTesting(mock)
+        AudioBackend._setForTesting(mock)
 
         await #expect(throws: Error.self) {
             _ = try await AudioDevice(objectID: 42)
@@ -364,7 +364,7 @@ final class MockPropertyTests {
         mock.registerString(objectID: 20, selector: kAudioObjectPropertyName, value: "Device B")
         mock.registerString(objectID: 20, selector: kAudioDevicePropertyDeviceUID, value: "uid_b")
 
-        AudioBackendAccessor._setBackendForTesting(mock)
+        AudioBackend._setForTesting(mock)
 
         let deviceA = try await AudioDevice(objectID: 10)
         let deviceB = try await AudioDevice(objectID: 20)

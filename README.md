@@ -57,9 +57,11 @@ try await manager.unregister()
 |------|------|
 | `AudioHardwareManager` | Singleton actor — device enumeration, aggregate device creation, hardware event dispatch |
 | `AudioDevice` | Represents a single audio device with properties for volume, sample rate, channels, streams, latency, and more |
+| `AudioStream` | Represents an audio stream within a device — format enumeration, direction, latency |
 | `SplitAudioDevice` | Matched input/output device pair (e.g. Bluetooth headphones with integrated mic) |
 | `SampleRateState` | Actor coordinating async sample rate changes with hardware confirmation |
 | `AudioObjectPool` | Internal singleton caching devices and streams, managing property listeners |
+| `AudioObjectBackend` | Protocol abstracting CoreAudio C API calls — enables hardware-independent testing |
 | `Scope` | Enum (`.input`, `.output`, `.global`, etc.) used throughout for directional property access |
 
 **Notifications** are delivered as typed enums through `NotificationCenter`:
@@ -68,11 +70,34 @@ try await manager.unregister()
 - `AudioDeviceNotification` — volume, mute, sample rate, name, and other per-device property changes
 - `AudioStreamNotification` — stream format changes
 
+**Backend abstraction:** All CoreAudio C API calls are routed through the `AudioObjectBackend` protocol via a global-replaceable accessor. In production, `CoreAudioBackend` delegates directly to the C functions. In tests, `MockAudioBackend` can be swapped in to verify property access logic without hardware. See the [test README](Tests/SPFKAudioHardwareTests/README.md) for details.
+
+### Testing
+
+Tests are organized into three tiers using Swift Testing tags:
+
+| Tag | Description | Hardware required |
+|-----|-------------|-------------------|
+| `.unit` | Pure logic and mock-based tests | No |
+| `.hardware` | Tests requiring NullAudioDevice or real audio hardware | Yes |
+| `.notification` | Async notification tests (timing-sensitive) | Yes |
+
+Unit tests (`.unit`) run in milliseconds with no hardware dependency. Hardware tests require Apple's NullAudioDevice driver and run serialized.
+
+```bash
+# Run only unit tests (no hardware needed)
+swift test --filter "DefinitionTests|MockPropertyTests"
+
+# Run all tests (requires NullAudioDevice driver)
+swift test
+```
+
 ### Dependencies
 
 | Package | Purpose |
 |---------|---------|
 | [spfk-base](https://github.com/ryanfrancesconi/spfk-base) | Shared base utilities |
+| [spfk-testing](https://github.com/ryanfrancesconi/spfk-testing) | Test utilities and resources (test target only) |
 
 ---
 

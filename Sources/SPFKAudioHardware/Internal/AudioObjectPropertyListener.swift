@@ -104,13 +104,13 @@ extension AudioObjectPropertyListener {
     /// Registers a wildcard property listener with Core Audio for `objectID`.
     private func addListener() -> OSStatus {
         var address: AudioObjectPropertyAddress = .wildcard
-        return AudioBackendAccessor.backend.addPropertyListener(objectID, address: &address, listener: _propertyListenerProc, clientData: selfPtr)
+        return AudioBackend.current.addPropertyListener(objectID, address: &address, listener: _propertyListenerProc, clientData: selfPtr)
     }
 
     /// Removes the wildcard property listener from Core Audio for `objectID`.
     private func removeListener() -> OSStatus {
         var address: AudioObjectPropertyAddress = .wildcard
-        return AudioBackendAccessor.backend.removePropertyListener(objectID, address: &address, listener: _propertyListenerProc, clientData: selfPtr)
+        return AudioBackend.current.removePropertyListener(objectID, address: &address, listener: _propertyListenerProc, clientData: selfPtr)
     }
 
     /// Called by the C callback proc for each changed property address.

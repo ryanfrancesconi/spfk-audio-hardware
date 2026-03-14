@@ -13,7 +13,7 @@ import CoreAudio
 /// ```swift
 /// let mock = MockAudioBackend()
 /// mock.register(objectID: 42, selector: kAudioDevicePropertyTransportType, value: kAudioDeviceTransportTypeVirtual)
-/// AudioBackendAccessor._setBackendForTesting(mock)
+/// AudioBackend._setForTesting(mock)
 /// ```
 final class MockAudioBackend: AudioObjectBackend, @unchecked Sendable {
     // MARK: - PropertyKey

@@ -43,6 +43,10 @@ class NullDeviceTestCase: AudioHardwareTestCase {
             kAudioHardwareNoError == nullDevice.setPreferredChannelsForStereo(channels: StereoPair(left: 1, right: 2), scope: .output)
         )
 
+        // Yield between property-set calls to avoid rapid-fire CoreAudio C calls
+        // from a cooperative thread, which can crash in Apple's internal logging path.
+        await Task.yield()
+
         #expect(
             kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: .output)
         )
@@ -51,6 +55,8 @@ class NullDeviceTestCase: AudioHardwareTestCase {
             kAudioHardwareNoError == nullDevice.setMute(false, channel: 0, scope: .input)
         )
 
+        await Task.yield()
+
         #expect(
             kAudioHardwareNoError == nullDevice.setVolume(0.5, channel: 0, scope: .output)
         )
@@ -58,6 +64,8 @@ class NullDeviceTestCase: AudioHardwareTestCase {
         #expect(
             kAudioHardwareNoError == nullDevice.setVolume(0.5, channel: 0, scope: .input)
         )
+
+        await Task.yield()
 
         #expect(
             kAudioHardwareNoError == nullDevice.setVirtualMainVolume(0.5, scope: .output)

@@ -137,7 +137,7 @@ extension AudioStream {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        guard AudioBackendAccessor.backend.hasProperty(objectID, address: &address) else { return nil }
+        guard AudioBackend.current.hasProperty(objectID, address: &address) else { return nil }
 
         var asrd = [AudioStreamRangedDescription]()
         guard noErr == getPropertyDataArray(address, value: &asrd, andDefaultValue: AudioStreamRangedDescription()) else {
@@ -160,7 +160,7 @@ extension AudioStream {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        guard AudioBackendAccessor.backend.hasProperty(objectID, address: &address) else { return nil }
+        guard AudioBackend.current.hasProperty(objectID, address: &address) else { return nil }
 
         var asrd = [AudioStreamRangedDescription]()
         guard noErr == getPropertyDataArray(address, value: &asrd, andDefaultValue: AudioStreamRangedDescription()) else {
@@ -193,7 +193,7 @@ private extension AudioStream {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        guard AudioBackendAccessor.backend.hasProperty(objectID, address: &address) else { return nil }
+        guard AudioBackend.current.hasProperty(objectID, address: &address) else { return nil }
 
         return getPropertyData(address, andValue: &value)
     }
@@ -217,7 +217,7 @@ private extension AudioStream {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        guard AudioBackendAccessor.backend.hasProperty(objectID, address: &address) else { return nil }
+        guard AudioBackend.current.hasProperty(objectID, address: &address) else { return nil }
 
         return setPropertyData(address, andValue: &value)
     }

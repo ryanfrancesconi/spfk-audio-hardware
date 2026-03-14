@@ -109,7 +109,7 @@ extension AudioObjectModel {
     ) -> AudioObjectPropertyAddress? {
         var address = AudioObjectPropertyAddress(selector: selector, scope: scope, element: element)
 
-        guard AudioBackendAccessor.backend.hasProperty(objectID, address: &address) else { return nil }
+        guard AudioBackend.current.hasProperty(objectID, address: &address) else { return nil }
 
         return address
     }

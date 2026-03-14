@@ -35,6 +35,7 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         }
 
         try await tearDown()
+        await Task.yield()
     }
 
     @Test(arguments: [Scope.output, Scope.input])
@@ -64,28 +65,40 @@ final class AudioDeviceNotificationTests: NullDeviceTestCase {
         #expect(nullDevice.isMuted(channel: 0, scope: scope) == true)
 
         try await tearDown()
+        await Task.yield()
     }
 
     @Test func deviceListening() async throws {
         await AudioObjectPool.shared.stopListening()
-        try await wait(sec: 0.2)
         await AudioObjectPool.shared.startListening()
-        try await wait(sec: 0.2)
         await AudioObjectPool.shared.stopListening()
 
         try await tearDown()
+        await Task.yield()
     }
 
     @Test func audioDeviceCacheUpdate() async throws {
         for _ in 0 ..< 2 {
-            let device = try await createAggregateDevice(in: 1)
+            // Wait for the device-added notification instead of a fixed sleep.
+            let addTask = Task<Bool, Error> { @Sendable in
+                let notification = try await NotificationCenter.wait(for: .deviceListChanged, timeout: 5)
+                return notification.object is AudioHardwareNotification
+            }
 
-            try await wait(sec: 3)
+            let device = try await createAggregateDevice()
+
+            #expect(try await addTask.value)
+
+            // Wait for the device-removed notification instead of a fixed sleep.
+            let removeTask = Task<Bool, Error> { @Sendable in
+                let notification = try await NotificationCenter.wait(for: .deviceListChanged, timeout: 5)
+                return notification.object is AudioHardwareNotification
+            }
 
             let status = await hardwareManager.removeAggregateDevice(id: device.id)
             #expect(kAudioHardwareNoError == status)
 
-            try await wait(sec: 3)
+            #expect(try await removeTask.value)
         }
     }
 }

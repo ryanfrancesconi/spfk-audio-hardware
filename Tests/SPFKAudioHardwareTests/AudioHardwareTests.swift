@@ -23,6 +23,7 @@ final class AudioHardwareTests: NullDeviceTestCase {
         #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
+        await Task.yield()
     }
 
     @Test func deviceListChanged() async throws {
@@ -56,6 +57,7 @@ final class AudioHardwareTests: NullDeviceTestCase {
         #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
+        await Task.yield()
     }
 
     @Test(arguments: DefaultSelectorType.allCases)
@@ -72,5 +74,6 @@ final class AudioHardwareTests: NullDeviceTestCase {
         #expect(kAudioHardwareNoError == status)
 
         try await tearDown()
+        await Task.yield()
     }
 }

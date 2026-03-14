@@ -18,7 +18,7 @@ extension AudioObjectModel {
         let qualifierDataSize = qualifierDataSize ?? UInt32(0)
 
         let status: OSStatus = qualifierData.withUnsafeMutableBufferPointer { bufferPtr in
-            AudioBackendAccessor.backend.getPropertyDataSize(objectID,
+            AudioBackend.current.getPropertyDataSize(objectID,
                                                              address: &address,
                                                              qualifierDataSize: qualifierDataSize,
                                                              qualifierData: bufferPtr.baseAddress,
@@ -37,7 +37,7 @@ extension AudioObjectModel {
         var qualifierData = qualifierData
 
         let status: OSStatus = withUnsafeMutablePointer(to: &qualifierData) { qualifierDataPtr in
-            AudioBackendAccessor.backend.getPropertyDataSize(objectID,
+            AudioBackend.current.getPropertyDataSize(objectID,
                                                              address: &address,
                                                              qualifierDataSize: qualifierDataSize ?? UInt32(0),
                                                              qualifierData: qualifierDataPtr,
@@ -52,59 +52,26 @@ extension AudioObjectModel {
     static func getPropertyData<T>(_ objectID: AudioObjectID,
                                    address: AudioObjectPropertyAddress,
                                    andValue value: inout T) -> OSStatus {
-        /// check the output of AudioObjectGetPropertyData and set the inout value T
-        func verify<Q>(status: OSStatus, typedValue: Q) -> OSStatus {
-            guard status == kAudioHardwareNoError else { return status }
-            guard let erasedValue = typedValue as? T else { return kAudioHardwareBadObjectError }
-            value = erasedValue // assign inout T
-            return status
+        // CFString must be handled separately — it reads a reference type, not raw bytes of T.
+        if value as? String != nil {
+            return getStringPropertyData(objectID, address: address, andValue: &value)
         }
 
-        // `AudioObjectGetPropertyData` doesn't want object types as generics.
-        // These are the explicit types that currently in use.
-        // Is there a better way to handle this?
-
+        // The backend uses UnsafeMutableRawPointer, so we can write directly into
+        // the inout value for any T without per-type branching.
         var address = address
         var size = UInt32(MemoryLayout<T>.size)
-        let inQualifierDataSize: UInt32 = 0
 
-        if value as? String != nil {
-            // CFString must be handled differently
-            return getStringPropertyData(objectID, address: address, andValue: &value)
-
-        } else if var typedValue = value as? UInt32 {
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
-            return verify(status: status, typedValue: typedValue)
-
-        } else if var typedValue = value as? Int32 {
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
-            return verify(status: status, typedValue: typedValue)
-
-        } else if var typedValue = value as? Float32 {
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
-            return verify(status: status, typedValue: typedValue)
-
-        } else if var typedValue = value as? Float64 {
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
-            return verify(status: status, typedValue: typedValue)
-
-        } else if var typedValue = value as? AudioValueTranslation {
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
-            return verify(status: status, typedValue: typedValue)
-
-        } else if var typedValue = value as? AudioStreamBasicDescription {
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
-            return verify(status: status, typedValue: typedValue)
-
-        } else if var typedValue = value as? AudioChannelLayout {
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: inQualifierDataSize, qualifierData: nil, dataSize: &size, data: &typedValue)
-            return verify(status: status, typedValue: typedValue)
-
-        } else {
-            assertionFailure("Unhandled type: \(value.self) \(value)")
+        return withUnsafeMutablePointer(to: &value) { valuePtr in
+            AudioBackend.current.getPropertyData(
+                objectID,
+                address: &address,
+                qualifierDataSize: 0,
+                qualifierData: nil,
+                dataSize: &size,
+                data: valuePtr
+            )
         }
-
-        return kAudioHardwareBadObjectError
     }
 
     private static func getStringPropertyData<T>(_ objectID: AudioObjectID,
@@ -117,7 +84,7 @@ extension AudioObjectModel {
         var cfString = string as CFString
 
         let returnValue = withUnsafeMutablePointer(to: &cfString) { cfStringPTR in
-            let status = AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: &size, data: cfStringPTR)
+            let status = AudioBackend.current.getPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: &size, data: cfStringPTR)
             guard status == kAudioHardwareNoError else { return status }
 
             guard let erasedValue = cfStringPTR.pointee as? T else { return kAudioHardwareBadObjectError }
@@ -156,7 +123,7 @@ extension AudioObjectModel {
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
             guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
-            return AudioBackendAccessor.backend.getPropertyData(objectID, address: &address, qualifierDataSize: qualifierDataSize, qualifierData: &qualifierData, dataSize: &size, data: baseAddress)
+            return AudioBackend.current.getPropertyData(objectID, address: &address, qualifierDataSize: qualifierDataSize, qualifierData: &qualifierData, dataSize: &size, data: baseAddress)
         }
 
         return status
@@ -188,7 +155,7 @@ extension AudioObjectModel {
         var value = value
 
         let status: OSStatus = withUnsafeMutablePointer(to: &value) { valuePtr in
-            AudioBackendAccessor.backend.setPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: size, data: valuePtr)
+            AudioBackend.current.setPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: size, data: valuePtr)
         }
 
         return status
@@ -202,7 +169,7 @@ extension AudioObjectModel {
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
             guard let baseAddress = bufferPtr.baseAddress else { return kAudioHardwareBadObjectError }
-            return AudioBackendAccessor.backend.setPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: size, data: baseAddress)
+            return AudioBackend.current.setPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: size, data: baseAddress)
         }
 
         return status
