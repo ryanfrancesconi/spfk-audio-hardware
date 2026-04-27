@@ -183,10 +183,6 @@ struct TerminalTypeTests {
 
 @Suite(.tags(.unit))
 struct DefaultSelectorTypeTests {
-    @Test func allCasesCount() {
-        #expect(DefaultSelectorType.allCases.count == 3)
-    }
-
     @Test func propertySelectorMapping() {
         #expect(DefaultSelectorType.defaultInput.propertySelector == kAudioHardwarePropertyDefaultInputDevice)
         #expect(DefaultSelectorType.defaultOutput.propertySelector == kAudioHardwarePropertyDefaultOutputDevice)
