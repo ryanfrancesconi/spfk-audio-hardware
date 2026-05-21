@@ -312,6 +312,11 @@ final class AudioDevicePropertyTests: NullDeviceTestCase {
         try await tearDown()
     }
 
+    @Test func isPrivateAggregateDeviceIsFalseForNonAggregate() throws {
+        let nullDevice = try #require(nullDevice)
+        #expect(!nullDevice.isPrivateAggregateDevice)
+    }
+
     // MARK: - Notification Enum
 
     @Test func audioDeviceNotificationGetDevice() async throws {

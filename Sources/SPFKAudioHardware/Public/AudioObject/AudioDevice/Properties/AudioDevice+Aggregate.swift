@@ -74,7 +74,7 @@ extension AudioDevice {
 
 extension AudioDevice {
     /// Reads the `kAudioAggregateDevicePropertyComposition` dictionary for this device.
-    var aggregateComposition: [String: Any]? {
+    private var aggregateComposition: [String: Any]? {
         var ref: CFPropertyList? = nil
         var size = UInt32(MemoryLayout<CFPropertyList?>.size)
         var addr = AudioObjectPropertyAddress(
