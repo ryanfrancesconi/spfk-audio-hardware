@@ -3,7 +3,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized, .tags(.hardware))
+@Suite(.tags(.hardware))
 final class AudioStreamTests: NullDeviceTestCase {
     @Test func testProperties() async throws {
         let nullDevice = try #require(nullDevice)
