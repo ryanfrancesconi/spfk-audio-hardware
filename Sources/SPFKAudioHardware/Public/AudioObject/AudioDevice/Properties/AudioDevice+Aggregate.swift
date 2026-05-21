@@ -7,14 +7,15 @@ import Foundation
 // MARK: - Aggregate Device Functions
 
 extension AudioDevice {
-    /// Whether this device is Core Audio's internal default aggregate device.
+    /// Whether this device is a process-private aggregate created internally by the audio engine.
     ///
-    /// Core Audio creates hidden aggregate devices with names prefixed
-    /// `"CADefaultDeviceAggregate"` for internal routing. These are typically
-    /// not useful to present to users.
-    public func isCADefaultDeviceAggregate() async -> Bool {
-        await isAggregateDevice &&
-            name.hasPrefix("CADefaultDeviceAggregate")
+    /// Identified via the `"private"` key in the aggregate's composition dictionary
+    /// (`kAudioAggregateDevicePropertyComposition`), which CoreAudio sets to `1` for
+    /// process-private aggregates (e.g. AVAudioEngine's internal I/O device) and `0`
+    /// for user-visible ones (e.g. Audio MIDI Setup aggregates).
+    public var isPrivateAggregateDevice: Bool {
+        guard classID == kAudioAggregateDeviceClassID else { return false }
+        return aggregateComposition?["private"] as? Int == 1
     }
 
     /// - Returns: `true` if this device is an aggregate one, `false` otherwise.
@@ -68,3 +69,24 @@ extension AudioDevice {
         }
     }
 }
+
+// MARK: - Private
+
+extension AudioDevice {
+    /// Reads the `kAudioAggregateDevicePropertyComposition` dictionary for this device.
+    var aggregateComposition: [String: Any]? {
+        var ref: CFPropertyList? = nil
+        var size = UInt32(MemoryLayout<CFPropertyList?>.size)
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioAggregateDevicePropertyComposition,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        let status = withUnsafeMutablePointer(to: &ref) { ptr in
+            AudioObjectGetPropertyData(objectID, &addr, 0, nil, &size, UnsafeMutableRawPointer(ptr))
+        }
+        guard status == noErr else { return nil }
+        return ref as? [String: Any]
+    }
+}
+

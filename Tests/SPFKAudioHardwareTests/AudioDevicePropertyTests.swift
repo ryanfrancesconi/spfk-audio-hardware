@@ -294,8 +294,8 @@ final class AudioDevicePropertyTests: NullDeviceTestCase {
         let ownedDevices = await device.ownedAggregateDevices
         #expect(ownedDevices != nil, "Aggregate device should have owned devices")
 
-        let isCADefault = await device.isCADefaultDeviceAggregate()
-        #expect(!isCADefault, "Test aggregate should not be CA default aggregate")
+        let isPrivate = device.isPrivateAggregateDevice
+        #expect(!isPrivate, "Test aggregate should not be a private aggregate device")
 
         let status = await hardwareManager.removeAggregateDevice(id: device.id)
         #expect(kAudioHardwareNoError == status)
