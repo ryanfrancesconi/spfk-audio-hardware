@@ -57,7 +57,7 @@ public actor SampleRateState {
         }
 
         let task = Task<Float64?, Error> {
-            let notification: Notification = try await NotificationCenter.wait(for: .deviceNominalSampleRateDidChange, timeout: 10)
+            let notification: Notification = try await NotificationCenter.wait(for: .deviceNominalSampleRateDidChange, timeout: 2)
 
             Log.debug(notification)
 
@@ -90,11 +90,13 @@ public actor SampleRateState {
         switch result {
         case let .success(newSampleRate):
             guard let newSampleRate, requestedRate == newSampleRate else {
-                throw NSError(description: "Failed to update \(nameAndID)'s sample rate to \(requestedRate). Device is set to \(newSampleRate?.string ?? "nil").")
+                let actualRate = device.nominalSampleRate
+                throw NSError(description: "Failed to update \(nameAndID)'s sample rate to \(requestedRate). Device is set to \(actualRate?.string ?? newSampleRate?.string ?? "nil").")
             }
 
         case let .failure(error):
-            throw NSError(description: "\(nameAndID) Failed to update to \(requestedRate) Hz. " + error.localizedDescription)
+            let actualRate = device.nominalSampleRate
+            throw NSError(description: "\(nameAndID) Failed to update to \(requestedRate) Hz (actual: \(actualRate?.string ?? "unknown")). " + error.localizedDescription)
         }
 
         // OK
