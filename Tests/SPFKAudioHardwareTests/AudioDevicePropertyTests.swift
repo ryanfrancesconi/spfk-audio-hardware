@@ -172,14 +172,20 @@ final class AudioDevicePropertyTests: NullDeviceTestCase {
         try await tearDown()
     }
 
-    @Test func layoutChannelDescriptions() async throws {
+    @Test(arguments: [Scope.output, Scope.input])
+    func layoutChannelDescriptions(scope: Scope) async throws {
         let nullDevice = try #require(nullDevice)
 
-        let descriptions = nullDevice.layoutChannelDescriptions(scope: .output)
+        let descriptions = try #require(nullDevice.layoutChannelDescriptions(scope: scope))
+        let layoutChannels = try #require(nullDevice.layoutChannels(scope: scope))
 
-        if let descriptions {
-            #expect(descriptions.isNotEmpty, "Should have channel descriptions")
-        }
+        #expect(descriptions.count == Int(layoutChannels))
+
+        // Reading the layout's header as if it were the first description yields
+        // kAudioChannelLabel_Unused for every entry, so the labels are what distinguish
+        // a parsed payload from a mis-parsed one.
+        #expect(descriptions.allSatisfy { $0.mChannelLabel != kAudioChannelLabel_Unused })
+        #expect(descriptions.map(\.mChannelLabel) == [kAudioChannelLabel_Left, kAudioChannelLabel_Right])
 
         try await tearDown()
     }

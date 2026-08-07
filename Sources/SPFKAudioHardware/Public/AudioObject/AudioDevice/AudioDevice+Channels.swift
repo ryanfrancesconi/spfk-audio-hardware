@@ -68,17 +68,9 @@ extension AudioDevice {
     ///
     /// - Returns: *(optional)* A `UInt32` with the number of layout channels.
     public func layoutChannels(scope: Scope) -> UInt32? {
-        guard
-            let address = validAddress(
-                selector: kAudioDevicePropertyPreferredChannelLayout,
-                scope: scope.propertyScope,
-            )
-        else { return nil }
+        guard let descriptions = preferredChannelLayoutDescriptions(scope: scope) else { return nil }
 
-        var result = AudioChannelLayout()
-        let status = getPropertyData(address, andValue: &result)
-
-        return noErr == status ? result.mNumberChannelDescriptions : nil
+        return UInt32(descriptions.count)
     }
 
     /// The preferred channel layout descriptions for a given scope.
@@ -87,6 +79,16 @@ extension AudioDevice {
     ///
     /// - Returns: *(optional)* An array of `AudioChannelDescription` structs.
     public func layoutChannelDescriptions(scope: Scope) -> [AudioChannelDescription]? {
+        preferredChannelLayoutDescriptions(scope: scope)
+    }
+
+    /// The channel descriptions of `kAudioDevicePropertyPreferredChannelLayout`.
+    ///
+    /// The payload is a variable-length `AudioChannelLayout`: a 12-byte header followed by
+    /// `mNumberChannelDescriptions` entries, so its size has to come from the property itself.
+    /// A layout that names its channels by `mChannelLayoutTag` carries no descriptions and
+    /// returns an empty array.
+    private func preferredChannelLayoutDescriptions(scope: Scope) -> [AudioChannelDescription]? {
         guard
             let address = validAddress(
                 selector: kAudioDevicePropertyPreferredChannelLayout,
@@ -94,15 +96,36 @@ extension AudioDevice {
             )
         else { return nil }
 
-        var result = AudioChannelLayout()
-        var status = getPropertyData(address, andValue: &result)
+        // AudioChannelLayout declares a trailing array of one, so subtracting that entry
+        // leaves the header.
+        let headerSize = MemoryLayout<AudioChannelLayout>.size - MemoryLayout<AudioChannelDescription>.size
 
-        guard noErr == status else { return nil }
+        var size = UInt32(0)
 
-        var mChannelDescriptions = [AudioChannelDescription]()
-        status = getPropertyDataArray(address, value: &mChannelDescriptions, andDefaultValue: .init())
+        guard noErr == getPropertyDataSize(address, andSize: &size), size >= UInt32(headerSize) else {
+            return nil
+        }
 
-        return mChannelDescriptions
+        let buffer = UnsafeMutableRawPointer.allocate(
+            byteCount: Int(size),
+            alignment: MemoryLayout<AudioChannelLayout>.alignment
+        )
+        defer { buffer.deallocate() }
+
+        guard noErr == getPropertyDataBytes(address, size: &size, into: buffer) else { return nil }
+
+        let declared = Int(buffer.loadUnaligned(fromByteOffset: headerSize - MemoryLayout<UInt32>.size,
+                                                as: UInt32.self))
+
+        // The byte count is authoritative — a declared count beyond it would read off the end.
+        let available = (Int(size) - headerSize) / MemoryLayout<AudioChannelDescription>.size
+
+        guard declared > 0, available > 0 else { return [] }
+
+        return (0 ..< min(declared, available)).map {
+            buffer.loadUnaligned(fromByteOffset: headerSize + $0 * MemoryLayout<AudioChannelDescription>.size,
+                                 as: AudioChannelDescription.self)
+        }
     }
 
     /// The number of physical channels for a given scope.

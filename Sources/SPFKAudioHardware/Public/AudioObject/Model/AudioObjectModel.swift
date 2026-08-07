@@ -121,6 +121,32 @@ extension AudioObjectModel {
         Self.getPropertyData(objectID, address: address, andValue: &value)
     }
 
+    /// The property's size in bytes, for payloads whose length is not implied by a Swift type.
+    func getPropertyDataSize(_ address: AudioObjectPropertyAddress, andSize size: inout UInt32) -> OSStatus {
+        Self.getPropertyDataArraySize(objectID,
+                                      address: address,
+                                      qualifierDataSize: nil,
+                                      qualifierData: [],
+                                      andSize: &size)
+    }
+
+    /// Reads a property of `size` bytes into a raw buffer.
+    ///
+    /// For variable-length payloads such as `AudioChannelLayout`, where `MemoryLayout<T>.size`
+    /// describes neither the property nor a whole number of its elements.
+    func getPropertyDataBytes(_ address: AudioObjectPropertyAddress,
+                              size: inout UInt32,
+                              into buffer: UnsafeMutableRawPointer) -> OSStatus {
+        var address = address
+
+        return AudioBackend.current.getPropertyData(objectID,
+                                                    address: &address,
+                                                    qualifierDataSize: 0,
+                                                    qualifierData: nil,
+                                                    dataSize: &size,
+                                                    data: buffer)
+    }
+
     func getPropertyDataArray<T>(_ address: AudioObjectPropertyAddress,
                                  qualifierDataSize: UInt32?,
                                  qualifierData: [UInt32],
