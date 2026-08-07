@@ -11,7 +11,7 @@ extension AudioObjectModel {
     static func getPropertyDataArraySize(_ objectID: AudioObjectID,
                                          address: AudioObjectPropertyAddress,
                                          qualifierDataSize: UInt32?,
-                                         qualifierData: inout [UInt32],
+                                         qualifierData: [UInt32],
                                          andSize size: inout UInt32) -> OSStatus {
         var address = address
         var qualifierData = qualifierData
@@ -31,7 +31,7 @@ extension AudioObjectModel {
     static func getPropertyDataSize<Q>(_ objectID: AudioObjectID,
                                        address: AudioObjectPropertyAddress,
                                        qualifierDataSize: UInt32?,
-                                       qualifierData: inout Q,
+                                       qualifierData: Q,
                                        andSize size: inout UInt32) -> OSStatus {
         var address = address
         var qualifierData = qualifierData
@@ -102,14 +102,14 @@ extension AudioObjectModel {
     static func getPropertyDataArray<T>(_ objectID: AudioObjectID,
                                         address: AudioObjectPropertyAddress,
                                         qualifierDataSize: UInt32?,
-                                        qualifierData: inout [UInt32],
+                                        qualifierData: [UInt32],
                                         value: inout [T],
                                         andDefaultValue defaultValue: T) -> OSStatus {
         var size = UInt32(0)
         let sizeStatus = getPropertyDataArraySize(objectID,
                                                   address: address,
                                                   qualifierDataSize: qualifierDataSize,
-                                                  qualifierData: &qualifierData,
+                                                  qualifierData: qualifierData,
                                                   andSize: &size)
 
         if kAudioHardwareNoError == sizeStatus {
@@ -124,6 +124,7 @@ extension AudioObjectModel {
         }
 
         var address = address
+        var qualifierData = qualifierData
         let qualifierDataSize = qualifierDataSize ?? UInt32(0)
 
         let status: OSStatus = value.withUnsafeMutableBufferPointer { bufferPtr in
@@ -138,12 +139,10 @@ extension AudioObjectModel {
                                         address: AudioObjectPropertyAddress,
                                         value: inout [T],
                                         andDefaultValue defaultValue: T) -> OSStatus {
-        var qualifierData: [UInt32] = []
-
         return getPropertyDataArray(objectID,
                                     address: address,
                                     qualifierDataSize: nil,
-                                    qualifierData: &qualifierData,
+                                    qualifierData: [],
                                     value: &value,
                                     andDefaultValue: defaultValue)
     }

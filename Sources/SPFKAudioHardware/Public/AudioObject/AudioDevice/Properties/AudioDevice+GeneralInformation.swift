@@ -111,14 +111,14 @@ extension AudioDevice {
     public var ownedObjectIDs: [AudioObjectID]? {
         guard let address = validAddress(selector: kAudioObjectPropertyOwnedObjects) else { return nil }
 
-        var qualifierData = [kAudioObjectClassID]
+        let qualifierData = [kAudioObjectClassID]
         let qualifierDataSize = UInt32(MemoryLayout<AudioClassID>.size * qualifierData.count)
         var ownedObjects = [AudioObjectID]()
 
         let status = getPropertyDataArray(
             address,
             qualifierDataSize: qualifierDataSize,
-            qualifierData: &qualifierData,
+            qualifierData: qualifierData,
             value: &ownedObjects,
             andDefaultValue: AudioObjectID()
         )

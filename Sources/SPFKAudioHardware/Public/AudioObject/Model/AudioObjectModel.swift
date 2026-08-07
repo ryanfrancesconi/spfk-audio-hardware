@@ -123,13 +123,13 @@ extension AudioObjectModel {
 
     func getPropertyDataArray<T>(_ address: AudioObjectPropertyAddress,
                                  qualifierDataSize: UInt32?,
-                                 qualifierData: inout [UInt32],
+                                 qualifierData: [UInt32],
                                  value: inout [T],
                                  andDefaultValue defaultValue: T) -> OSStatus {
         Self.getPropertyDataArray(objectID,
                                   address: address,
                                   qualifierDataSize: qualifierDataSize,
-                                  qualifierData: &qualifierData,
+                                  qualifierData: qualifierData,
                                   value: &value,
                                   andDefaultValue: defaultValue)
     }
