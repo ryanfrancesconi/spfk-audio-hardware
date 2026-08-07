@@ -53,7 +53,7 @@ extension AudioObjectModel {
                                    address: AudioObjectPropertyAddress,
                                    andValue value: inout T) -> OSStatus {
         // CFString must be handled separately — it reads a reference type, not raw bytes of T.
-        if value as? String != nil {
+        if T.self == CFString.self || T.self == String.self {
             return getStringPropertyData(objectID, address: address, andValue: &value)
         }
 
@@ -74,27 +74,38 @@ extension AudioObjectModel {
         }
     }
 
+    /// Reads a property whose value is a `CFStringRef`.
+    ///
+    /// Core Audio hands back a retained reference, so it is read as `Unmanaged` — writing over a
+    /// managed `CFString` leaks whatever the slot already held, and sizes the read by
+    /// `MemoryLayout<T>`, which is 16 bytes for a `String` against an 8-byte buffer.
     private static func getStringPropertyData<T>(_ objectID: AudioObjectID,
                                                  address: AudioObjectPropertyAddress,
                                                  andValue value: inout T) -> OSStatus {
-        guard let string = value as? String else { return kAudioHardwareBadObjectError }
-
         var address = address
-        var size = UInt32(MemoryLayout<T>.size)
-        var cfString = string as CFString
+        var unmanaged: Unmanaged<CFString>?
+        var size = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
 
-        let returnValue = withUnsafeMutablePointer(to: &cfString) { cfStringPTR in
-            let status = AudioBackend.current.getPropertyData(objectID, address: &address, qualifierDataSize: UInt32(0), qualifierData: nil, dataSize: &size, data: cfStringPTR)
-            guard status == kAudioHardwareNoError else { return status }
-
-            guard let erasedValue = cfStringPTR.pointee as? T else { return kAudioHardwareBadObjectError }
-
-            value = erasedValue // assign inout T
-
-            return status
+        let status = withUnsafeMutablePointer(to: &unmanaged) { pointer in
+            AudioBackend.current.getPropertyData(
+                objectID,
+                address: &address,
+                qualifierDataSize: 0,
+                qualifierData: nil,
+                dataSize: &size,
+                data: pointer
+            )
         }
 
-        return returnValue
+        guard kAudioHardwareNoError == status else { return status }
+        guard let unmanaged else { return kAudioHardwareBadObjectError }
+        guard let erasedValue = unmanaged.takeRetainedValue() as? T else {
+            return kAudioHardwareBadObjectError
+        }
+
+        value = erasedValue
+
+        return status
     }
 }
 
