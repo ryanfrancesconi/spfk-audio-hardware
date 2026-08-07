@@ -84,17 +84,19 @@ extension NullDeviceTestCase {
     func createAggregateDevice(in delay: TimeInterval = 0) async throws -> AudioDevice {
         let nullDevice = try #require(nullDevice)
 
-        let allDevices = try await hardwareManager.allDevices()
-
-        if let existing = allDevices.first(where: {
-            $0.uid == Self.aggregateDeviceUID
-        }) {
+        // AudioDevice.lookup(uid:) asks the HAL directly. hardwareManager.allDevices() answers
+        // from the cache, which lags a destruction and reports the device already gone.
+        if let existing = try? await AudioDevice.lookup(uid: Self.aggregateDeviceUID) {
             Log.error("Device exists attempting to remove it...")
 
             let status = await hardwareManager.removeAggregateDevice(id: existing.id)
 
             #expect(kAudioHardwareNoError == status)
         }
+
+        // Destruction finishes after removeAggregateDevice returns, and creating the same UID
+        // before then fails with kAudioHardwareIllegalOperationError.
+        try await waitForAggregateDeviceRemoval()
 
         if delay > 0 {
             try await Task.sleep(seconds: delay)
@@ -108,6 +110,31 @@ extension NullDeviceTestCase {
         )
 
         return device
+    }
+
+    /// Removes the aggregate device and waits for the HAL to finish destroying it.
+    ///
+    /// Until destruction completes the null device is still a sub-device of the aggregate, and
+    /// property writes on it — including the ones `tearDown()` makes — are rejected.
+    func removeAggregateDeviceAndWait(_ device: AudioDevice) async throws {
+        let status = await hardwareManager.removeAggregateDevice(id: device.id)
+
+        #expect(kAudioHardwareNoError == status)
+
+        try await waitForAggregateDeviceRemoval()
+    }
+
+    /// Polls the HAL until no device carries `aggregateDeviceUID`.
+    func waitForAggregateDeviceRemoval(timeout: TimeInterval = 5) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+
+        while Date() < deadline {
+            guard (try? await AudioDevice.lookup(uid: Self.aggregateDeviceUID)) != nil else { return }
+
+            try await Task.sleep(seconds: 0.02)
+        }
+
+        Log.error("\(Self.aggregateDeviceUID) still present after \(timeout)s")
     }
 
     func promoteAndWaitForEvent(device: AudioDevice, to selectorType: DefaultSelectorType) async throws {

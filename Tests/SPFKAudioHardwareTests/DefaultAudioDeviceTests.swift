@@ -7,23 +7,25 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.tags(.hardware))
-final class DefaultAudioDeviceTests: AudioHardwareTestCase {
-    @Test(arguments: [Scope.output, Scope.input])
-    func preferredChannelsForStereoAllDevices(scope: Scope) async throws {
-        let devices = try await hardwareManager.allDevices()
+extension HardwareSuite {
+    @Suite(.tags(.hardware))
+    final class DefaultAudioDeviceTests: AudioHardwareTestCase {
+        @Test(arguments: [Scope.output, Scope.input])
+        func preferredChannelsForStereoAllDevices(scope: Scope) async throws {
+            let devices = try await hardwareManager.allDevices()
 
-        #expect(devices.isNotEmpty, "Should have at least one audio device")
+            #expect(devices.isNotEmpty, "Should have at least one audio device")
 
-        for device in devices {
-            let preferredChannels = device.preferredChannelsForStereo(scope: scope)
+            for device in devices {
+                let preferredChannels = device.preferredChannelsForStereo(scope: scope)
 
-            if let preferredChannels {
-                #expect(preferredChannels.left > 0, "\(device.name) left channel should be > 0")
-                #expect(preferredChannels.right > 0, "\(device.name) right channel should be > 0")
+                if let preferredChannels {
+                    #expect(preferredChannels.left > 0, "\(device.name) left channel should be > 0")
+                    #expect(preferredChannels.right > 0, "\(device.name) right channel should be > 0")
+                }
+
+                Log.debug(device.name, preferredChannels)
             }
-
-            Log.debug(device.name, preferredChannels)
         }
     }
 }

@@ -8,57 +8,59 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized, .tags(.hardware))
-final class SampleRateStateTests: NullDeviceTestCase {
-    @Test(arguments: [44100, 48000])
-    func updateAndWait(sampleRate: Float64) async throws {
-        let nullDevice = try #require(nullDevice)
+extension HardwareSuite {
+    @Suite(.serialized, .tags(.hardware))
+    final class SampleRateStateTests: NullDeviceTestCase {
+        @Test(arguments: [44100, 48000])
+        func updateAndWait(sampleRate: Float64) async throws {
+            let nullDevice = try #require(nullDevice)
 
-        try await nullDevice.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
-
-        #expect(sampleRate == nullDevice.nominalSampleRate)
-
-        try await tearDown()
-    }
-
-    @Test(arguments: [22050, 96000])
-    func verifyInvalidThrows(sampleRate: Float64) async throws {
-        let nullDevice = try #require(nullDevice)
-
-        await #expect(throws: (any Error).self) {
             try await nullDevice.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
+
+            #expect(sampleRate == nullDevice.nominalSampleRate)
+
+            try await tearDown()
         }
 
-        try await tearDown()
-    }
+        @Test(arguments: [22050, 96000])
+        func verifyInvalidThrows(sampleRate: Float64) async throws {
+            let nullDevice = try #require(nullDevice)
 
-    @Test func mutableState() async throws {
-        let outputDevices = try await hardwareManager.outputDevices()
+            await #expect(throws: (any Error).self) {
+                try await nullDevice.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
+            }
 
-        guard let device = outputDevices.filter({
-            guard let rates = $0.nominalSampleRates else { return false }
-            return rates.count > 3
-        }).first else { return }
+            try await tearDown()
+        }
 
-        let currentSampleRate = try #require(device.nominalSampleRate)
-        let testRates = try #require(device.nominalSampleRates).filter { $0 != currentSampleRate }
+        @Test func mutableState() async throws {
+            let outputDevices = try await hardwareManager.outputDevices()
 
-        Log.debug("Testing \(device.nameAndID) at \(currentSampleRate), supports \(device.nominalSampleRates ?? [])")
+            guard let device = outputDevices.filter({
+                guard let rates = $0.nominalSampleRates else { return false }
+                return rates.count > 3
+            }).first else { return }
 
-        await withTaskGroup { taskGroup in
-            for sampleRate in testRates {
-                taskGroup.addTask {
-                    do {
-                        try await device.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
-                    } catch {
-                        Log.error(error)
+            let currentSampleRate = try #require(device.nominalSampleRate)
+            let testRates = try #require(device.nominalSampleRates).filter { $0 != currentSampleRate }
+
+            Log.debug("Testing \(device.nameAndID) at \(currentSampleRate), supports \(device.nominalSampleRates ?? [])")
+
+            await withTaskGroup { taskGroup in
+                for sampleRate in testRates {
+                    taskGroup.addTask {
+                        do {
+                            try await device.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
+                        } catch {
+                            Log.error(error)
+                        }
                     }
                 }
             }
+
+            try await device.sampleRateUpdater.updateAndWait(sampleRate: currentSampleRate)
+
+            try await tearDown()
         }
-
-        try await device.sampleRateUpdater.updateAndWait(sampleRate: currentSampleRate)
-
-        try await tearDown()
     }
 }

@@ -48,4 +48,16 @@ extension AudioHardwareTestCase {
     func wait(sec seconds: TimeInterval) async throws {
         try await Task.sleep(seconds: seconds)
     }
+
+    /// Polls `condition` until it holds or `seconds` elapses.
+    ///
+    /// Core Audio applies property changes asynchronously with no bounded latency, so a fixed
+    /// sleep races the device. Poll instead, and assert the value after this returns.
+    func wait(sec seconds: TimeInterval, until condition: () -> Bool) async throws {
+        let deadline = Date().addingTimeInterval(seconds)
+
+        while !condition(), Date() < deadline {
+            try await Task.sleep(seconds: 0.01)
+        }
+    }
 }

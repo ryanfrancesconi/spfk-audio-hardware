@@ -7,76 +7,77 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.serialized, .tags(.hardware))
-final class AudioHardwareManagerTests: NullDeviceTestCase {
-    @Test func allDevices() async throws {
-        let allDevices = try await hardwareManager.allDevices()
+extension HardwareSuite {
+    @Suite(.serialized, .tags(.hardware))
+    final class AudioHardwareManagerTests: NullDeviceTestCase {
+        @Test func allDevices() async throws {
+            let allDevices = try await hardwareManager.allDevices()
 
-        #expect(allDevices.isNotEmpty, "Should have at least one audio device")
+            #expect(allDevices.isNotEmpty, "Should have at least one audio device")
 
-        for device in allDevices {
-            #expect(!device.name.isEmpty, "Device should have a name")
+            for device in allDevices {
+                #expect(!device.name.isEmpty, "Device should have a name")
+            }
+
+            Log.debug("Found", allDevices.count, "devices: ", allDevices)
+
+            try await tearDown()
         }
 
-        Log.debug("Found", allDevices.count, "devices: ", allDevices)
+        @Test(arguments: [Scope.input, Scope.output])
+        func splitDevices(scope: Scope) async throws {
+            let devices = try await hardwareManager.splitDevices()
 
-        try await tearDown()
-    }
+            for device in devices {
+                let sampleRates = device.getNominalSampleRates(scope: scope) ?? []
 
-    @Test(arguments: [Scope.input, Scope.output])
-    func splitDevices(scope: Scope) async throws {
-        let devices = try await hardwareManager.splitDevices()
+                Log.debug(scope, device.name, "(\(device.objectID(scope: scope) ?? 0))", sampleRates)
 
-        for device in devices {
-            let sampleRates = device.getNominalSampleRates(scope: scope) ?? []
-
-            Log.debug(scope, device.name, "(\(device.objectID(scope: scope) ?? 0))", sampleRates)
-
-            for sampleRate in sampleRates {
-                do {
-                    try await device.device(scope: scope).sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
-                } catch {
-                    Log.error(error)
+                for sampleRate in sampleRates {
+                    do {
+                        try await device.device(scope: scope).sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
+                    } catch {
+                        Log.error(error)
+                    }
                 }
             }
+
+            try await tearDown()
         }
 
-        try await tearDown()
-    }
+        @Test func deviceEnumeration() async throws {
+            let nullDevice = try #require(nullDevice)
 
-    @Test func deviceEnumeration() async throws {
-        let nullDevice = try #require(nullDevice)
+            let aggregateDevice = try await createAggregateDevice(in: 0.3)
 
-        let aggregateDevice = try await createAggregateDevice(in: 0.3)
+            let allDevices = try await hardwareManager.allDevices()
+            let allDeviceIDs = try await hardwareManager.allDeviceIDs()
+            let allInputDevices = try await hardwareManager.inputDevices()
+            let allOutputDevices = try await hardwareManager.outputDevices()
+            let allIODevices = try await hardwareManager.allIODevices()
+            let allNonAggregateDevices = try await hardwareManager.nonAggregateDevices()
+            let allAggregateDevices = try await hardwareManager.aggregateDevices()
 
-        let allDevices = try await hardwareManager.allDevices()
-        let allDeviceIDs = try await hardwareManager.allDeviceIDs()
-        let allInputDevices = try await hardwareManager.inputDevices()
-        let allOutputDevices = try await hardwareManager.outputDevices()
-        let allIODevices = try await hardwareManager.allIODevices()
-        let allNonAggregateDevices = try await hardwareManager.nonAggregateDevices()
-        let allAggregateDevices = try await hardwareManager.aggregateDevices()
+            Log.debug("allDevices", allDevices)
+            Log.debug("allInputDevices", allInputDevices)
+            Log.debug("allOutputDevices", allOutputDevices)
+            Log.debug("allIODevices", allIODevices)
+            Log.debug("allNonAggregateDevices", allNonAggregateDevices)
+            Log.debug("allAggregateDevices", allAggregateDevices)
 
-        Log.debug("allDevices", allDevices)
-        Log.debug("allInputDevices", allInputDevices)
-        Log.debug("allOutputDevices", allOutputDevices)
-        Log.debug("allIODevices", allIODevices)
-        Log.debug("allNonAggregateDevices", allNonAggregateDevices)
-        Log.debug("allAggregateDevices", allAggregateDevices)
+            #expect(allDevices.contains(nullDevice))
+            #expect(allDeviceIDs.contains(nullDevice.id))
+            #expect(allInputDevices.contains(nullDevice))
+            #expect(allOutputDevices.contains(nullDevice))
+            #expect(allIODevices.contains(nullDevice))
+            #expect(allNonAggregateDevices.contains(nullDevice))
+            #expect(allAggregateDevices.contains(nullDevice) == false)
 
-        #expect(allDevices.contains(nullDevice))
-        #expect(allDeviceIDs.contains(nullDevice.id))
-        #expect(allInputDevices.contains(nullDevice))
-        #expect(allOutputDevices.contains(nullDevice))
-        #expect(allIODevices.contains(nullDevice))
-        #expect(allNonAggregateDevices.contains(nullDevice))
-        #expect(allAggregateDevices.contains(nullDevice) == false)
+            #expect(allAggregateDevices.contains(aggregateDevice))
 
-        #expect(allAggregateDevices.contains(aggregateDevice))
+            try await removeAggregateDeviceAndWait(aggregateDevice)
 
-        let status = await hardwareManager.removeAggregateDevice(id: aggregateDevice.id)
-        #expect(kAudioHardwareNoError == status)
-
-        try await tearDown()
+            try await tearDown()
+        }
     }
 }
