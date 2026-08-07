@@ -113,7 +113,12 @@ extension AudioObjectModel {
                                                   andSize: &size)
 
         if kAudioHardwareNoError == sizeStatus {
-            value = [T](repeating: defaultValue, count: Int(size) / MemoryLayout<T>.size)
+            let count = Int(size) / MemoryLayout<T>.size
+            value = [T](repeating: defaultValue, count: count)
+
+            // The buffer holds whole elements only. A property whose size is not an exact
+            // multiple of the element size would otherwise let the read run past its end.
+            size = UInt32(count * MemoryLayout<T>.size)
         } else {
             return sizeStatus
         }
