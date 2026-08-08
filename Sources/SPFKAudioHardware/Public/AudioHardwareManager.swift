@@ -28,7 +28,10 @@ extension AudioHardwareManager {
     /// Start must be called to begin listening for hardware events
     public func start() async throws {
         guard !isListening else {
-            Log.error("Error: already started")
+            // Starting an already-started shared manager is how every additional consumer
+            // begins, so this is ordinary. `stop()` logs an error because stopping one that
+            // was never started means someone else already tore it down.
+            Log.debug("Already started")
             return
         }
 
