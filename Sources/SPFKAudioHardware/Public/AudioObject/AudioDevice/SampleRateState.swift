@@ -56,22 +56,39 @@ public actor SampleRateState {
             throw NSError(description: "\(nameAndID) doesn't support \(requestedRate) Hz")
         }
 
-        let task = Task<Float64?, Error> {
-            let notification: Notification = try await NotificationCenter.wait(for: .deviceNominalSampleRateDidChange, timeout: 2)
+        // Matched on objectID: any device may post this notification, and taking the first one to
+        // arrive validates the rate of whichever device that was. Confirmed happening in practice.
+        let task = Task<Float64?, Error> { [objectID] in
+            try await withThrowingTaskGroup(of: Float64?.self, returning: Float64?.self) { group in
+                group.addTask {
+                    for await notification in NotificationCenter.default.notifications(
+                        named: .deviceNominalSampleRateDidChange
+                    ) {
+                        guard let deviceNotification = notification.object as? AudioDeviceNotification,
+                              case let .deviceNominalSampleRateDidChange(notifiedID) = deviceNotification,
+                              notifiedID == objectID
+                        else {
+                            continue
+                        }
 
-            Log.debug(notification)
+                        let device: AudioDevice = try await AudioObjectPool.shared.lookup(id: objectID)
 
-            guard let deviceNotification = notification.object as? AudioDeviceNotification else {
-                return nil
+                        return device.nominalSampleRate
+                    }
+
+                    return nil
+                }
+
+                group.addTask {
+                    try await Task.sleep(seconds: 2)
+                    return nil
+                }
+
+                let result = try await group.next()
+                group.cancelAll()
+
+                return result ?? nil
             }
-
-            guard case let .deviceNominalSampleRateDidChange(objectID) = deviceNotification else {
-                return nil
-            }
-
-            let device: AudioDevice = try await AudioObjectPool.shared.lookup(id: objectID)
-
-            return device.nominalSampleRate
         }
         updateTask = task
 
