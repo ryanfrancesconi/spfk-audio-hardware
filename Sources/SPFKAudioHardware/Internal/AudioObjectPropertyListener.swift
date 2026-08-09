@@ -81,19 +81,26 @@ final class AudioObjectPropertyListener {
     ///
     /// Calls `AudioObjectRemovePropertyListener` to unregister the callback.
     ///
-    /// - Throws: If `AudioObjectRemovePropertyListener` returns an error status.
+    /// `kAudioHardwareBadObjectError` counts as success: a listener cannot outlive its object, and a
+    /// device removal is only ever learned after the HAL has destroyed it — absence from
+    /// `kAudioHardwarePropertyDevices` is the notification — so this is the ordinary path for a
+    /// device that goes away, not a failure.
+    ///
+    /// - Throws: If `AudioObjectRemovePropertyListener` fails for any other reason. `isListening`
+    ///   stays `true` in that case, so a caller may retry.
     func stop() throws {
         guard isListening else {
             return
         }
 
-        let status = removeListener()
+        switch removeListener() {
+        case kAudioHardwareNoError,
+             kAudioHardwareBadObjectError:
+            isListening = false
 
-        guard kAudioHardwareNoError == status else {
+        case let status:
             throw NSError(description: "failed to stop listening for (\(notificationType)) with error (\(status.fourCC))")
         }
-
-        isListening = false
     }
 }
 
