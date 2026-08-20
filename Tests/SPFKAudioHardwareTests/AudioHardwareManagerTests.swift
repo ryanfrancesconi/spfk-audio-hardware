@@ -3,6 +3,7 @@
 
 import CoreAudio
 import SPFKBase
+import SPFKTesting
 import Testing
 
 @testable import SPFKAudioHardware

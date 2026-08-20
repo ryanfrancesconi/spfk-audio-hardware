@@ -6,7 +6,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.tags(.unit))
+@Suite
 struct AudioDeviceNamedChannelTests {
     @Test func descriptionWithName() {
         let channel = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)

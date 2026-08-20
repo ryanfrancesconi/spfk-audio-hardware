@@ -1,4 +1,5 @@
 import AudioToolbox
+import SPFKTesting
 import Testing
 
 @testable import SPFKAudioHardware

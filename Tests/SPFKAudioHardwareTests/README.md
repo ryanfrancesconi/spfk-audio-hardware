@@ -2,17 +2,19 @@
 
 ## Test Organization
 
-Tests use Swift Testing tags defined in `Tags+AudioHardware.swift` to categorize suites:
+Tests use the shared Swift Testing tags from `SPFKTesting` to categorize suites. Every tag names
+what a suite *requires*, so an untagged suite needs nothing — that is how `spfk-fast` selects the
+hermetic majority of this target out of a package otherwise confined to `spfk-all-serial`.
 
 | Tag | Suites | Description |
 |-----|--------|-------------|
-| `.unit` | `DefinitionTests` (12 suites), `MockPropertyTests` | Pure logic — no hardware, runs in milliseconds |
+| _(none)_ | `DefinitionTests` (10 suites), `MockPropertyTests`, `AudioDeviceNamedChannelTests`, `ScopeTests` | Pure logic — no hardware, runs in milliseconds |
 | `.hardware` | `NullDeviceTests`, `AudioDevicePropertyTests`, `AudioStreamTests`, `AudioHardwareManagerTests`, `DefaultAudioDeviceTests`, `SampleRateStateTests` | Requires NullAudioDevice driver |
 | `.notification` | `AudioDeviceNotificationTests`, `AudioHardwareTests` | Hardware + async notification waits (timing-sensitive) |
 
 All hardware and notification suites use `@Suite(.serialized)` because they share the global `AudioHardwareManager` singleton and NullAudioDevice state.
 
-Mock-based unit tests (`MockPropertyTests`) also use `.serialized` because they swap the global `AudioBackend.current` backend.
+Mock-based tests (`MockPropertyTests`) also use `.serialized` because they swap the global `AudioBackend.current` backend.
 
 ## Mock Testing Infrastructure
 

@@ -6,7 +6,7 @@ import Testing
 
 @testable import SPFKAudioHardware
 
-@Suite(.tags(.unit))
+@Suite
 struct ScopeTests {
     @Test func propertyScopeRoundTrip() {
         let cases: [(Scope, AudioObjectPropertyScope)] = [
