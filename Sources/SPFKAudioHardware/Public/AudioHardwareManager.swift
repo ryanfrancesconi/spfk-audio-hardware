@@ -44,7 +44,11 @@ extension AudioHardwareManager {
                 guard let self else { return }
 
                 Task { @MainActor in
-                    try await callback(with: notification)
+                    do {
+                        try await callback(with: notification)
+                    } catch {
+                        Log.error(error)
+                    }
                 }
             }
         )
