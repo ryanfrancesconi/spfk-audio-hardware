@@ -9,7 +9,7 @@ import Testing
 @testable import SPFKAudioHardware
 
 extension HardwareSuite {
-    @Suite(.serialized, .tags(.hardware))
+    @Suite(.serialized, .tags(.hardware), .nullDeviceState)
     final class AudioHardwareManagerTests: NullDeviceTestCase {
         @Test func allDevices() async throws {
             let allDevices = try await hardwareManager.allDevices()
@@ -21,8 +21,6 @@ extension HardwareSuite {
             }
 
             Log.debug("Found", allDevices.count, "devices: ", allDevices)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.input, Scope.output])
@@ -42,8 +40,6 @@ extension HardwareSuite {
                     }
                 }
             }
-
-            try await tearDown()
         }
 
         @Test func deviceEnumeration() async throws {
@@ -77,8 +73,6 @@ extension HardwareSuite {
             #expect(allAggregateDevices.contains(aggregateDevice))
 
             try await removeAggregateDeviceAndWait(aggregateDevice)
-
-            try await tearDown()
         }
     }
 }

@@ -11,7 +11,7 @@ import Testing
 @testable import SPFKAudioHardware
 
 extension HardwareSuite {
-    @Suite(.serialized, .tags(.hardware, .notification))
+    @Suite(.serialized, .tags(.hardware, .notification), .nullDeviceState)
     final class AudioHardwareTests: NullDeviceTestCase {
         @Test func createAndDestroyAggregateDevice() async throws {
             let device = try await createAggregateDevice(in: 1)
@@ -22,9 +22,6 @@ extension HardwareSuite {
             await #expect(device.ownedAggregateDevices?.count == 1)
 
             try await removeAggregateDeviceAndWait(device)
-
-            try await tearDown()
-            await Task.yield()
         }
 
         @Test func deviceListChanged() async throws {
@@ -54,9 +51,6 @@ extension HardwareSuite {
             task.cancel()
 
             try await removeAggregateDeviceAndWait(device)
-
-            try await tearDown()
-            await Task.yield()
         }
 
         @Test(arguments: DefaultSelectorType.allCases)
@@ -69,9 +63,6 @@ extension HardwareSuite {
             await #expect(AudioDevice.defaultDevice(of: selectorType) == device)
 
             try await removeAggregateDeviceAndWait(device)
-
-            try await tearDown()
-            await Task.yield()
         }
     }
 }

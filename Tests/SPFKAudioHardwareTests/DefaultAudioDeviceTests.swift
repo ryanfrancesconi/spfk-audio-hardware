@@ -9,7 +9,7 @@ import Testing
 @testable import SPFKAudioHardware
 
 extension HardwareSuite {
-    @Suite(.tags(.hardware))
+    @Suite(.tags(.hardware), .hardwareState)
     final class DefaultAudioDeviceTests: AudioHardwareTestCase {
         @Test(arguments: [Scope.output, Scope.input])
         func preferredChannelsForStereoAllDevices(scope: Scope) async throws {

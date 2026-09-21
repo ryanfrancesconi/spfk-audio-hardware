@@ -10,7 +10,7 @@ import Testing
 @testable import SPFKAudioHardware
 
 extension HardwareSuite {
-    @Suite(.serialized, .tags(.hardware))
+    @Suite(.serialized, .tags(.hardware), .nullDeviceState)
     final class SampleRateStateTests: NullDeviceTestCase {
         @Test(arguments: [44100, 48000])
         func updateAndWait(sampleRate: Float64) async throws {
@@ -19,8 +19,6 @@ extension HardwareSuite {
             try await nullDevice.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
 
             #expect(sampleRate == nullDevice.nominalSampleRate)
-
-            try await tearDown()
         }
 
         @Test(arguments: [22050, 96000])
@@ -30,8 +28,6 @@ extension HardwareSuite {
             await #expect(throws: (any Error).self) {
                 try await nullDevice.sampleRateUpdater.updateAndWait(sampleRate: sampleRate)
             }
-
-            try await tearDown()
         }
 
         @Test func mutableState() async throws {
@@ -60,8 +56,6 @@ extension HardwareSuite {
             }
 
             try await device.sampleRateUpdater.updateAndWait(sampleRate: currentSampleRate)
-
-            try await tearDown()
         }
     }
 }

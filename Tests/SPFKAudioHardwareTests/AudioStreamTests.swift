@@ -5,7 +5,7 @@ import Testing
 @testable import SPFKAudioHardware
 
 extension HardwareSuite {
-    @Suite(.tags(.hardware))
+    @Suite(.tags(.hardware), .nullDeviceState)
     final class AudioStreamTests: NullDeviceTestCase {
         @Test func testProperties() async throws {
             let nullDevice = try #require(nullDevice)
@@ -57,8 +57,6 @@ extension HardwareSuite {
 
             inputStream.physicalFormat = nil
             #expect(inputStream.physicalFormat != nil)
-
-            try await tearDown()
         }
     }
 }

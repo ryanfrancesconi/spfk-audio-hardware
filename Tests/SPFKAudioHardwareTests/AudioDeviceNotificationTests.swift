@@ -10,7 +10,7 @@ import Testing
 @testable import SPFKAudioHardware
 
 extension HardwareSuite {
-    @Suite(.serialized, .tags(.hardware, .notification))
+    @Suite(.serialized, .tags(.hardware, .notification), .nullDeviceState)
     final class AudioDeviceNotificationTests: NullDeviceTestCase {
         @Test(arguments: [Scope.output, Scope.input])
         func volumeDidChangeNotification(scope: Scope) async throws {
@@ -35,9 +35,6 @@ extension HardwareSuite {
             case let .failure(error):
                 throw error
             }
-
-            try await tearDown()
-            await Task.yield()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -65,18 +62,12 @@ extension HardwareSuite {
             }
 
             #expect(nullDevice.isMuted(channel: 0, scope: scope) == true)
-
-            try await tearDown()
-            await Task.yield()
         }
 
         @Test func deviceListening() async throws {
             await AudioObjectPool.shared.stopListening()
             await AudioObjectPool.shared.startListening()
             await AudioObjectPool.shared.stopListening()
-
-            try await tearDown()
-            await Task.yield()
         }
 
         @Test func audioDeviceCacheUpdate() async throws {

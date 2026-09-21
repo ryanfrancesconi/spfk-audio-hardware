@@ -11,7 +11,7 @@ import Testing
 @testable import SPFKAudioHardware
 
 extension HardwareSuite {
-    @Suite(.serialized, .tags(.hardware))
+    @Suite(.serialized, .tags(.hardware), .nullDeviceState)
     final class NullDeviceTests: NullDeviceTestCase {
         @Test func deviceLookUp() async throws {
             let nullDevice = try #require(nullDevice)
@@ -22,7 +22,6 @@ extension HardwareSuite {
             #expect(lookupDevice == nullDevice)
 
             try await #expect(AudioDevice.lookup(uid: deviceUID) == nullDevice)
-            try await tearDown()
         }
 
         @Test(arguments: DefaultSelectorType.allCases)
@@ -38,8 +37,6 @@ extension HardwareSuite {
             #expect(isDefaultDevice)
 
             try await wait(sec: 1)
-
-            try await tearDown()
         }
 
         @Test func generalDeviceInformation() async throws {
@@ -71,8 +68,6 @@ extension HardwareSuite {
             #expect(nullDevice.ownedObjectIDs != nil)
             #expect(nullDevice.controlList != nil)
             await #expect(nullDevice.relatedDevices != nil)
-
-            try await tearDown()
         }
 
         @Test func lowFrequencyEffects() async throws {
@@ -93,8 +88,6 @@ extension HardwareSuite {
             #expect(nullDevice.lfeVolumeDecibels == nil)
             nullDevice.lfeVolumeDecibels = 6.0
             #expect(nullDevice.lfeVolumeDecibels == nil)
-
-            try await tearDown()
         }
 
         @Test func inputOutputLayout() async throws {
@@ -111,8 +104,6 @@ extension HardwareSuite {
 
             #expect(!isInputOnlyDevice)
             #expect(!isOutputOnlyDevice)
-
-            try await tearDown()
         }
 
         @Test func volumeInfo() async throws {
@@ -147,8 +138,6 @@ extension HardwareSuite {
             #expect(nullDevice.volumeInfo(channel: 2, scope: .input) == nil)
             #expect(nullDevice.volumeInfo(channel: 3, scope: .input) == nil)
             #expect(nullDevice.volumeInfo(channel: 4, scope: .input) == nil)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -166,8 +155,6 @@ extension HardwareSuite {
 
             #expect(kAudioHardwareNoError != nullDevice.setVolume(0.5, channel: 2, scope: .output))
             #expect(nullDevice.volume(channel: 2, scope: scope) == nil)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -187,8 +174,6 @@ extension HardwareSuite {
             #expect(!nullDevice.canSetVolume(channel: 2, scope: scope))
             #expect(kAudioHardwareNoError != nullDevice.setVolume(0.5, channel: 2, scope: scope))
             #expect(nullDevice.volumeInDecibels(channel: 2, scope: scope) == nil)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -208,8 +193,6 @@ extension HardwareSuite {
             #expect(!nullDevice.canMute(channel: 2, scope: scope))
             #expect(kAudioHardwareNoError != nullDevice.setMute(true, channel: 2, scope: scope))
             #expect(nullDevice.isMuted(channel: 2, scope: scope) == nil)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -227,8 +210,6 @@ extension HardwareSuite {
             #expect(nullDevice.isMainChannelMuted(scope: scope) == false)
             #expect(kAudioHardwareNoError == nullDevice.setMute(true, channel: 0, scope: scope))
             #expect(nullDevice.isMainChannelMuted(scope: scope) == true)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -261,8 +242,6 @@ extension HardwareSuite {
             preferredChannels = try #require(nullDevice.preferredChannelsForStereo(scope: scope))
             #expect(preferredChannels.left == 1)
             #expect(preferredChannels.right == 2)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -296,8 +275,6 @@ extension HardwareSuite {
 
                 _ = try #require(device.virtualMainVolumeInDecibels(scope: scope))
             }
-
-            try await tearDown()
         }
 
         @Test func virtualMainBalance() async throws {
@@ -311,8 +288,6 @@ extension HardwareSuite {
 
             #expect(kAudioHardwareNoError != nullDevice.setVirtualMainBalance(0.0, scope: .input))
             #expect(nullDevice.virtualMainBalance(scope: .input) == nil)
-
-            try await tearDown()
         }
 
         @Test func dataSource() async throws {
@@ -320,8 +295,6 @@ extension HardwareSuite {
 
             #expect(nullDevice.dataSource(scope: .output) != nil)
             #expect(nullDevice.dataSource(scope: .input) != nil)
-
-            try await tearDown()
         }
 
         @Test func dataSources() async throws {
@@ -329,8 +302,6 @@ extension HardwareSuite {
 
             #expect(nullDevice.dataSources(scope: .output) != nil)
             #expect(nullDevice.dataSources(scope: .input) != nil)
-
-            try await tearDown()
         }
 
         @Test func dataSourceName() async throws {
@@ -347,8 +318,6 @@ extension HardwareSuite {
             #expect(nullDevice.dataSourceName(dataSourceID: 2, scope: .input) == "Data Source Item 2")
             #expect(nullDevice.dataSourceName(dataSourceID: 3, scope: .input) == "Data Source Item 3")
             #expect(nullDevice.dataSourceName(dataSourceID: 4, scope: .input) == nil)
-
-            try await tearDown()
         }
 
         @Test func clockSource() async throws {
@@ -360,8 +329,6 @@ extension HardwareSuite {
             #expect(nullDevice.clockSourceNames == nil)
             #expect(nullDevice.clockSourceName(clockSourceID: 0) == nil)
             #expect(kAudioHardwareNoError != nullDevice.setClockSourceID(0))
-
-            try await tearDown()
         }
 
         @Test func totalLatency() async throws {
@@ -369,8 +336,6 @@ extension HardwareSuite {
 
             await #expect(nullDevice.latency(scope: .output) == 512)
             await #expect(nullDevice.latency(scope: .input) == 512)
-
-            try await tearDown()
         }
 
         @Test func safetyOffset() async throws {
@@ -378,8 +343,6 @@ extension HardwareSuite {
 
             #expect(nullDevice.safetyOffset(scope: .output) == 0)
             #expect(nullDevice.safetyOffset(scope: .input) == 0)
-
-            try await tearDown()
         }
 
         @Test func bufferFrameSize() async throws {
@@ -389,8 +352,6 @@ extension HardwareSuite {
             // for the NullAudio.driver
             #expect(nullDevice.bufferFrameSize(scope: .output) == 512)
             #expect(nullDevice.bufferFrameSize(scope: .input) == 512)
-
-            try await tearDown()
         }
 
         @Test func hogMode() async throws {
@@ -401,8 +362,6 @@ extension HardwareSuite {
             #expect(nullDevice.hogModePID == pid_t(ProcessInfo.processInfo.processIdentifier))
             #expect(kAudioHardwareNoError == nullDevice.unsetHogMode())
             #expect(nullDevice.hogModePID == -1)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -410,8 +369,6 @@ extension HardwareSuite {
             let nullDevice = try #require(nullDevice)
 
             await #expect(nullDevice.streams(scope: scope)?.count == 1)
-
-            try await tearDown()
         }
     }
 }
@@ -426,8 +383,6 @@ extension HardwareSuite.NullDeviceTests {
         let rates = try #require(nullDevice.getNominalSampleRates(scope: scope))
 
         #expect(rates == [44100, 48000])
-
-        try await tearDown()
     }
 
     @Test(arguments: [44100, 48000] as [Float64])
@@ -453,7 +408,5 @@ extension HardwareSuite.NullDeviceTests {
 
         #expect(nullDevice.nominalSampleRate == sampleRate)
         #expect(nullDevice.actualSampleRate == sampleRate)
-
-        try await tearDown()
     }
 }

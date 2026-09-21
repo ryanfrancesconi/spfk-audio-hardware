@@ -11,7 +11,7 @@ import Testing
 /// Additional property tests for AudioDevice covering volume conversion,
 /// latency calculations, channels, and stream formats.
 extension HardwareSuite {
-    @Suite(.serialized, .tags(.hardware))
+    @Suite(.serialized, .tags(.hardware), .nullDeviceState)
     final class AudioDevicePropertyTests: NullDeviceTestCase {
         // MARK: - Volume Conversion
 
@@ -34,8 +34,6 @@ extension HardwareSuite {
 
             // Invalid channel should return nil regardless
             #expect(nullDevice.scalarToDecibels(volume: 0.5, channel: 5, scope: scope) == nil)
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -51,8 +49,6 @@ extension HardwareSuite {
 
             // Invalid channel should return nil regardless
             #expect(nullDevice.decibelsToScalar(volume: -70.5, channel: 5, scope: scope) == nil)
-
-            try await tearDown()
         }
 
         // MARK: - Latency
@@ -68,8 +64,6 @@ extension HardwareSuite {
                 #expect(latency >= 0, "Latency in seconds should be non-negative")
                 #expect(latency < 1, "Latency should be less than 1 second")
             }
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -92,8 +86,6 @@ extension HardwareSuite {
 
             let expectedSum = (deviceLatency ?? 0) + (safetyOffset ?? 0) + (bufferSize ?? 0) + streamLatency
             #expect(totalLatency == expectedSum, "Total latency should equal sum of components")
-
-            try await tearDown()
         }
 
         @Test func bufferFrameSizeRange() async throws {
@@ -113,8 +105,6 @@ extension HardwareSuite {
                     #expect(size > 0, "Buffer size should be positive")
                 }
             }
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -130,8 +120,6 @@ extension HardwareSuite {
 
             // Restore original
             nullDevice.setBufferFrameSize(originalSize, scope: scope)
-
-            try await tearDown()
         }
 
         // MARK: - Channels
@@ -148,8 +136,6 @@ extension HardwareSuite {
             for channel in channels {
                 #expect(channel.scope == scope)
             }
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -158,8 +144,6 @@ extension HardwareSuite {
 
             let virtualCount = await nullDevice.virtualChannels(scope: scope)
             #expect(virtualCount == 2, "Null device should have 2 virtual channels per scope")
-
-            try await tearDown()
         }
 
         @Test func layoutChannels() async throws {
@@ -170,8 +154,6 @@ extension HardwareSuite {
 
             #expect(outputChannels == 2, "Null device should have 2 output layout channels")
             #expect(inputChannels == 2, "Null device should have 2 input layout channels")
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -188,8 +170,6 @@ extension HardwareSuite {
             // a parsed payload from a mis-parsed one.
             #expect(descriptions.allSatisfy { $0.mChannelLabel != kAudioChannelLabel_Unused })
             #expect(descriptions.map(\.mChannelLabel) == [kAudioChannelLabel_Left, kAudioChannelLabel_Right])
-
-            try await tearDown()
         }
 
         @Test func preferredChannelsDescription() async throws {
@@ -199,8 +179,6 @@ extension HardwareSuite {
 
             // May be nil if channels don't have names
             Log.debug("preferredChannelsDescription:", description ?? "nil")
-
-            try await tearDown()
         }
 
         // MARK: - Stream Properties
@@ -215,8 +193,6 @@ extension HardwareSuite {
             let format = try #require(stream.physicalFormat)
             #expect(format.mSampleRate > 0, "Sample rate should be positive")
             #expect(format.mChannelsPerFrame > 0, "Should have at least one channel")
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -229,8 +205,6 @@ extension HardwareSuite {
             let format = try #require(stream.virtualFormat)
             #expect(format.mSampleRate > 0, "Sample rate should be positive")
             #expect(format.mChannelsPerFrame > 0, "Should have at least one channel")
-
-            try await tearDown()
         }
 
         @Test(arguments: [Scope.output, Scope.input])
@@ -245,8 +219,6 @@ extension HardwareSuite {
 
             let virtualFormats = try #require(stream.availableVirtualFormats)
             #expect(virtualFormats.isNotEmpty, "Should have available virtual formats")
-
-            try await tearDown()
         }
 
         // MARK: - Data Sources
@@ -265,8 +237,6 @@ extension HardwareSuite {
                     #expect(name != nil, "Data source \(sourceID) should have a name")
                 }
             }
-
-            try await tearDown()
         }
 
         // MARK: - Device Description
@@ -277,8 +247,6 @@ extension HardwareSuite {
             let description = nullDevice.description
             #expect(description.contains("Null Audio Device"), "Description should contain device name")
             #expect(description.contains(String(nullDevice.objectID)), "Description should contain objectID")
-
-            try await tearDown()
         }
 
         @Test func deviceNameAndID() async throws {
@@ -287,8 +255,6 @@ extension HardwareSuite {
             let nameAndID = nullDevice.nameAndID
             #expect(nameAndID.contains("Null Audio Device"))
             #expect(nameAndID.contains(String(nullDevice.objectID)))
-
-            try await tearDown()
         }
 
         // MARK: - Aggregate Device Properties
@@ -306,8 +272,6 @@ extension HardwareSuite {
             #expect(!isPrivate, "Test aggregate should not be a private aggregate device")
 
             try await removeAggregateDeviceAndWait(device)
-
-            try await tearDown()
         }
 
         @Test func nonAggregateDeviceIsNotAggregate() async throws {
@@ -315,8 +279,6 @@ extension HardwareSuite {
 
             let isAggregate = await nullDevice.isAggregateDevice
             #expect(!isAggregate, "Null device should not be aggregate")
-
-            try await tearDown()
         }
 
         @Test func isPrivateAggregateDeviceIsFalseForNonAggregate() throws {
@@ -332,8 +294,6 @@ extension HardwareSuite {
             let notification = AudioDeviceNotification.deviceNameDidChange(objectID: nullDevice.objectID)
             let device = await notification.getAudioDevice()
             #expect(device == nullDevice)
-
-            try await tearDown()
         }
 
         @Test func audioDeviceNotificationName() async throws {
@@ -370,8 +330,6 @@ extension HardwareSuite {
             if let defaultOutput {
                 #expect(defaultOutput.isAlive, "Default output should be alive")
             }
-
-            try await tearDown()
         }
 
         // MARK: - Owning Object
@@ -384,8 +342,6 @@ extension HardwareSuite {
 
             let owningObject = try await stream.owningObject()
             #expect(owningObject != nil, "Stream should have an owning object")
-
-            try await tearDown()
         }
     }
 }

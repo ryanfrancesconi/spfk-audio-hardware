@@ -6,41 +6,15 @@ import Foundation
 import SPFKBase
 import Testing
 
+/// Base for suites that touch Core Audio. The manager's lifecycle and the default devices
+/// belong to ``HardwareStateTrait``, which every subclass suite must carry.
 class AudioHardwareTestCase {
     let hardwareManager: AudioHardwareManager = .shared
 
-    private var defaultInputDevice: AudioDevice?
-    private var defaultOutputDevice: AudioDevice?
-    private var defaultSystemOutputDevice: AudioDevice?
-
-    init() async throws {
-        try await hardwareManager.start()
-        await saveDefaultDevices()
-    }
-
-    func tearDown() async throws {
-        try restoreDefaultDevices()
-        try await hardwareManager.unregister()
-    }
+    init() async throws {}
 
     deinit {
         Log.debug("- { AudioHardwareTestCase }")
-    }
-}
-
-// MARK: - Private Functions
-
-extension AudioHardwareTestCase {
-    fileprivate func saveDefaultDevices() async {
-        defaultInputDevice = await hardwareManager.defaultInputDevice
-        defaultOutputDevice = await hardwareManager.defaultOutputDevice
-        defaultSystemOutputDevice = await hardwareManager.defaultSystemOutputDevice
-    }
-
-    fileprivate func restoreDefaultDevices() throws {
-        try defaultInputDevice?.promote(to: .defaultInput)
-        try defaultOutputDevice?.promote(to: .defaultOutput)
-        try defaultSystemOutputDevice?.promote(to: .alertOutput)
     }
 }
 

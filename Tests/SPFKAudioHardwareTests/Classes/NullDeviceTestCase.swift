@@ -10,7 +10,8 @@ import Testing
 class NullDeviceTestCase: AudioHardwareTestCase {
     let nullDevice_name = "Null Audio Device"
     let nullDevice_manufacturer = "Apple Inc."
-    let nullDevice_uid = "NullAudioDevice_UID"
+    static let nullDeviceUID = "NullAudioDevice_UID"
+    let nullDevice_uid = NullDeviceTestCase.nullDeviceUID
     let nullDevice_modelUID = "NullAudioDevice_ModelUID"
     let nullDevice_configurationApplication = "com.apple.audio.AudioMIDISetup"
 
@@ -19,22 +20,14 @@ class NullDeviceTestCase: AudioHardwareTestCase {
     override init() async throws {
         try await super.init()
         nullDevice = try await AudioDevice.lookup(uid: nullDevice_uid)
-        try await resetNullDeviceState()
-    }
-
-    override func tearDown() async throws {
-        try await resetNullDeviceState()
-
-        try await super.tearDown()
-        Log.debug("tearDown complete")
     }
 
     deinit {
         Log.debug("- { NullDeviceTestCase }")
     }
 
-    func resetNullDeviceState() async throws {
-        let nullDevice = try #require(nullDevice)
+    static func resetNullDeviceState() async throws {
+        let nullDevice = try await AudioDevice.lookup(uid: nullDeviceUID)
 
         nullDevice.unsetHogMode()
         try await nullDevice.sampleRateUpdater.updateAndWait(sampleRate: 44100)
@@ -84,19 +77,9 @@ extension NullDeviceTestCase {
     func createAggregateDevice(in delay: TimeInterval = 0) async throws -> AudioDevice {
         let nullDevice = try #require(nullDevice)
 
-        // AudioDevice.lookup(uid:) asks the HAL directly. hardwareManager.allDevices() answers
-        // from the cache, which lags a destruction and reports the device already gone.
-        if let existing = try? await AudioDevice.lookup(uid: Self.aggregateDeviceUID) {
-            Log.error("Device exists attempting to remove it...")
-
-            let status = await hardwareManager.removeAggregateDevice(id: existing.id)
-
-            #expect(kAudioHardwareNoError == status)
-        }
-
         // Destruction finishes after removeAggregateDevice returns, and creating the same UID
         // before then fails with kAudioHardwareIllegalOperationError.
-        try await waitForAggregateDeviceRemoval()
+        try await Self.removeAggregateDeviceIfPresent()
 
         if delay > 0 {
             try await Task.sleep(seconds: delay)
@@ -115,17 +98,31 @@ extension NullDeviceTestCase {
     /// Removes the aggregate device and waits for the HAL to finish destroying it.
     ///
     /// Until destruction completes the null device is still a sub-device of the aggregate, and
-    /// property writes on it — including the ones `tearDown()` makes — are rejected.
+    /// property writes on it — including the ones ``HardwareStateTrait`` makes — are rejected.
     func removeAggregateDeviceAndWait(_ device: AudioDevice) async throws {
         let status = await hardwareManager.removeAggregateDevice(id: device.id)
 
         #expect(kAudioHardwareNoError == status)
 
-        try await waitForAggregateDeviceRemoval()
+        try await Self.waitForAggregateDeviceRemoval()
+    }
+
+    /// Removes the test aggregate if one exists and waits for the HAL to finish destroying it.
+    ///
+    /// Asks the HAL through `AudioDevice.lookup(uid:)`: `allDevices()` answers from a cache that
+    /// lags a destruction.
+    static func removeAggregateDeviceIfPresent() async throws {
+        guard let existing = try? await AudioDevice.lookup(uid: aggregateDeviceUID) else { return }
+
+        let status = await AudioHardwareManager.shared.removeAggregateDevice(id: existing.id)
+
+        #expect(kAudioHardwareNoError == status)
+
+        try await Self.waitForAggregateDeviceRemoval()
     }
 
     /// Polls the HAL until no device carries `aggregateDeviceUID`.
-    func waitForAggregateDeviceRemoval(timeout: TimeInterval = 5) async throws {
+    static func waitForAggregateDeviceRemoval(timeout: TimeInterval = 5) async throws {
         let deadline = Date().addingTimeInterval(timeout)
 
         while Date() < deadline {

@@ -42,7 +42,7 @@ Hardware tests inherit from `NullDeviceTestCase` (or its parent `AudioHardwareTe
 - `AudioHardwareTestCase` — Starts `AudioHardwareManager`, saves/restores default devices
 - `NullDeviceTestCase` — Looks up the NullAudioDevice, provides `resetNullDeviceState()` and `createAggregateDevice()`
 
-Each test calls `tearDown()` to reset device state (sample rate, volume, mute, stereo channels) ensuring test isolation.
+Each hardware suite carries `.nullDeviceState` or `.hardwareState` (`HardwareStateTrait`), which resets device state (sample rate, volume, mute, stereo channels) before each test case and restores it and the default devices afterwards — including when the test throws.
 
 ## Running Tests
 
@@ -62,4 +62,4 @@ Note: The `.xctestplan` must have parallelization disabled due to the shared `Au
 
 Hardware tests that set device properties (volume, mute, etc.) can occasionally crash inside Apple's internal `LogVolumeChangeForClientSide` logging function. The crash occurs in `snprintf` → `__Balloc_D2A` (a memory allocator for float-to-string conversion) when `AudioObjectSetPropertyData` is called rapidly from Swift's cooperative thread pool.
 
-This is an Apple framework bug — the crash is entirely within CoreAudio's internal logging path. `Task.yield()` calls have been added between property-set batches in `resetNullDeviceState()` and after `tearDown()` in notification tests to reduce the frequency, but cannot fully prevent it. If you see this crash, simply re-run the tests.
+This is an Apple framework bug — the crash is entirely within CoreAudio's internal logging path. `Task.yield()` calls have been added between property-set batches in `resetNullDeviceState()` and after each test's restore in `HardwareStateTrait` to reduce the frequency, but cannot fully prevent it. If you see this crash, simply re-run the tests.
