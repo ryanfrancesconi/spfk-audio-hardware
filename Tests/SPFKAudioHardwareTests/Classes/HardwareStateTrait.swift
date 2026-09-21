@@ -3,6 +3,7 @@
 import Foundation
 @testable import SPFKAudioHardware
 import SPFKBase
+import SPFKTesting
 import Testing
 
 /// Starts `AudioHardwareManager.shared` around each test case and returns Core Audio to the
@@ -54,26 +55,18 @@ struct HardwareStateTrait: SuiteTrait, TestTrait, TestScoping {
     private func restore(manager: AudioHardwareManager, defaults: [(AudioDevice?, DefaultSelectorType)]) async {
         if resetsNullDevice {
             // The null device rejects property writes while it is still a sub-device of an aggregate.
-            await Self.recordingIssues { try await NullDeviceTestCase.removeAggregateDeviceIfPresent() }
-            await Self.recordingIssues { try await NullDeviceTestCase.resetNullDeviceState() }
+            await recordingIssues { try await NullDeviceTestCase.removeAggregateDeviceIfPresent() }
+            await recordingIssues { try await NullDeviceTestCase.resetNullDeviceState() }
         }
 
-        await Self.recordingIssues {
+        await recordingIssues {
             for (device, selector) in defaults {
                 try device?.promote(to: selector)
             }
         }
 
-        await Self.recordingIssues { try await manager.unregister() }
+        await recordingIssues { try await manager.unregister() }
         await Task.yield()
-    }
-
-    private static func recordingIssues(_ body: () async throws -> Void) async {
-        do {
-            try await body()
-        } catch {
-            Issue.record(error)
-        }
     }
 }
 
