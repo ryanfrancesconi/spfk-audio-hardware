@@ -8,7 +8,7 @@ hermetic majority of this target out of a package otherwise confined to `spfk-al
 
 | Tag | Suites | Description |
 |-----|--------|-------------|
-| _(none)_ | `DefinitionTests` (10 suites), `MockPropertyTests`, `AudioDeviceNamedChannelTests`, `ScopeTests` | Pure logic — no hardware, runs in milliseconds |
+| _(none)_ | `DefinitionTests` (10 suites), `MockPropertyTests`, `ProcessDeviceTests`, `AudioDeviceNamedChannelTests`, `ScopeTests` | Pure logic — no hardware, runs in milliseconds |
 | `.hardware` | `NullDeviceTests`, `AudioDevicePropertyTests`, `AudioStreamTests`, `AudioHardwareManagerTests`, `DefaultAudioDeviceTests`, `SampleRateStateTests` | Requires NullAudioDevice driver |
 | `.notification` | `AudioDeviceNotificationTests`, `AudioHardwareTests` | Hardware + async notification waits (timing-sensitive) |
 

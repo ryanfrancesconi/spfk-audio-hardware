@@ -18,6 +18,7 @@ A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction L
 
 - **Device enumeration** — query all devices, or filter by input, output, aggregate, Bluetooth, split, and more
 - **Default device management** — get and promote default input, output, and system output devices
+- **Per-process devices** — `AudioDevice.devices(usedByProcess:scope:)` lists the devices another running process is using
 - **Volume and mute control** — per-channel scalar/dB volume, virtual main volume, balance, and mute state
 - **Sample rate management** — coordinated async sample rate transitions via the `SampleRateState` actor
 - **Aggregate devices** — create, configure, and destroy aggregate devices with clock source control
