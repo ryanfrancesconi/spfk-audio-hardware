@@ -8,8 +8,9 @@ import Testing
 /// Hardware-independent tests for property access logic.
 ///
 /// These verify the validAddress → getProperty → type conversion → return chain
-/// using `MockAudioBackend` instead of real CoreAudio hardware.
-@Suite(.serialized)
+/// using `MockAudioBackend` instead of real CoreAudio hardware. Tagged `.hardware` for isolation,
+/// as ``ProcessDeviceTests`` is: the backend swap is process-global.
+@Suite(.serialized, .tags(.hardware))
 final class MockPropertyTests {
     deinit {
         AudioBackend._reset()

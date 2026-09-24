@@ -8,7 +8,9 @@ import Testing
 
 /// `AudioDevice.devices(usedByProcess:scope:)` against `MockAudioBackend`, which ignores the PID
 /// qualifier, so these cover the chain after the translation rather than the translation itself.
-@Suite(.serialized)
+/// Tagged `.hardware` for its isolation, not a device: the backend swap is process-global, so a
+/// parallel run lets another suite replace the mock mid-test.
+@Suite(.serialized, .tags(.hardware))
 final class ProcessDeviceTests {
     private let processID: AudioObjectID = 7001
     private let deviceID: AudioObjectID = 7002
