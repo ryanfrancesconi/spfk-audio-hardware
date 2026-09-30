@@ -44,7 +44,6 @@ public actor AudioObjectPool {
         stopListening()
 
         guard pool.isNotEmpty else {
-            // Log.debug("No objects in pool")
             return
         }
 
@@ -68,7 +67,6 @@ extension AudioObjectPool {
         let id = audioObject.objectID
 
         guard listeners[id] == nil else {
-            // Log.error("Already have listener for", id)
             return
         }
 
@@ -113,8 +111,6 @@ extension AudioObjectPool {
 
 extension AudioObjectPool {
     @MainActor private func received(id: AudioObjectID, notification: any PropertyAddressNotification) {
-        // Log.debug("🔊 \(id)", notification)
-
         NotificationCenter.default.post(
             name: notification.name,
             object: notification

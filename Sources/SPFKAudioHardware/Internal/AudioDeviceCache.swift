@@ -92,7 +92,6 @@ extension AudioDeviceCache {
         cachedDevices.append(contentsOf: event.addedDevices)
         cachedDevices.removeAll { event.removedDevices.contains($0) }
 
-        // Log.debug("Removing", devices.removedDevices.count, "devices...")
         for device in event.removedDevices {
             await AudioObjectPool.shared.remove(device.id)
         }

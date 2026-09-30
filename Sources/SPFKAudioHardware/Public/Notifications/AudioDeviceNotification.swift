@@ -130,7 +130,6 @@ extension AudioDeviceNotification: PropertyAddressNotification {
             self = .deviceIOStoppedAbnormally(objectID: objectID)
 
         default:
-            // Log.error("AudioDeviceNotification: unhandled mSelector \(propertyAddress.mSelector) (\(propertyAddress.mSelector.fourCC))") // uncomment to change for unhandled events
             return nil
         }
     }

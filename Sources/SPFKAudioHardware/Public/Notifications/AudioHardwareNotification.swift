@@ -42,7 +42,6 @@ extension AudioHardwareNotification: PropertyAddressNotification {
             self = .defaultSystemOutputDeviceChanged(objectID: objectID)
 
         default:
-            // Log.error("AudioHardwareNotification: unhandled mSelector \(propertyAddress.mSelector) (\(propertyAddress.mSelector.fourCC))")
             return nil
         }
     }
