@@ -25,8 +25,6 @@ public actor AudioObjectPool {
         }
 
         pool[id] = audioObject
-
-        Log.debug("✅ \(audioObject)")
     }
 
     func remove(_ id: AudioObjectID) {
@@ -83,7 +81,6 @@ extension AudioObjectPool {
         do {
             try listener.start()
             listeners[id] = listener
-            Log.debug("Added listener for \(audioObject)")
 
         } catch let error as NSError {
             Log.error("Error adding listener for \(audioObject)", error)

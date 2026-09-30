@@ -175,10 +175,7 @@ extension HardwareSuite {
         @Test func preferredChannelsDescription() async throws {
             let nullDevice = try #require(nullDevice)
 
-            let description = await nullDevice.preferredChannelsDescription(scope: .output)
-
-            // May be nil if channels don't have names
-            Log.debug("preferredChannelsDescription:", description ?? "nil")
+            _ = await nullDevice.preferredChannelsDescription(scope: .output)
         }
 
         // MARK: - Stream Properties

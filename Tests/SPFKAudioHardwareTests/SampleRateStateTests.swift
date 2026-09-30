@@ -41,8 +41,6 @@ extension HardwareSuite {
             let currentSampleRate = try #require(device.nominalSampleRate)
             let testRates = try #require(device.nominalSampleRates).filter { $0 != currentSampleRate }
 
-            Log.debug("Testing \(device.nameAndID) at \(currentSampleRate), supports \(device.nominalSampleRates ?? [])")
-
             await withTaskGroup { taskGroup in
                 for sampleRate in testRates {
                     taskGroup.addTask {

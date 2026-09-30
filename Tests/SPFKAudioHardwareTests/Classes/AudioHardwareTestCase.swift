@@ -12,10 +12,6 @@ class AudioHardwareTestCase {
     let hardwareManager: AudioHardwareManager = .shared
 
     init() async throws {}
-
-    deinit {
-        Log.debug("- { AudioHardwareTestCase }")
-    }
 }
 
 extension AudioHardwareTestCase {

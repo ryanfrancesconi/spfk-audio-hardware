@@ -35,8 +35,6 @@ extension AudioHardwareManager {
             return
         }
 
-        Log.debug("Starting listening...")
-
         listener = AudioObjectPropertyListener(
             notificationType: notificationType,
             objectID: objectID,
@@ -67,8 +65,6 @@ extension AudioHardwareManager {
             return
         }
 
-        Log.debug("Stopping listening...")
-
         try await cache.stop()
 
         try listener?.stop()
@@ -84,7 +80,6 @@ extension AudioHardwareManager {
     public func unregister() async throws {
         try await stop()
         try await cache.unregister()
-        Log.debug("⛔️ (shared) - { \(self) }")
     }
 }
 

@@ -261,8 +261,6 @@ extension HardwareSuite {
                     continue
                 }
 
-                Log.debug(dB, "for", device.name, scope)
-
                 #expect(dB < 0) // this value is different for different devices
 
                 #expect(kAudioHardwareNoError == device.setVirtualMainVolume(0.5, scope: scope))

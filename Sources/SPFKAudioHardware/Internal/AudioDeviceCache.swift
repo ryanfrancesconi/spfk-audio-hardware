@@ -63,9 +63,6 @@ extension AudioDeviceCache {
     func update() async throws -> DeviceStatusEvent {
         let latestDeviceList = try await allDevices()
 
-        Log.debug("🔊 \(cachedDevices.count) latestDeviceList: ", latestDeviceList.map(\.objectID).sorted())
-        Log.debug("🔈 \(cachedDevices.count) cachedDevices: ", cachedDevices.map(\.objectID).sorted())
-
         // compare added and removed devices.
 
         let addedDevices: [AudioDevice] = latestDeviceList.filter { !cachedDevices.contains($0) }
@@ -99,8 +96,6 @@ extension AudioDeviceCache {
         if cachedDevices.count > 0 {
             await AudioObjectPool.shared.startListening()
         }
-
-        Log.debug("🔈 updated \(cachedDevices.count) cachedDevice: ", cachedDevices.map(\.objectID).sorted())
     }
 }
 

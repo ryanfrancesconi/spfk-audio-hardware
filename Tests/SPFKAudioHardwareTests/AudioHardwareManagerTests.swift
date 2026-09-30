@@ -19,8 +19,6 @@ extension HardwareSuite {
             for device in allDevices {
                 #expect(!device.name.isEmpty, "Device should have a name")
             }
-
-            Log.debug("Found", allDevices.count, "devices: ", allDevices)
         }
 
         @Test(arguments: [Scope.input, Scope.output])
@@ -29,8 +27,6 @@ extension HardwareSuite {
 
             for device in devices {
                 let sampleRates = device.getNominalSampleRates(scope: scope) ?? []
-
-                Log.debug(scope, device.name, "(\(device.objectID(scope: scope) ?? 0))", sampleRates)
 
                 for sampleRate in sampleRates {
                     do {
@@ -54,13 +50,6 @@ extension HardwareSuite {
             let allIODevices = try await hardwareManager.allIODevices()
             let allNonAggregateDevices = try await hardwareManager.nonAggregateDevices()
             let allAggregateDevices = try await hardwareManager.aggregateDevices()
-
-            Log.debug("allDevices", allDevices)
-            Log.debug("allInputDevices", allInputDevices)
-            Log.debug("allOutputDevices", allOutputDevices)
-            Log.debug("allIODevices", allIODevices)
-            Log.debug("allNonAggregateDevices", allNonAggregateDevices)
-            Log.debug("allAggregateDevices", allAggregateDevices)
 
             #expect(allDevices.contains(nullDevice))
             #expect(allDeviceIDs.contains(nullDevice.id))

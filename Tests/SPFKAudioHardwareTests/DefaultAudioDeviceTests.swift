@@ -24,8 +24,6 @@ extension HardwareSuite {
                     #expect(preferredChannels.left > 0, "\(device.name) left channel should be > 0")
                     #expect(preferredChannels.right > 0, "\(device.name) right channel should be > 0")
                 }
-
-                Log.debug(device.name, preferredChannels)
             }
         }
     }

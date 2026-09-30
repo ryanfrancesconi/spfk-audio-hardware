@@ -22,10 +22,6 @@ class NullDeviceTestCase: AudioHardwareTestCase {
         nullDevice = try await AudioDevice.lookup(uid: nullDevice_uid)
     }
 
-    deinit {
-        Log.debug("- { NullDeviceTestCase }")
-    }
-
     static func resetNullDeviceState() async throws {
         let nullDevice = try await AudioDevice.lookup(uid: nullDeviceUID)
 
