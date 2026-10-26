@@ -98,10 +98,8 @@ extension AudioHardwareManager {
             let event = try await cache.update()
             try Task.checkCancellation()
 
-            guard event.removedDevices.isNotEmpty || event.addedDevices.isNotEmpty else {
-                Log.error("No changes detected")
-                return
-            }
+            // Core Audio posts this with no net change, often many times in a row.
+            guard event.removedDevices.isNotEmpty || event.addedDevices.isNotEmpty else { return }
 
             let notification: AudioHardwareNotification =
                 .deviceListChanged(objectID: objectID, event: event)

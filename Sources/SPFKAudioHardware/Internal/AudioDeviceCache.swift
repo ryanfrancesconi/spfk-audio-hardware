@@ -60,6 +60,8 @@ extension AudioDeviceCache {
         await AudioObjectPool.shared.removeAll()
     }
 
+    /// The devices added and removed since the last update. Both are empty when the list Core Audio
+    /// announced as changed is the same as before, which it does post.
     func update() async throws -> DeviceStatusEvent {
         let latestDeviceList = try await allDevices()
 
@@ -69,7 +71,7 @@ extension AudioDeviceCache {
         let removedDevices: [AudioDevice] = cachedDevices.filter { !latestDeviceList.contains($0) }
 
         guard removedDevices.isNotEmpty || addedDevices.isNotEmpty else {
-            throw NSError(description: "No changes detected...")
+            return DeviceStatusEvent()
         }
 
         let status = DeviceStatusEvent(
