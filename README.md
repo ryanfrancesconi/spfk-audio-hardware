@@ -4,93 +4,76 @@
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fryanfrancesconi%2Fspfk-audio-hardware%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ryanfrancesconi/spfk-audio-hardware)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fryanfrancesconi%2Fspfk-audio-hardware%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/ryanfrancesconi/spfk-audio-hardware)
 
-A Swift concurrency-first abstraction over the Core Audio Hardware Abstraction Layer (HAL) for macOS. Provides a type-safe, `Sendable` interface to audio device management built on actors and `async`/`await`.
+A Swift concurrency interface to the Core Audio Hardware Abstraction Layer on macOS: the audio
+devices attached to the machine, their properties, and the changes the system reports about them.
 
-- Full `Sendable` and actor isolation throughout
-- MIT License
+The HAL is a C API of property selectors, scopes and listener callbacks on arbitrary threads. This
+package presents it as `Sendable` device objects and actors, with `async` reads and writes and typed
+notifications, so an app can list devices, follow the user's default output, or change a sample rate
+without writing any of that plumbing. It is what an audio app embeds to manage the hardware it plays
+and records through. ShadowTag uses it through spfk-audio-workspace, and it depends on neither
+product.
 
-## Requirements
+## What it does
 
-- **Platforms:** macOS 13+
-- **Swift:** 6.2+
+**Devices.** `AudioHardwareManager` lists every device, or only inputs, outputs, aggregates,
+Bluetooth devices, or input/output pairs that belong together such as a headset's speaker and
+microphone. It answers which devices are the system's default input, output and alert output, and
+promotes a device to any of those roles. It can also list the devices another running process is
+using.
 
-## Features
+**Properties.** An `AudioDevice` reads and writes what the HAL exposes for it: name and UID,
+transport type, sample rates, per-channel and virtual main volume in scalar or decibels, balance,
+mute, channel counts and names, stream formats, latency and safety offsets, buffer size, clock
+source, and hog mode.
 
-- **Device enumeration** — query all devices, or filter by input, output, aggregate, Bluetooth, split, and more
-- **Default device management** — get and promote default input, output, and system output devices
-- **Per-process devices** — `AudioDevice.devices(usedByProcess:scope:)` lists the devices another running process is using
-- **Volume and mute control** — per-channel scalar/dB volume, virtual main volume, balance, and mute state
-- **Sample rate management** — coordinated async sample rate transitions via the `SampleRateState` actor
-- **Aggregate devices** — create, configure, and destroy aggregate devices with clock source control
-- **Stream formats** — enumerate and filter physical/virtual formats, access stream latency and direction
-- **Channel layout** — physical/virtual channel counts, named channels, layout descriptions, and LFE support
-- **Property notifications** — typed `AudioDeviceNotification`, `AudioStreamNotification`, and `AudioHardwareNotification` enums dispatched through `NotificationCenter`
-- **Latency and safety offsets** — device, stream, and presentation latency; buffer frame size management
+**Sample rates.** A sample-rate change is asynchronous in the HAL. `SampleRateState` requests one
+and waits until the device reports it has arrived, so the caller resumes at the new rate.
 
-## Architecture
+**Aggregate devices.** Combine two devices into an aggregate with a chosen clock source, and remove
+it again.
 
-`AudioHardwareManager` is a singleton actor that owns the device lifecycle. It must be started before use and manages an internal `AudioDeviceCache` and `AudioObjectPool` for efficient device tracking and listener management.
+**Notifications.** Property changes on the system, on each device and on each stream are posted to
+`NotificationCenter.default` as `AudioHardwareNotification`, `AudioDeviceNotification` and
+`AudioStreamNotification`. A device-list change carries the devices added and removed.
 
-**Key types:**
+## Usage
 
-| Type | Role |
-|------|------|
-| `AudioHardwareManager` | Singleton actor — device enumeration, aggregate device creation, hardware event dispatch |
-| `AudioDevice` | Represents a single audio device with properties for volume, sample rate, channels, streams, latency, and more |
-| `AudioStream` | Represents an audio stream within a device — format enumeration, direction, latency |
-| `SplitAudioDevice` | Matched input/output device pair (e.g. Bluetooth headphones with integrated mic) |
-| `SampleRateState` | Actor coordinating async sample rate changes with hardware confirmation |
-| `AudioObjectPool` | Internal singleton caching devices and streams, managing property listeners |
-| `AudioObjectBackend` | Protocol abstracting CoreAudio C API calls — enables hardware-independent testing |
-| `Scope` | Enum (`.input`, `.output`, `.global`, etc.) used throughout for directional property access |
-| `AudioObjectOwner` | Base for an object that owns HAL property listeners and tears them down |
-| `AudioDeviceNamedChannel` | One channel, with its name and terminal type |
-| `StereoPair` | Two channels read as a pair |
-| `VolumeInfo` | Scalar, dB and mute state read together |
-| `DeviceStatusEvent` | A device arriving, leaving or changing, as one value |
-| `TerminalType` / `TransportType` | What a channel is physically, and how the device is attached |
-| `DefaultSelectorType` | Which default role — input, output, system output — a query means |
+Start the manager once, then query it:
 
-**Notifications** are delivered as typed enums through `NotificationCenter`:
+```swift
+let hardware = AudioHardwareManager.shared
+try await hardware.start()
 
-- `AudioHardwareNotification` — device list changes, default device changes
-- `AudioDeviceNotification` — volume, mute, sample rate, name, and other per-device property changes
-- `AudioStreamNotification` — stream format changes
-
-**Backend abstraction:** All CoreAudio C API calls are routed through the `AudioObjectBackend` protocol via a global-replaceable accessor. In production, `CoreAudioBackend` delegates directly to the C functions. In tests, `MockAudioBackend` can be swapped in to verify property access logic without hardware. See the [test README](Tests/SPFKAudioHardwareTests/README.md) for details.
-
-## Testing
-
-Tests are organized into three tiers using Swift Testing tags:
-
-| Tag | Description | Hardware required |
-|-----|-------------|-------------------|
-| `.unit` | Pure logic and mock-based tests | No |
-| `.hardware` | Tests requiring NullAudioDevice or real audio hardware | Yes |
-| `.notification` | Async notification tests (timing-sensitive) | Yes |
-
-Unit tests (`.unit`) run in milliseconds with no hardware dependency. Hardware tests require Apple's NullAudioDevice driver and run serialized.
-
-```bash
-# Run only unit tests (no hardware needed)
-swift test --filter "DefinitionTests|MockPropertyTests"
-
-# Run all tests (requires NullAudioDevice driver)
-swift test
+let outputs = try await hardware.outputDevices()
+let device = await hardware.defaultOutputDevice
+try await device?.sampleRateUpdater.updateAndWait(sampleRate: 48000)
 ```
 
-## Dependencies
+Follow device arrivals and departures:
 
-| Package | Purpose |
-|---------|---------|
-| [spfk-base](https://github.com/ryanfrancesconi/spfk-base) | Shared base utilities |
-| [spfk-testing](https://github.com/ryanfrancesconi/spfk-testing) | Test utilities and resources (test target only) |
+```swift
+for await note in NotificationCenter.default.notifications(named: .deviceListChanged) {
+    guard case let .deviceListChanged(_, event) = note.object as? AudioHardwareNotification else { continue }
+    print(event.addedDevices, event.removedDevices)
+}
+```
 
----
+## Things to know
 
-## History
+- Nothing is observed, and the device list is not kept current, until `start()` has been called.
+  Calling it again from another consumer is harmless.
+- The device list is a cache updated from HAL notifications, so it trails the hardware briefly.
+  `AudioDevice.lookup(uid:)` asks the HAL directly, which is what to poll after creating or
+  destroying an aggregate.
+- `setNominalSampleRate` returns before the device has changed rate. Use the device's
+  `sampleRateUpdater` when the next step depends on the new rate.
+- Notifications are posted on the main actor.
 
-SPFKAudioHardware is derived from [SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) by Ruben Nine ([@rnine](https://github.com/rnine)). Open-sourced in March 2014 and archived in March 2025. Ryan Francesconi was a contributor and continued its development (as this package) after it was archived.
+## License
+
+MIT. Derived from [SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) by Ruben Nine, whose
+copyright the license carries alongside this package's.
 
 ## About
 
