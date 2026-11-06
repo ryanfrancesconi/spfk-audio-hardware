@@ -9,10 +9,7 @@ devices attached to the machine, their properties, and the changes the system re
 
 The HAL is a C API of property selectors, scopes and listener callbacks on arbitrary threads. This
 package presents it as `Sendable` device objects and actors, with `async` reads and writes and typed
-notifications, so an app can list devices, follow the user's default output, or change a sample rate
-without writing any of that plumbing. It is what an audio app embeds to manage the hardware it plays
-and records through. ShadowTag uses it through spfk-audio-workspace, and it depends on neither
-product.
+notifications, so an app can list and select devices, follow the user's default output, or change sample rates.
 
 ## What it does
 
