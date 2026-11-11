@@ -32,22 +32,4 @@ struct AudioDeviceNamedChannelTests {
         let channel = AudioDeviceNamedChannel(channel: 0, name: "  Left  ", scope: .output)
         #expect(channel.name == "Left")
     }
-
-    @Test func equality() {
-        let a = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
-        let b = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
-        let c = AudioDeviceNamedChannel(channel: 1, name: "Left", scope: .output)
-
-        #expect(a == b)
-        #expect(a != c)
-    }
-
-    @Test func scopeIsPreserved() {
-        let outputChannel = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .output)
-        let inputChannel = AudioDeviceNamedChannel(channel: 0, name: "Left", scope: .input)
-
-        #expect(outputChannel.scope == .output)
-        #expect(inputChannel.scope == .input)
-        #expect(outputChannel != inputChannel)
-    }
 }

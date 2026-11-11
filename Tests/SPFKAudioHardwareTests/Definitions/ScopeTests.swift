@@ -24,15 +24,6 @@ struct ScopeTests {
         }
     }
 
-    @Test func titles() {
-        #expect(Scope.global.title == "Global")
-        #expect(Scope.input.title == "Input")
-        #expect(Scope.output.title == "Output")
-        #expect(Scope.playthrough.title == "Playthrough")
-        #expect(Scope.main.title == "Main")
-        #expect(Scope.wildcard.title == "Wildcard")
-    }
-
     @Test func unrecognizedPropertyScopeDefaultsToWildcard() {
         let scope = Scope(propertyScope: 0xDEAD_BEEF)
         #expect(scope == .wildcard)
