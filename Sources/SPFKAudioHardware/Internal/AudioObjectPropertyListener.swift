@@ -82,8 +82,8 @@ final class AudioObjectPropertyListener {
     /// Calls `AudioObjectRemovePropertyListener` to unregister the callback.
     ///
     /// `kAudioHardwareBadObjectError` counts as success: a listener cannot outlive its object, and a
-    /// device removal is only ever learned after the HAL has destroyed it — absence from
-    /// `kAudioHardwarePropertyDevices` is the notification — so this is the ordinary path for a
+    /// device removal is only ever learned after the HAL has destroyed it - absence from
+    /// `kAudioHardwarePropertyDevices` is the notification - so this is the ordinary path for a
     /// device that goes away, not a failure.
     ///
     /// - Throws: If `AudioObjectRemovePropertyListener` fails for any other reason. `isListening`

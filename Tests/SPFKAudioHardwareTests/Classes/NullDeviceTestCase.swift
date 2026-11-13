@@ -94,7 +94,7 @@ extension NullDeviceTestCase {
     /// Removes the aggregate device and waits for the HAL to finish destroying it.
     ///
     /// Until destruction completes the null device is still a sub-device of the aggregate, and
-    /// property writes on it — including the ones ``HardwareStateTrait`` makes — are rejected.
+    /// property writes on it - including the ones ``HardwareStateTrait`` makes - are rejected.
     func removeAggregateDeviceAndWait(_ device: AudioDevice) async throws {
         let status = await hardwareManager.removeAggregateDevice(id: device.id)
 

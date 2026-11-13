@@ -3,12 +3,12 @@
 ## Test Organization
 
 Tests use the shared Swift Testing tags from `SPFKTesting` to categorize suites. Every tag names
-what a suite *requires*, so an untagged suite needs nothing — that is how `spfk-fast` selects the
+what a suite *requires*, so an untagged suite needs nothing - that is how `spfk-fast` selects the
 hermetic majority of this target out of a package otherwise confined to `spfk-all-serial`.
 
 | Tag | Suites | Description |
 |-----|--------|-------------|
-| _(none)_ | `DefinitionTests` (10 suites), `AudioDeviceNamedChannelTests`, `ScopeTests` | Pure logic — no hardware, runs in milliseconds |
+| _(none)_ | `DefinitionTests` (10 suites), `AudioDeviceNamedChannelTests`, `ScopeTests` | Pure logic - no hardware, runs in milliseconds |
 | `.hardware` | `NullDeviceTests`, `AudioDevicePropertyTests`, `AudioStreamTests`, `AudioHardwareManagerTests`, `DefaultAudioDeviceTests`, `SampleRateStateTests` | Requires NullAudioDevice driver |
 | `.hardware` (isolation) | `MockPropertyTests`, `ProcessDeviceTests` | Mock-only, but swaps the global backend and so must not run in parallel |
 | `.notification` | `AudioDeviceNotificationTests`, `AudioHardwareTests` | Hardware + async notification waits (timing-sensitive) |
@@ -23,8 +23,8 @@ The `AudioObjectBackend` protocol abstracts all CoreAudio C API calls. Tests can
 
 **Key files:**
 
-- `Mocks/MockAudioBackend.swift` — In-memory property store keyed by `(objectID, selector, scope, element)`. Supports `register()`, `registerString()`, `registerArray()`, and tracks `setCalls` for verification.
-- `Mocks/MockDeviceFactory.swift` — Creates mock-backed `AudioDevice` instances with minimum required properties pre-registered.
+- `Mocks/MockAudioBackend.swift` - In-memory property store keyed by `(objectID, selector, scope, element)`. Supports `register()`, `registerString()`, `registerArray()`, and tracks `setCalls` for verification.
+- `Mocks/MockDeviceFactory.swift` - Creates mock-backed `AudioDevice` instances with minimum required properties pre-registered.
 
 ```swift
 // Example: test that transportType maps UInt32 to enum
@@ -40,10 +40,10 @@ let (device, _) = try await MockDeviceFactory.makeDevice { mock, id in
 
 Hardware tests inherit from `NullDeviceTestCase` (or its parent `AudioHardwareTestCase`):
 
-- `AudioHardwareTestCase` — Starts `AudioHardwareManager`, saves/restores default devices
-- `NullDeviceTestCase` — Looks up the NullAudioDevice, provides `resetNullDeviceState()` and `createAggregateDevice()`
+- `AudioHardwareTestCase` - Starts `AudioHardwareManager`, saves/restores default devices
+- `NullDeviceTestCase` - Looks up the NullAudioDevice, provides `resetNullDeviceState()` and `createAggregateDevice()`
 
-Each hardware suite carries `.nullDeviceState` or `.hardwareState` (`HardwareStateTrait`), which resets device state (sample rate, volume, mute, stereo channels) before each test case and restores it and the default devices afterwards — including when the test throws.
+Each hardware suite carries `.nullDeviceState` or `.hardwareState` (`HardwareStateTrait`), which resets device state (sample rate, volume, mute, stereo channels) before each test case and restores it and the default devices afterwards - including when the test throws.
 
 ## Running Tests
 
@@ -63,4 +63,4 @@ Note: The `.xctestplan` must have parallelization disabled due to the shared `Au
 
 Hardware tests that set device properties (volume, mute, etc.) can occasionally crash inside Apple's internal `LogVolumeChangeForClientSide` logging function. The crash occurs in `snprintf` → `__Balloc_D2A` (a memory allocator for float-to-string conversion) when `AudioObjectSetPropertyData` is called rapidly from Swift's cooperative thread pool.
 
-This is an Apple framework bug — the crash is entirely within CoreAudio's internal logging path. `Task.yield()` calls have been added between property-set batches in `resetNullDeviceState()` and after each test's restore in `HardwareStateTrait` to reduce the frequency, but cannot fully prevent it. If you see this crash, simply re-run the tests.
+This is an Apple framework bug - the crash is entirely within CoreAudio's internal logging path. `Task.yield()` calls have been added between property-set batches in `resetNullDeviceState()` and after each test's restore in `HardwareStateTrait` to reduce the frequency, but cannot fully prevent it. If you see this crash, simply re-run the tests.

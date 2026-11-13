@@ -117,7 +117,7 @@ extension AudioDevice {
         let declared = Int(buffer.loadUnaligned(fromByteOffset: headerSize - MemoryLayout<UInt32>.size,
                                                 as: UInt32.self))
 
-        // The byte count is authoritative — a declared count beyond it would read off the end.
+        // The byte count is authoritative - a declared count beyond it would read off the end.
         let available = (Int(size) - headerSize) / MemoryLayout<AudioChannelDescription>.size
 
         guard declared > 0, available > 0 else { return [] }

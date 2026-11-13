@@ -52,7 +52,7 @@ extension AudioObjectModel {
     static func getPropertyData<T>(_ objectID: AudioObjectID,
                                    address: AudioObjectPropertyAddress,
                                    andValue value: inout T) -> OSStatus {
-        // CFString must be handled separately — it reads a reference type, not raw bytes of T.
+        // CFString must be handled separately - it reads a reference type, not raw bytes of T.
         if T.self == CFString.self || T.self == String.self {
             return getStringPropertyData(objectID, address: address, andValue: &value)
         }
@@ -76,7 +76,7 @@ extension AudioObjectModel {
 
     /// Reads a property whose value is a `CFStringRef`.
     ///
-    /// Core Audio hands back a retained reference, so it is read as `Unmanaged` — writing over a
+    /// Core Audio hands back a retained reference, so it is read as `Unmanaged` - writing over a
     /// managed `CFString` leaks whatever the slot already held, and sizes the read by
     /// `MemoryLayout<T>`, which is 16 bytes for a `String` against an 8-byte buffer.
     private static func getStringPropertyData<T>(_ objectID: AudioObjectID,

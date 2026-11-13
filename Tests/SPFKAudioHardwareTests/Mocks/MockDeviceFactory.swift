@@ -41,7 +41,7 @@ enum MockDeviceFactory {
         // Install mock backend
         AudioBackend._setForTesting(mock)
 
-        // Create device — init calls classID, objectName, sampleRateUpdater.update
+        // Create device - init calls classID, objectName, sampleRateUpdater.update
         let device = try await AudioDevice(objectID: objectID)
 
         return (device, mock)

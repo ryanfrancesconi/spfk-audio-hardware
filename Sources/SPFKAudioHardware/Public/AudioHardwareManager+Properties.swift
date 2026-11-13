@@ -52,7 +52,7 @@ extension AudioHardwareManager {
         try await cache.allIODevices()
     }
 
-    /// All the devices that are real devices — not aggregate ones.
+    /// All the devices that are real devices - not aggregate ones.
     ///
     /// - Returns: An array of `AudioDevice` objects.
     public func nonAggregateDevices() async throws -> [AudioDevice] {
